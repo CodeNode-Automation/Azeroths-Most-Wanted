@@ -189,11 +189,61 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const heatmapGrid = document.getElementById('heatmap-grid');
     if (heatmapGrid && heatmapData && heatmapData.length > 0) {
+        
+        // --- NEW: Chart.js Line Graph ---
+        const ctx = document.getElementById('activityChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: heatmapData.map(d => d.day_name),
+                    datasets: [
+                        {
+                            label: 'Loot Drops',
+                            data: heatmapData.map(d => d.loot || 0),
+                            borderColor: '#a335ee', // Epic Purple
+                            backgroundColor: 'rgba(163, 53, 238, 0.1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#a335ee',
+                            pointBorderColor: '#fff',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Level Ups',
+                            data: heatmapData.map(d => d.levels || 0),
+                            borderColor: '#ffd100', // Gold
+                            backgroundColor: 'rgba(255, 209, 0, 0.1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ffd100',
+                            pointBorderColor: '#fff',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#bbb', font: { family: 'Cinzel' }, boxWidth: 12 } },
+                        tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#fff', bodyFont: { family: 'Cinzel' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#888', stepSize: 1, font: {family: 'Cinzel'} }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { ticks: { color: '#888', font: { family: 'Cinzel', weight: 'bold' } }, grid: { display: false } }
+                    },
+                    interaction: { mode: 'nearest', axis: 'x', intersect: false }
+                }
+            });
+        }
+
+        // --- Original Heatmap Grid ---
         let heatmapHtml = '';
         
         // Find the absolute highest activity count in the current 7-day window
-        const maxCount = Math.max(...heatmapData.map(d => d.count), 1); 
-        
+        const maxCount = Math.max(...heatmapData.map(d => d.count), 1);
+
         heatmapData.forEach(day => {
             let lvl = 0;
             
@@ -431,20 +481,39 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         let gearHtml = "";
+        
+        // Items that cannot be traditionally enchanted (ignoring rings to prevent false positives for non-enchanters)
+        const UNENCHANTABLE_SLOTS = ['NECK', 'SHIRT', 'TABARD', 'FINGER_1', 'FINGER_2', 'TRINKET_1', 'TRINKET_2'];
+
         SLOTS.forEach(slot => {
             const data = eq[slot];
             if (data && data.item_id) {
                 const q = data.quality || "COMMON", qHex = QUALITY_COLORS[q];
                 const hasEnchant = data.tooltip_params && data.tooltip_params.includes('ench=');
-                const enchantBadge = hasEnchant ? `<div style="position:absolute; bottom:-4px; right:8px; background:#000; border:1px solid #1eff00; color:#1eff00; font-size:9px; font-weight:bold; border-radius:3px; padding:0 4px; z-index:5;">E</div>` : '';
+                const canBeEnchanted = !UNENCHANTABLE_SLOTS.includes(slot);
                 
+                let enchantBadge = '';
+                let warningStyle = '';
+                let warningText = '';
+
+                if (hasEnchant) {
+                    enchantBadge = `<div style="position:absolute; bottom:-4px; right:8px; background:#000; border:1px solid #1eff00; color:#1eff00; font-size:9px; font-weight:bold; border-radius:3px; padding:0 4px; z-index:5;">E</div>`;
+                } else if (canBeEnchanted && (q === "EPIC" || q === "LEGENDARY")) {
+                    // 🔍 OFFICER X-RAY: Flag missing enchants on high-end gear
+                    warningStyle = `box-shadow: inset 0 0 15px rgba(231, 76, 60, 0.4); border-left-color: #e74c3c !important;`;
+                    warningText = `<div style="color: #e74c3c; font-size: 10px; font-weight: bold; margin-top: 2px; text-shadow: 1px 1px 2px #000;">⚠️ Missing Enchant</div>`;
+                }
+
                 gearHtml += `
-                <div class="item-slot border-${q}" style="border-left-color:${qHex}; background:rgba(20,20,20,0.9);">
+                <div class="item-slot border-${q}" style="border-left-color:${qHex}; background:rgba(20,20,20,0.9); ${warningStyle}">
                     <div style="position:relative;">
-                        <img src="${data.icon_data}" style="border-color:${qHex};">
+                        <img src="${data.icon_data}" style="border-color:${warningStyle ? '#e74c3c' : qHex};">
                         ${enchantBadge}
                     </div>
-                    <a href="https://www.wowhead.com/wotlk/item=${data.item_id}" class="${q}" data-wowhead="${data.tooltip_params}" target="_blank" style="color:${qHex};">${data.name}</a>
+                    <div style="display:flex; flex-direction:column; justify-content:center;">
+                        <a href="https://www.wowhead.com/wotlk/item=${data.item_id}" class="${q}" data-wowhead="${data.tooltip_params}" target="_blank" style="color:${qHex}; text-decoration: none;">${data.name}</a>
+                        ${warningText}
+                    </div>
                 </div>`;
             } else {
                 const emptyIcon = EMPTY_ICONS[slot] || 'inv_misc_questionmark';
@@ -456,11 +525,15 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // --- NEW: Grab the Guild Rank ---
+        const guildRank = p.guild_rank || 'Member';
+
         return `
 <div class="char-card ${factionCls}" style="border-top-color:${cHex};">
     <div style="text-align:center; margin-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:20px;">
         <h2 style="color:${cHex}; font-family:Cinzel; font-size:38px; margin:0; text-shadow:0 2px 4px #000;">${p.name || 'Unknown'}</h2>
         <div style="display:flex; justify-content:center; gap:10px; margin-top:12px; flex-wrap:wrap;">
+            <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid #ffd100; padding:5px 14px; border-radius:20px; font-size:14px; color:#ffd100; text-shadow: 1px 1px 2px #000;">🛡️ ${guildRank}</span>
             <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.2); padding:5px 14px; border-radius:20px; font-size:14px; color:#ddd;">Level ${p.level || 0}</span>
             <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid #ff8000; padding:5px 14px; border-radius:20px; font-size:14px; color:#ff8000;">iLvl ${p.equipped_item_level || 0}</span>
             <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.2); padding:5px 14px; border-radius:20px; font-size:14px; color:#ddd;">${raceName}</span>
@@ -784,8 +857,12 @@ window.addEventListener('DOMContentLoaded', () => {
                 const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" style="width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 4px; border: 1px solid #222;">` : '';
                 const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
                 
+                // --- NEW: Grab the Guild Rank from the profile ---
+                const guildRank = p.guild_rank || 'Member';
+                
                 tooltip.innerHTML = `
                     <div class="tt-name" style="color:${cHex};">${p.name || 'Unknown'}</div>
+                    <div class="tt-row"><span class="tt-label">Guild Rank</span><span class="tt-val" style="color:#ffd100;">${guildRank}</span></div>
                     <div class="tt-row"><span class="tt-label">Level / Race</span><span class="tt-val">${p.level || 0} / ${raceName}</span></div>
                     <div class="tt-row"><span class="tt-label">Class</span><span class="tt-val" style="color:${cHex}; display:flex; align-items:center;">${specIconHtml}${displaySpecClass}</span></div>
                     <div class="tt-row"><span class="tt-label">Equipped iLvl</span><span class="tt-val" style="color:#ff8000;">${p.equipped_item_level || 0}</span></div>
@@ -817,11 +894,23 @@ window.addEventListener('DOMContentLoaded', () => {
             const charName = el.getAttribute('data-char');
             const eventType = el.getAttribute('data-event-type');
             const timestampStr = el.getAttribute('data-timestamp');
+            const itemQuality = el.getAttribute('data-quality'); // NEW: Grab the quality tag!
             
             let show = true;
             
             if (window.currentFilteredChars && !window.currentFilteredChars.includes(charName)) show = false;
-            if (tlTypeFilter !== 'all' && eventType !== tlTypeFilter) show = false;
+            
+            // --- NEW: Epic & Legendary Filtering Logic ---
+            if (tlTypeFilter === 'epic') {
+                // If they click Epics+, show ONLY Epic OR Legendary items
+                if (eventType !== 'item' || (itemQuality !== 'EPIC' && itemQuality !== 'LEGENDARY')) show = false;
+            } else if (tlTypeFilter === 'legendary') {
+                // If they click Legendaries, show ONLY Orange items
+                if (eventType !== 'item' || itemQuality !== 'LEGENDARY') show = false;
+            } else if (tlTypeFilter !== 'all' && eventType !== tlTypeFilter) {
+                // Normal "Loot" or "Levels" logic
+                show = false;
+            }
 
             if (tlSpecificDate && timestampStr) {
                 if (!timestampStr.startsWith(tlSpecificDate)) {
@@ -852,7 +941,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 noResultsMsg.style.textAlign = 'center';
                 noResultsMsg.style.padding = '20px';
                 noResultsMsg.style.fontStyle = 'italic';
-                noResultsMsg.innerText = 'No activity found for these filters.';
+                noResultsMsg.innerText = 'No high-end loot found for these filters yet... keep raiding!';
                 timeline.appendChild(noResultsMsg);
             } else {
                 noResultsMsg.style.display = 'block';

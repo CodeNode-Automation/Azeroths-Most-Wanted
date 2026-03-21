@@ -88,15 +88,24 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
     trend_active_html = get_trend_html(global_trends.get('trend_active', 0))
     trend_ready_html = get_trend_html(global_trends.get('trend_ready', 0))
 
-    # --- Process Timeline for Heatmap (Last 7 Days) ---
-    heatmap_counts = {}
+    # --- Process Timeline for Heatmap & Chart (Last 7 Days) ---
+    activity_counts = {}
     for event in timeline_data:
         ts = event.get("timestamp", "")
+        e_type = event.get("type", "item") # Defaults to item if missing
         try:
             # Parse ISO 8601 string safely into a Date
             dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
             date_key = dt.strftime("%Y-%m-%d")
-            heatmap_counts[date_key] = heatmap_counts.get(date_key, 0) + 1
+            
+            if date_key not in activity_counts:
+                activity_counts[date_key] = {"total": 0, "loot": 0, "levels": 0}
+                
+            activity_counts[date_key]["total"] += 1
+            if e_type == "level_up":
+                activity_counts[date_key]["levels"] += 1
+            else:
+                activity_counts[date_key]["loot"] += 1
         except Exception:
             pass
 
@@ -107,8 +116,15 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         day = today - timedelta(days=i)
         d_str = day.strftime("%Y-%m-%d")
         day_name = day.strftime("%a") # Mon, Tue, Wed, etc.
-        count = heatmap_counts.get(d_str, 0)
-        heatmap_data.append({"date": d_str, "day_name": day_name, "count": count})
+        
+        day_data = activity_counts.get(d_str, {"total": 0, "loot": 0, "levels": 0})
+        heatmap_data.append({
+            "date": d_str, 
+            "day_name": day_name, 
+            "count": day_data["total"],
+            "loot": day_data["loot"],
+            "levels": day_data["levels"]
+        })
     
     safe_heatmap_data = json.dumps(heatmap_data)
     
@@ -209,6 +225,7 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
     <title>&lt;Azeroths Most Wanted&gt; Guild Armory</title>
     <script>const whTooltips = {{colorLinks: false, iconizeLinks: false, renameLinks: false}};</script>
     <script src="https://wow.zamimg.com/widgets/power.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         {css_content}
     </style>
@@ -272,8 +289,11 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
                     </div>
                 </div>
 
-                <div class="heatmap-wrapper">
+                <div class="heatmap-wrapper" style="max-width: 650px;">
                     <h3 class="heatmap-title">🔥 Guild Activity (Last 7 Days) <span style="color:#aaa; font-size: 11px;">Updates Daily</span></h3>
+                    <div style="position: relative; height: 180px; width: 100%; margin-bottom: 20px;">
+                        <canvas id="activityChart"></canvas>
+                    </div>
                     <div id="heatmap-grid" class="heatmap-grid"></div>
                 </div>
                 
@@ -314,7 +334,9 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
             <div class="timeline-filters">
                 <div class="filter-group">
                     <button class="tl-btn active" data-type="all">All</button>
-                    <button class="tl-btn" data-type="item">Loot</button>
+                    <button class="tl-btn" data-type="item">All Loot</button>
+                    <button class="tl-btn" style="color: #a335ee; border-color: rgba(163, 53, 238, 0.5);" data-type="epic">Epics+</button>
+                    <button class="tl-btn" style="color: #ff8000; border-color: rgba(255, 128, 0, 0.5);" data-type="legendary">Legendaries</button>
                     <button class="tl-btn" data-type="level_up">Levels</button>
                 </div>
                 <div class="filter-group">
@@ -357,7 +379,7 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
                 q = event.get('item_quality', 'COMMON')
                 q_hex = QUALITY_COLORS.get(q, "#ffffff")
                 html += f"""
-                <div onclick="selectCharacter('{c_name.lower()}')" class="concise-item tt-char" data-char="{c_name.lower()}" data-event-type="item" data-timestamp="{ts}" style="border-left-color: {q_hex}; cursor: pointer;">
+                <div onclick="selectCharacter('{c_name.lower()}')" class="concise-item tt-char" data-char="{c_name.lower()}" data-event-type="item" data-quality="{q}" data-timestamp="{ts}" style="border-left-color: {q_hex}; cursor: pointer;">
                     <div class="timeline-node" style="background: {q_hex}; box-shadow: 0 0 8px {q_hex};"></div>
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                         <span style="color: {c_hex}; font-family:'Cinzel'; font-weight:bold; font-size:15px; text-shadow:1px 1px 2px #000;">{c_name}</span>

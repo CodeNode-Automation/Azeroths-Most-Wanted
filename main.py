@@ -31,6 +31,16 @@ RACE_MAP = {
     6: "Tauren", 7: "Gnome", 8: "Troll", 10: "Blood Elf", 11: "Draenei"
 }
 
+# NEW: Map the exact in-game rank names to their numerical IDs (0 is always Guild Master)
+RANK_MAP = {
+    0: "Guild Master",
+    1: "MOST WANTED",
+    2: "Veteran",
+    3: "Member",
+    4: "Alt",
+    5: "Wanted"
+}
+
 def get_db_connection():
     """Establishes a connection to the persistent SQLite database."""
     os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
@@ -77,6 +87,17 @@ def setup_database():
             val1 INTEGER,
             val2 INTEGER,
             val3 INTEGER
+        )
+    """)
+
+    # NEWER: Persistent trend tracker for characters (replaces daily reset for leaderboards)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS character_trends (
+            char_name TEXT PRIMARY KEY,
+            last_ilvl INTEGER,
+            trend_ilvl INTEGER,
+            last_hks INTEGER,
+            trend_hks INTEGER
         )
     """)
 
@@ -196,9 +217,9 @@ async def main_async():
                             c_race_id = c.get('playable_race', {}).get('id')
                             c_race = RACE_MAP.get(c_race_id, "Unknown")
                             
-                            # Map the explicit Guild Rank
-                            rank_id = m.get('rank')
-                            rank_name = rank_map.get(rank_id, "Member")
+                            # Map the explicit Guild Rank using our manual RANK_MAP
+                            rank_id = m.get('rank', 5) # Default to 5 if missing
+                            rank_name = RANK_MAP.get(rank_id, f"Rank {rank_id}")
                             char_ranks[c_name.lower()] = rank_name
                             
                             raw_guild_roster.append({
@@ -229,11 +250,18 @@ async def main_async():
         tasks = [fetch_with_semaphore(sem, session, token, char, history_data) for char in roster_names]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # --- NEW TREND LOGIC: Load Daily Snapshots from DB ---
+        # --- NEW TREND LOGIC: Load Persistent Trends & Daily Snapshots ---
         today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        
+        # Load Global Snapshots
         snapshots = {}
         for row in db_c.execute("SELECT * FROM daily_snapshot").fetchall():
             snapshots[row['id']] = dict(row)
+            
+        # Load Character Trends
+        char_trends = {}
+        for row in db_c.execute("SELECT * FROM character_trends").fetchall():
+            char_trends[row['char_name']] = dict(row)
 
         for result in results:
             if isinstance(result, dict) and result:
@@ -243,29 +271,47 @@ async def main_async():
                 if isinstance(result.get('profile'), dict):
                     result['profile']['guild_rank'] = char_ranks.get(char_name_lower, "Member")
                     
-                    # --- TREND CALCULATIONS: PVE & PVP ---
+                    # --- PERSISTENT TREND CALCULATIONS: PVE & PVP ---
                     cur_ilvl = result['profile'].get('equipped_item_level', 0)
                     cur_hks = result['profile'].get('honorable_kills', 0)
                     
-                    snap = snapshots.get(char_name_lower)
-                    baseline_ilvl, baseline_hks = cur_ilvl, cur_hks
+                    ct = char_trends.get(char_name_lower)
                     
-                    if snap:
-                        if snap['snapshot_date'] == today_str:
-                            # We already snapshotted today. Use it for comparison!
-                            baseline_ilvl, baseline_hks = snap['val1'], snap['val2']
-                        else:
-                            # It's a new day! Overwrite yesterday's snapshot with current stats
-                            db_c.execute("INSERT OR REPLACE INTO daily_snapshot (id, snapshot_date, val1, val2, val3) VALUES (?, ?, ?, ?, ?)", 
-                                         (char_name_lower, today_str, cur_ilvl, cur_hks, 0))
-                    else:
-                        # First time ever seeing this character
-                        db_c.execute("INSERT INTO daily_snapshot (id, snapshot_date, val1, val2, val3) VALUES (?, ?, ?, ?, ?)", 
-                                     (char_name_lower, today_str, cur_ilvl, cur_hks, 0))
+                    if ct:
+                        last_ilvl = ct['last_ilvl']
+                        trend_ilvl = ct['trend_ilvl']
+                        last_hks = ct['last_hks']
+                        trend_hks = ct['trend_hks']
                         
-                    # Inject the math directly into the profile so JS can read it!
-                    result['profile']['trend_pve'] = cur_ilvl - baseline_ilvl
-                    result['profile']['trend_pvp'] = cur_hks - baseline_hks
+                        # Check for iLvl changes
+                        if cur_ilvl != last_ilvl:
+                            trend_ilvl = cur_ilvl - last_ilvl
+                            last_ilvl = cur_ilvl
+                            
+                        # Check for HK changes
+                        if cur_hks != last_hks:
+                            trend_hks = cur_hks - last_hks
+                            last_hks = cur_hks
+                            
+                        # Save the updated persistent trend back to the DB
+                        db_c.execute("""
+                            INSERT OR REPLACE INTO character_trends 
+                            (char_name, last_ilvl, trend_ilvl, last_hks, trend_hks) 
+                            VALUES (?, ?, ?, ?, ?)
+                        """, (char_name_lower, last_ilvl, trend_ilvl, last_hks, trend_hks))
+                        
+                    else:
+                        # First time seeing this character: set baseline, trend is 0
+                        trend_ilvl, trend_hks = 0, 0
+                        db_c.execute("""
+                            INSERT INTO character_trends 
+                            (char_name, last_ilvl, trend_ilvl, last_hks, trend_hks) 
+                            VALUES (?, ?, 0, ?, 0)
+                        """, (char_name_lower, cur_ilvl, cur_hks))
+                        
+                    # Inject the persistent math directly into the profile so JS can read it!
+                    result['profile']['trend_pve'] = trend_ilvl
+                    result['profile']['trend_pvp'] = trend_hks
                 
                 history_data, timeline_data_new = update_character_state(result, history_data, timeline_data_new)
                 roster_data.append(result)
