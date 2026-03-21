@@ -28,13 +28,18 @@ const TBC_XP = {
     60: 494000, 61: 517000, 62: 550000, 63: 587000, 64: 632000, 65: 684000, 66: 745000, 67: 815000, 68: 895000, 69: 985000
 };
 
-// Once the DOM is ready, initialize the interactive application
-window.addEventListener('DOMContentLoaded', () => {
+// NEW: Added 'async' so we can fetch the external files
+window.addEventListener('DOMContentLoaded', async () => {
 
     const config = JSON.parse(document.getElementById('dashboard-config').textContent);
-    const rosterData = JSON.parse(document.getElementById('roster-data').textContent);
-    const rawGuildRoster = JSON.parse(document.getElementById('raw-roster-data').textContent);
     const heatmapData = JSON.parse(document.getElementById('heatmap-data').textContent);
+    
+    // NEW: Download the heavy roster files silently in the background
+    const rosterRes = await fetch('asset/roster.json');
+    const rosterData = await rosterRes.json();
+    
+    const rawRes = await fetch('asset/raw_roster.json');
+    const rawGuildRoster = await rawRes.json();
     
     const active14Days = config.active_14_days;
     const raidReadyCount = config.raid_ready_count;

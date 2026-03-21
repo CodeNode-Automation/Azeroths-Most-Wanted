@@ -208,9 +208,12 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
     except FileNotFoundError:
         js_content = "console.error('script.js not found');"
 
-    safe_roster_data = json.dumps(sorted_stats_roster).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026').replace("'", "\\u0027")
-    safe_raw_roster = json.dumps(raw_guild_roster).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026').replace("'", "\\u0027")
-    
+    os.makedirs("asset", exist_ok=True)
+    with open("asset/roster.json", "w", encoding="utf-8") as f:
+        json.dump(sorted_stats_roster, f)
+    with open("asset/raw_roster.json", "w", encoding="utf-8") as f:
+        json.dump(raw_guild_roster, f)
+        
     dashboard_config = {
         "last_updated": last_updated_iso,
         "active_14_days": active_14_days,
@@ -410,12 +413,6 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
     </script>
     <script id="heatmap-data" type="application/json">
         {safe_heatmap_data}
-    </script>
-    <script id="roster-data" type="application/json">
-        {safe_roster_data}
-    </script>
-    <script id="raw-roster-data" type="application/json">
-        {safe_raw_roster}
     </script>
 
     <script>

@@ -62,8 +62,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Explicitly add ONLY the SQL and HTML file, ignoring accidental junk
-          git add asset/guild.sql index.html
+          # Explicitly add the SQL, HTML, and our new decoupled JSON data files
+          git add asset/guild.sql index.html asset/roster.json asset/raw_roster.json
           
           git commit -m "Auto-update WoW guild data & SQL timeline" || echo "No changes to commit"
           git push
