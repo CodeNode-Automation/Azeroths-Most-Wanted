@@ -251,3 +251,170 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     0% { opacity: 0.3; transform: scale(0.98); filter: drop-shadow(0 0 5px rgba(163, 53, 238, 0.2)); }
     100% { opacity: 0.7; transform: scale(1.02); filter: drop-shadow(0 0 15px rgba(163, 53, 238, 0.6)); }
 }
+
+/* =========================================
+   UX / UI ENHANCEMENTS
+   ========================================= */
+
+/* 1. Back to Top Button */
+#backToTopBtn {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid #ffd100;
+    outline: none;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #ffd100;
+    cursor: url('https://wow.zamimg.com/images/wow/cursor/select.png'), pointer !important;
+    padding: 10px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+}
+#backToTopBtn.show {
+    display: block;
+    opacity: 1;
+}
+#backToTopBtn:hover {
+    background-color: rgba(255, 209, 0, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 209, 0, 0.4);
+}
+
+/* 2. Sticky Timeline Filters (Fixed Overlap) */
+.timeline-container {
+    padding-top: 0 !important; /* Remove container top padding so items don't show above the sticky bar */
+}
+
+.timeline-title {
+    padding-top: 25px; /* Move the 25px spacing here so the original layout looks identical */
+    background: #161616; /* Add background to prevent transparency issues */
+    position: relative;
+    z-index: 10;
+}
+
+.timeline-filters {
+    position: sticky;
+    top: 0;
+    background: #161616; /* Match timeline container background to block scrolled items */
+    z-index: 15; /* Ensure it stays above the timeline feed elements */
+    padding-top: 10px;
+    padding-bottom: 15px;
+    margin-top: 0; 
+    box-shadow: 0 15px 15px -15px rgba(0,0,0,0.9); /* Stronger bottom shadow to cover scrolling items */
+}
+
+/* 3. 3D Hover Effect for Holographic Character Cards */
+.char-card {
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+.char-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 0 60px rgba(255,255,255,0.05);
+}
+
+/* 4. Swipeable Class Badges on Mobile */
+@media (max-width: 600px) {
+    .class-stat-container {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 15px;
+        /* Hide scrollbar for a clean UI */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+    }
+    .class-stat-container::-webkit-scrollbar {
+        display: none;
+    }
+    .stat-badge {
+        flex: 0 0 auto; /* Prevent badges from shrinking */
+        scroll-snap-align: start;
+    }
+}
+
+/* =========================================
+   UX / UI ENHANCEMENTS: PHASE 2
+   ========================================= */
+
+/* 1. Global Loading Overlay */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+    z-index: 9998; /* Just below the video intro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+}
+#loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+.loader-content {
+    text-align: center;
+    animation: fadeInUp 0.5s forwards;
+}
+.pulse-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid #ffd100;
+    box-shadow: 0 0 15px rgba(255, 209, 0, 0.5);
+    animation: pulseGlow 1.5s infinite alternate;
+}
+@keyframes pulseGlow {
+    0% { transform: scale(0.95); box-shadow: 0 0 10px rgba(255, 209, 0, 0.3); }
+    100% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 209, 0, 0.8); }
+}
+
+/* 2. Sorting Dropdown for Concise View */
+.sort-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-family: 'Cinzel', serif;
+}
+.sort-select {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #444;
+    color: #ffd100;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.sort-select:hover, .sort-select:focus {
+    border-color: #ffd100;
+}
+.sort-select option {
+    background: #111;
+    color: #fff;
+}
+
+/* 3. Accessibility (A11y) Keyboard Navigation Tweaks */
+:focus-visible {
+    outline: 2px solid #ffd100 !important;
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+.nav-btn:focus-visible, .search-box input:focus-visible {
+    outline-offset: 1px;
+}

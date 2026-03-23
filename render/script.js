@@ -40,6 +40,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     const rawRes = await fetch('asset/raw_roster.json');
     const rawGuildRoster = await rawRes.json();
+
+    // Hide the loading overlay once data is ready
+    const loader = document.getElementById('loading-overlay');
+    if (loader) loader.classList.add('hidden');
     
     const active14Days = config.active_14_days;
     const raidReadyCount = config.raid_ready_count;
@@ -780,55 +784,99 @@ window.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Variable to track current sort method
+    let currentSortMethod = 'ilvl'; 
+
     function renderConciseList(title, characters, isRawMode = false) {
         conciseViewTitle.textContent = title;
-        conciseList.innerHTML = characters.map(char => {
+
+        // Apply Sorting before mapping HTML
+        let sortedCharacters = [...characters];
+        sortedCharacters.sort((a, b) => {
+            let valA, valB;
+            
+            // Handle Raw vs Full data structures
+            const profA = isRawMode ? (rosterData.find(c => c.profile && c.profile.name === a.name)?.profile || a) : (a.profile || a);
+            const profB = isRawMode ? (rosterData.find(c => c.profile && c.profile.name === b.name)?.profile || b) : (b.profile || b);
+
+            if (currentSortMethod === 'ilvl') {
+                valA = profA.equipped_item_level || 0;
+                valB = profB.equipped_item_level || 0;
+                return valB - valA; // High to Low
+            } else if (currentSortMethod === 'level') {
+                valA = profA.level || 0;
+                valB = profB.level || 0;
+                return valB - valA; // High to Low
+            } else if (currentSortMethod === 'hks') {
+                valA = profA.honorable_kills || 0;
+                valB = profB.honorable_kills || 0;
+                return valB - valA; // High to Low
+            } else if (currentSortMethod === 'name') {
+                valA = (profA.name || '').toLowerCase();
+                valB = (profB.name || '').toLowerCase();
+                return valA.localeCompare(valB); // A to Z
+            }
+            return 0;
+        });
+
+        // Add Sorting Dropdown UI to the top of the list
+        let sortUI = `
+            <div class="sort-controls" style="animation: fadeIn 0.3s forwards;">
+                <span style="color: #888; font-size: 14px;">Sort By:</span>
+                <select id="concise-sort-dropdown" class="sort-select">
+                    <option value="ilvl" ${currentSortMethod === 'ilvl' ? 'selected' : ''}>Item Level</option>
+                    <option value="level" ${currentSortMethod === 'level' ? 'selected' : ''}>Character Level</option>
+                    <option value="hks" ${currentSortMethod === 'hks' ? 'selected' : ''}>Honorable Kills</option>
+                    <option value="name" ${currentSortMethod === 'name' ? 'selected' : ''}>Name (A-Z)</option>
+                </select>
+            </div>
+        `;
+
+        // Generate the HTML for the list
+        let listHTML = sortedCharacters.map(char => {
+            // ... (Keep ALL of your exact existing mapping logic inside here) ...
             
             if (isRawMode) {
                 const deepChar = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === char.name.toLowerCase());
-                
                 if (deepChar) {
                     const p = deepChar.profile || {};
                     const cClass = getCharClass(deepChar);
                     const raceName = p.race && p.race.name ? (typeof p.race.name === 'string' ? p.race.name : (p.race.name.en_US || 'Unknown')) : 'Unknown';
                     const cHex = CLASS_COLORS[cClass] || "#fff";
                     const portraitURL = deepChar.render_url || getClassIcon(cClass);
-                    
                     const activeSpec = p.active_spec ? p.active_spec : '';
                     const activeSpecAttr = activeSpec ? activeSpec : 'unspecced';
                     const specIconUrl = getSpecIcon(cClass, activeSpec);
                     const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" style="width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 3px; border: 1px solid #222;">` : '';
                     const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
-                    
                     return `
-    <a href="javascript:void(0)" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" class="concise-char-bar tt-char" data-char="${(p.name || '').toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex};">
-        <div class="c-main-info">
-            <img src="${portraitURL}" class="c-portrait" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
-            <span class="c-name" style="color:${cHex};">${p.name || 'Unknown'}</span>
-            <span class="c-meta">${raceName} &bull; ${specIconHtml}${displaySpecClass}</span>
-        </div>
-        <div class="c-stats-info">
-            <span>Level <span class="c-val-lvl">${p.level || 0}</span></span>
-            <span>iLvl <span class="c-val-ilvl">${p.equipped_item_level || 0}</span></span>
-        </div>
-    </a>`;
+                    <a href="javascript:void(0)" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" class="concise-char-bar tt-char" data-char="${(p.name || '').toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex};">
+                        <div class="c-main-info">
+                            <img src="${portraitURL}" class="c-portrait" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
+                            <span class="c-name" style="color:${cHex};">${p.name || 'Unknown'}</span>
+                            <span class="c-meta">${raceName} &bull; ${specIconHtml}${displaySpecClass}</span>
+                        </div>
+                        <div class="c-stats-info">
+                            <span>Level <span class="c-val-lvl">${p.level || 0}</span></span>
+                            <span>iLvl <span class="c-val-ilvl">${p.equipped_item_level || 0}</span></span>
+                        </div>
+                    </a>`;
                 } else {
                     const charClass = char.class || 'Unknown';
                     const cHex = CLASS_COLORS[charClass] || "#fff";
                     const portraitURL = getClassIcon(charClass);
-                    
                     return `
-    <div class="concise-char-bar" data-class="${charClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default;">
-        <div class="c-main-info">
-            <img src="${portraitURL}" class="c-portrait" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
-            <span class="c-name" style="color:${cHex};">${char.name || 'Unknown'}</span>
-            <span class="c-meta">${char.race || 'Unknown'} ${charClass}</span>
-        </div>
-        <div class="c-stats-info">
-            <span>Level <span class="c-val-lvl">${char.level || 0}</span></span>
-            <span>iLvl <span class="c-val-ilvl" style="color:#666;">???</span></span>
-        </div>
-    </div>`;
+                    <div class="concise-char-bar" data-class="${charClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default;">
+                        <div class="c-main-info">
+                            <img src="${portraitURL}" class="c-portrait" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
+                            <span class="c-name" style="color:${cHex};">${char.name || 'Unknown'}</span>
+                            <span class="c-meta">${char.race || 'Unknown'} ${charClass}</span>
+                        </div>
+                        <div class="c-stats-info">
+                            <span>Level <span class="c-val-lvl">${char.level || 0}</span></span>
+                            <span>iLvl <span class="c-val-ilvl" style="color:#666;">???</span></span>
+                        </div>
+                    </div>`;
                 }
             }
             
@@ -837,7 +885,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             const raceName = p.race && p.race.name ? (typeof p.race.name === 'string' ? p.race.name : (p.race.name.en_US || 'Unknown')) : 'Unknown';
             const cHex = CLASS_COLORS[cClass] || "#fff";
             const portraitURL = char.render_url || getClassIcon(cClass);
-            
             const activeSpec = p.active_spec ? p.active_spec : '';
             const activeSpecAttr = activeSpec ? activeSpec : 'unspecced';
             const specIconUrl = getSpecIcon(cClass, activeSpec);
@@ -845,19 +892,40 @@ window.addEventListener('DOMContentLoaded', async () => {
             const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
             
             return `
-<a href="javascript:void(0)" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" class="concise-char-bar tt-char" data-char="${(p.name || '').toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex};">
-    <div class="c-main-info">
-        <img src="${portraitURL}" class="c-portrait" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
-        <span class="c-name" style="color:${cHex};">${p.name || 'Unknown'}</span>
-        <span class="c-meta">${raceName} &bull; ${specIconHtml}${displaySpecClass}</span>
-    </div>
-    <div class="c-stats-info">
-        <span>Level <span class="c-val-lvl">${p.level || 0}</span></span>
-        <span>iLvl <span class="c-val-ilvl">${p.equipped_item_level || 0}</span></span>
-    </div>
-</a>`;
+            <a href="javascript:void(0)" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" class="concise-char-bar tt-char" data-char="${(p.name || '').toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex};">
+                <div class="c-main-info">
+                    <img src="${portraitURL}" class="c-portrait" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
+                    <span class="c-name" style="color:${cHex};">${p.name || 'Unknown'}</span>
+                    <span class="c-meta">${raceName} &bull; ${specIconHtml}${displaySpecClass}</span>
+                </div>
+                <div class="c-stats-info">
+                    <span>Level <span class="c-val-lvl">${p.level || 0}</span></span>
+                    <span>iLvl <span class="c-val-ilvl">${p.equipped_item_level || 0}</span></span>
+                </div>
+            </a>`;
         }).join('');
         
+        // Inject the sorting UI and the List HTML
+        conciseList.innerHTML = sortUI + listHTML;
+
+        // Bind the event listener to the newly created dropdown
+        document.getElementById('concise-sort-dropdown').addEventListener('change', function(e) {
+            currentSortMethod = e.target.value;
+            // Re-render the list with the exact same parameters but new sort
+            renderConciseList(title, characters, isRawMode);
+            
+            // Re-apply any active spec filters to the newly rendered HTML
+            if (typeof applyTimelineFilters === 'function') {
+                 // Trigger a click on the active badge to re-filter the DOM elements
+                 const activeBadge = document.querySelector('.dynamic-badge.active-filter');
+                 if (activeBadge) {
+                     // Briefly remove the class so the click handler re-applies it correctly
+                     activeBadge.classList.remove('active-filter'); 
+                     activeBadge.click();
+                 }
+            }
+        });
+
         setupTooltips();
     }
 
@@ -1636,6 +1704,31 @@ window.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
             }
+        });
+    }
+
+    // ==========================================
+    // UX ENHANCEMENT: Back to Top Button Logic
+    // ==========================================
+    const backToTopBtn = document.getElementById("backToTopBtn");
+    if (backToTopBtn) {
+        // Show button when user scrolls down 400px
+        window.addEventListener('scroll', () => {
+            if (document.body.scrollTop > 400 || document.documentElement.scrollTop > 400) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        });
+
+        // Smooth scroll to top on click
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            // Also reset focus to the top for Accessibility (a11y)
+            document.body.focus();
         });
     }
 
