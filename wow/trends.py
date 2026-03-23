@@ -98,7 +98,17 @@ def process_global_trends(db_c, roster_data, raw_guild_roster, realm_data):
             (id, last_total, trend_total, last_active, trend_active, last_ready, trend_ready) 
             VALUES (?, ?, 0, ?, 0, ?, 0)
         """, ('__GLOBAL__', total_members, active_14_days, raid_ready_count))
-                     
+
+    # --- Save today's exact roster size for the historical line chart ---
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Using INSERT OR REPLACE ensures we only keep the latest snapshot for any given day
+    db_c.execute("""
+        INSERT OR REPLACE INTO daily_roster_stats 
+        (date, total_roster, active_roster) 
+        VALUES (?, ?, ?)
+    """, (today_str, total_members, active_14_days))
+
     if realm_data is None: realm_data = {}
     realm_data['global_trends'] = {
         'trend_total': trend_total,

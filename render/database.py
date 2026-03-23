@@ -82,5 +82,14 @@ def setup_database():
         )
     """)
 
+    # Create the new historical daily tracking table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS daily_roster_stats (
+            date TEXT PRIMARY KEY,
+            total_roster INTEGER DEFAULT 0,
+            active_roster INTEGER DEFAULT 0
+        )
+    ''')
+
     conn.commit()
     conn.close()

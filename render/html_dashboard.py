@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timezone, timedelta
 from jinja2 import Environment, FileSystemLoader
 
-def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, raw_guild_roster=None):
+def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, raw_guild_roster=None, roster_history=None):
     """
     Generates the interactive, high-performance HTML dashboard utilizing Jinja2 templates.
     """
@@ -11,6 +11,8 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         timeline_data = []
     if not raw_guild_roster:
         raw_guild_roster = []
+    if not roster_history:
+        roster_history = {}
 
     # Safely filter out any characters whose profile failed to load from the API
     roster_data = [char for char in roster_data if char and isinstance(char.get("profile"), dict)]
@@ -104,12 +106,26 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         d_str = day.strftime("%Y-%m-%d")
         day_name = day.strftime("%a")
         day_data = activity_counts.get(d_str, {"total": 0, "loot": 0, "levels": 0})
+        
+        # --- NEW: Grab historical stats if they exist in the DB for this date ---
+        hist_data = roster_history.get(d_str, {})
+        
+        # Ensure 'today' always has the live exact count, even if the DB hasn't committed yet
+        if i == 0:
+            hist_total = display_total_members
+            hist_active = active_14_days
+        else:
+            hist_total = hist_data.get('total_roster')  # Will be None if you don't have data for this past day yet
+            hist_active = hist_data.get('active_roster')
+
         heatmap_data.append({
             "date": d_str, 
             "day_name": day_name, 
             "count": day_data["total"],
             "loot": day_data["loot"],
-            "levels": day_data["levels"]
+            "levels": day_data["levels"],
+            "total_roster": hist_total,
+            "active_roster": hist_active
         })
     
     safe_heatmap_data = json.dumps(heatmap_data)

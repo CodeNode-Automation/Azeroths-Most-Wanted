@@ -243,10 +243,13 @@ async def main_async():
     
     # Query latest 2000 events for the HTML feed so the page doesn't bloat endlessly
     dashboard_feed = [dict(row) for row in render_c.execute("SELECT * FROM timeline ORDER BY timestamp DESC LIMIT 2000").fetchall()]
+    # Query the last 7 days of population trends
+    roster_history = {row['date']: dict(row) for row in render_c.execute("SELECT * FROM daily_roster_stats ORDER BY date DESC LIMIT 7").fetchall()}
+    
     render_conn.close()
 
     # Pass historical data and the FULL raw roster into generator
-    generate_html_dashboard(roster_data, realm_data, dashboard_feed, raw_guild_roster)
+    generate_html_dashboard(roster_data, realm_data, dashboard_feed, raw_guild_roster, roster_history)
     print("🎉 ALL DONE! The SQLite-powered pipeline ran successfully.")
 
 def main():

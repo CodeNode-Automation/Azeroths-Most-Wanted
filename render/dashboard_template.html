@@ -26,7 +26,7 @@
                 intro.classList.add('fade-out'); // Fade it to black
                 if (dash) {
                     dash.style.opacity = '1';
-                    dash.style.transition = 'opacity 1.5s ease-in-out';
+                    dash.style.transition = 'opacity 2s ease-in-out';
                 }
                 setTimeout(function() { if (intro) intro.remove(); }, 1000);
             }
@@ -34,11 +34,11 @@
 
         var vid = document.getElementById('intro-video');
         if (vid) {
-            vid.playbackRate = 1.5; 
+            vid.playbackRate = 1.75; 
             vid.addEventListener('ended', killIntro); 
             vid.addEventListener('error', killIntro); 
         }
-        setTimeout(killIntro, 6500);
+        setTimeout(killIntro, 6000);
     </script>
     <div class="embers-container"></div>
 
@@ -52,7 +52,7 @@
         <div class="main-content">
             <div id="empty-state">
                 
-                <img src="asset/amw.png" alt="Azeroths Most Wanted Logo" style="max-width: 320px; width: 100%; display: block; margin: 0 auto 5px auto; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); animation: fadeIn 0.8s ease-out;">
+                <img src="asset/amw.png" alt="Azeroths Most Wanted Logo" class="main-logo">
                 
                 <h2 style="color: #ffd100; font-family: 'Cinzel', serif; font-size: 28px; letter-spacing: 1.5px; text-shadow: 0 2px 4px #000; margin-top: 0;">Azeroths Most Wanted Armory</h2>
                 <p style="font-family: 'Marcellus', serif; max-width: 600px; margin: 0 auto 30px auto; color: #bbb; font-size: 16px;">
@@ -87,12 +87,23 @@
                     </div>
                 </div>
 
-                <div class="heatmap-wrapper" style="max-width: 650px;">
-                    <h3 class="heatmap-title">🔥 Guild Activity (Last 7 Days) <span style="color:#aaa; font-size: 11px;">Updates Daily</span></h3>
-                    <div style="position: relative; height: 180px; width: 100%; margin-bottom: 20px;">
-                        <canvas id="activityChart"></canvas>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; max-width: 1100px; margin-bottom: 30px;">
+                    
+                    <div class="heatmap-wrapper" style="flex: 2; min-width: 320px; max-width: 650px; margin: 0;">
+                        <h3 class="heatmap-title">🔥 Guild Activity (Last 7 Days) <span style="color:#aaa; font-size: 11px;">Updates Daily</span></h3>
+                        <div style="position: relative; height: 180px; width: 100%; margin-bottom: 20px;">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                        <div id="heatmap-grid" class="heatmap-grid"></div>
                     </div>
-                    <div id="heatmap-grid" class="heatmap-grid"></div>
+
+                    <div class="heatmap-wrapper" style="flex: 1; min-width: 300px; max-width: 400px; margin: 0; display: flex; flex-direction: column;">
+                        <h3 class="heatmap-title">📊 Class Distribution <span style="color:#aaa; font-size: 11px;">Entire Roster</span></h3>
+                        <div style="position: relative; flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 250px;">
+                            <canvas id="classDonutChart"></canvas>
+                        </div>
+                    </div>
+
                 </div>
                 
                 <div class="class-stat-container">
