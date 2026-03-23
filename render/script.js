@@ -1015,7 +1015,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (navbar) navbar.style.background = '#111';
         if (timeline) timeline.style.display = 'none'; 
         
-        // 1. Level Distribution (Fixed Ordering via explicit arrays)
+        // 1. Level Distribution Data & Chart
         const levelLabels = ["1-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70"];
         const levelData = [0, 0, 0, 0, 0, 0, 0, 0];
         rawGuildRoster.forEach(c => {
@@ -1037,10 +1037,22 @@ window.addEventListener('DOMContentLoaded', async () => {
                 labels: levelLabels,
                 datasets: [{ label: 'Characters', data: levelData, backgroundColor: '#ffd100', borderColor: '#b39200', borderWidth: 1 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}}, scales: { y: {beginAtZero: true, ticks: {color: '#888'}}, x: {ticks: {color: '#888', font: {family: 'Cinzel'}}}} }
+            options: { 
+                responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}}, 
+                scales: { y: {beginAtZero: true, ticks: {color: '#888'}}, x: {ticks: {color: '#888', font: {family: 'Cinzel'}}}},
+                onClick: (event, elements, chart) => {
+                    if (elements.length > 0) {
+                        const clickedLabel = chart.data.labels[elements[0].index];
+                        window.location.hash = 'filter-level-' + clickedLabel;
+                    }
+                },
+                onHover: (event, elements) => {
+                    event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                }
+            }
         });
 
-        // 2. Max Level iLvl Spread
+        // 2. Max Level iLvl Spread Data & Chart
         const ilvlLabels = ["<100", "100-109", "110-119", "120-129", "130+"];
         const ilvlData = [0, 0, 0, 0, 0];
         rosterData.forEach(c => {
@@ -1062,10 +1074,22 @@ window.addEventListener('DOMContentLoaded', async () => {
                 labels: ilvlLabels,
                 datasets: [{ label: 'Level 70 Characters', data: ilvlData, backgroundColor: '#ff8000', borderColor: '#cc6600', borderWidth: 1 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}}, scales: { y: {beginAtZero: true, ticks: {color: '#888'}}, x: {ticks: {color: '#888', font: {family: 'Cinzel'}}}} }
+            options: { 
+                responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}}, 
+                scales: { y: {beginAtZero: true, ticks: {color: '#888'}}, x: {ticks: {color: '#888', font: {family: 'Cinzel'}}}},
+                onClick: (event, elements, chart) => {
+                    if (elements.length > 0) {
+                        const clickedLabel = chart.data.labels[elements[0].index];
+                        window.location.hash = 'filter-ilvl-' + clickedLabel;
+                    }
+                },
+                onHover: (event, elements) => {
+                    event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                }
+            }
         });
 
-        // 3. Race Distribution (Fixed WoW-Realistic Colors)
+        // 3. Race Distribution Data & Chart
         const raceCounts = {};
         rosterData.forEach(c => {
             const p = c.profile;
@@ -1076,17 +1100,9 @@ window.addEventListener('DOMContentLoaded', async () => {
         });
         
         const RACE_COLORS = {
-            "Human": "#0033aa",      // Alliance Blue
-            "Draenei": "#ba55d3",    // Light Purple/Crystal
-            "Dwarf": "#8B4513",      // Brown
-            "Night Elf": "#800080",  // Deep Purple
-            "Gnome": "#FF69B4",      // Pink
-            "Orc": "#8B0000",        // Horde Red
-            "Undead": "#556B2F",     // Sickly Green
-            "Tauren": "#D2B48C",     // Tan
-            "Troll": "#008B8B",      // Teal
-            "Blood Elf": "#DC143C",  // Crimson
-            "Unknown": "#888"
+            "Human": "#0033aa", "Draenei": "#ba55d3", "Dwarf": "#8B4513", "Night Elf": "#800080",
+            "Gnome": "#FF69B4", "Orc": "#8B0000", "Undead": "#556B2F", "Tauren": "#D2B48C",
+            "Troll": "#008B8B", "Blood Elf": "#DC143C", "Unknown": "#888"
         };
 
         if(raceChartInstance) raceChartInstance.destroy();
@@ -1096,7 +1112,18 @@ window.addEventListener('DOMContentLoaded', async () => {
                 labels: Object.keys(raceCounts),
                 datasets: [{ data: Object.values(raceCounts), backgroundColor: Object.keys(raceCounts).map(r => RACE_COLORS[r] || '#555'), borderColor: '#111', borderWidth: 2 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {position: 'right', labels:{color:'#bbb', font:{family:'Cinzel'}}} } }
+            options: { 
+                responsive: true, maintainAspectRatio: false, plugins: { legend: {position: 'right', labels:{color:'#bbb', font:{family:'Cinzel'}}} },
+                onClick: (event, elements, chart) => {
+                    if (elements.length > 0) {
+                        const clickedLabel = chart.data.labels[elements[0].index];
+                        window.location.hash = 'filter-race-' + clickedLabel.toLowerCase();
+                    }
+                },
+                onHover: (event, elements) => {
+                    event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                }
+            }
         });
 
         // 4. Duplicate Activity Chart from Main Page
@@ -1274,6 +1301,53 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
             
             showConciseView(`Guild ${displaySpecName} ${formattedClass}s (${specRoster.length})`, specRoster, false, false);
+            updateDropdownLabel('all');
+        } else if (hash.startsWith('filter-level-')) {
+            const range = hash.replace('filter-level-', '');
+            let minLvl = 0, maxLvl = 70;
+            if (range === '70') { minLvl = 70; maxLvl = 70; }
+            else if (range.includes('-')) {
+                const parts = range.split('-');
+                minLvl = parseInt(parts[0]);
+                maxLvl = parseInt(parts[1]);
+            }
+            const filteredRoster = rawGuildRoster.filter(c => {
+                const lvl = c.level || 0;
+                return lvl >= minLvl && lvl <= maxLvl;
+            });
+            showConciseView(`Level ${range} Characters (${filteredRoster.length})`, filteredRoster, true, true);
+            updateDropdownLabel('all');
+        } else if (hash.startsWith('filter-ilvl-')) {
+            const range = hash.replace('filter-ilvl-', '');
+            const filteredRoster = rosterData.filter(c => {
+                const p = c.profile;
+                if (!p || p.level < 70) return false;
+                const ilvl = p.equipped_item_level || 0;
+                
+                if (range === '<100') return ilvl < 100;
+                if (range === '130+') return ilvl >= 130;
+                
+                const parts = range.split('-');
+                if (parts.length === 2) {
+                    return ilvl >= parseInt(parts[0]) && ilvl <= parseInt(parts[1]);
+                }
+                return false;
+            });
+            showConciseView(`Level 70 Characters iLvl ${range} (${filteredRoster.length})`, filteredRoster, false, true);
+            updateDropdownLabel('all');
+        } else if (hash.startsWith('filter-race-')) {
+            const targetRace = decodeURIComponent(hash.replace('filter-race-', ''));
+            const filteredRoster = rosterData.filter(c => {
+                const p = c.profile;
+                if (p && p.race && p.race.name) {
+                    const raceName = typeof p.race.name === 'string' ? p.race.name : (p.race.name.en_US || 'Unknown');
+                    return raceName.toLowerCase() === targetRace;
+                }
+                return false;
+            });
+            // Capitalize for the nice title string
+            const displayRace = targetRace.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            showConciseView(`${displayRace} Characters (${filteredRoster.length})`, filteredRoster, false, true);
             updateDropdownLabel('all');
         } else {
             const char = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === hash);
