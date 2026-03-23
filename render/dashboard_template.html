@@ -127,7 +127,22 @@
 
             <div id="concise-view">
                 <h2 id="concise-view-title">Guild Overview</h2>
-                <div id="concise-class-badges" class="class-stat-container" style="display:none; margin-bottom: 20px;"></div>
+                
+                <div id="concise-top-stats" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; width: 100%; max-width: 1100px; margin: 0 auto 30px auto;">
+                    
+                    <div id="concise-donut-container" class="heatmap-wrapper" style="flex: 1; min-width: 300px; max-width: 400px; margin: 0; display: none; flex-direction: column;">
+                        <h3 class="heatmap-title" style="justify-content: center;">📊 Class Distribution</h3>
+                        <div style="position: relative; height: 250px; width: 100%; display: flex; justify-content: center; align-items: center;">
+                            <canvas id="conciseDonutChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div id="concise-badges-wrapper" style="flex: 2; min-width: 320px; max-width: 650px; display: flex; flex-direction: column; justify-content: center;">
+                        <div id="concise-class-badges" class="class-stat-container" style="display:none; margin-bottom: 20px; width: 100%; justify-content: center;"></div>
+                    </div>
+                    
+                </div>
+
                 <div id="concise-char-list"></div>
             </div>
 

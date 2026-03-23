@@ -59,9 +59,11 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         if current_time_ms - last_login <= fourteen_days_ms:
             active_14_days += 1
             
-        class_data = p.get('character_class', {}).get('name', 'Unknown')
-        c_class = class_data if isinstance(class_data, str) else class_data.get('en_US', 'Unknown')
-        class_counts[c_class] = class_counts.get(c_class, 0) + 1
+    # Calculate accurate class counts using the entire raw guild roster
+    for char in raw_guild_roster:
+        c_class = char.get('class', 'Unknown')
+        if c_class != 'Unknown':
+            class_counts[c_class] = class_counts.get(c_class, 0) + 1
 
     avg_level = (total_level // total_processed) if total_processed > 0 else 0
     display_total_members = len(raw_guild_roster)

@@ -54,6 +54,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     let tlSpecificDate = null; 
     window.currentFilteredChars = null;
     window.activeClassExpanded = null;
+    let mainDonutChartInstance = null;     
+    let conciseDonutChartInstance = null;   
     
     const navbar = document.querySelector('.navbar');
     const emptyState = document.getElementById('empty-state');
@@ -251,75 +253,10 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         }
-                
+
         // --- NEW: Class Distribution Donut Chart ---
-        const classCounts = {};
-        // Tally up classes from the entire raw roster
-        rawGuildRoster.forEach(char => {
-            const cClass = char.class || 'Unknown';
-            if (cClass !== 'Unknown') {
-                classCounts[cClass] = (classCounts[cClass] || 0) + 1;
-            }
-        });
-
-        // Sort classes by highest count first
-        const sortedClasses = Object.keys(classCounts).sort((a, b) => classCounts[b] - classCounts[a]);
-        const donutLabels = sortedClasses;
-        const donutData = sortedClasses.map(cls => classCounts[cls]);
-        const donutColors = sortedClasses.map(cls => CLASS_COLORS[cls] || '#888');
-
-        const donutCtx = document.getElementById('classDonutChart');
-        if (donutCtx) {
-            new Chart(donutCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: donutLabels,
-                    datasets: [{
-                        data: donutData,
-                        backgroundColor: donutColors,
-                        borderColor: '#111', // Matches dark theme background
-                        borderWidth: 2,
-                        hoverOffset: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%', // Makes the donut ring thinner and sleeker
-                    plugins: {
-                        legend: {
-                            position: 'right', // Put the legend on the right so it fits nicely
-                            labels: {
-                                color: '#bbb',
-                                font: { family: 'Cinzel', size: 11 },
-                                boxWidth: 12,
-                                padding: 10
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.9)',
-                            titleColor: '#fff',
-                            bodyFont: { family: 'Cinzel', size: 14, weight: 'bold' },
-                            borderColor: '#ffd100',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) label += ': ';
-                                    if (context.parsed !== null) {
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = Math.round((context.parsed / total) * 100);
-                                        // Shows "Warrior: 45 (20%)"
-                                        label += context.parsed + ' (' + percentage + '%)'; 
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        if (mainDonutChartInstance) mainDonutChartInstance.destroy();
+        mainDonutChartInstance = createDonutChart('classDonutChart', rawGuildRoster, true);
 
         // --- Original Heatmap Grid ---
         let heatmapHtml = '';
@@ -669,7 +606,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             specContainer.style.textAlign = 'center';
             specContainer.style.marginBottom = '20px';
             specContainer.style.animation = 'fadeInUp 0.3s forwards';
-            container.parentNode.insertBefore(specContainer, document.getElementById('concise-char-list'));
+            container.parentNode.appendChild(specContainer); 
         } else {
             specContainer.style.display = 'none';
         }
@@ -1111,6 +1048,19 @@ window.addEventListener('DOMContentLoaded', async () => {
             const specContainer = document.getElementById('concise-spec-container');
             if (specContainer) specContainer.style.display = 'none';
         }
+
+        // Draw the secondary Pie Chart
+        const hash = window.location.hash.substring(1);
+        const donutContainer = document.getElementById('concise-donut-container');
+        if (hash === 'total' || hash === 'active' || hash === 'raidready') {
+            if (donutContainer) {
+                donutContainer.style.display = 'flex';
+                if (conciseDonutChartInstance) conciseDonutChartInstance.destroy();
+                conciseDonutChartInstance = createDonutChart('conciseDonutChart', characters, isRawRoster);
+            }
+        } else {
+            if (donutContainer) donutContainer.style.display = 'none';
+        }
         
         if (timeline) {
             const baseTitle = title.replace(/ Overview \(\d+\)/, '').replace(/ \(\d+\)/, '');
@@ -1222,12 +1172,14 @@ window.addEventListener('DOMContentLoaded', async () => {
             badge.classList.add('active-filter');
             window.activeClassExpanded = className;
 
-            const classRoster = rosterData.filter(c => getCharClass(c).toLowerCase() === className);
+            // USE RAW GUILD ROSTER HERE
+            const classRosterRaw = rawGuildRoster.filter(c => (c.class || '').toLowerCase() === className);
             const specCounts = {};
             let unspeccedCount = 0;
 
-            classRoster.forEach(char => {
-                const spec = char.profile && char.profile.active_spec ? char.profile.active_spec : null;
+            classRosterRaw.forEach(rawChar => {
+                const fullChar = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === (rawChar.name || '').toLowerCase());
+                const spec = (fullChar && fullChar.profile && fullChar.profile.active_spec) ? fullChar.profile.active_spec : null;
                 if (spec) {
                     specCounts[spec] = (specCounts[spec] || 0) + 1;
                 } else {
@@ -1241,9 +1193,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             specHtml += `
                 <div class="stat-badge spec-btn" data-hash="class-${className}" style="border-color: ${cHex}; cursor: pointer; transform: scale(0.95); background: rgba(255,255,255,0.05);" title="View all ${formattedClass}s">
                     <span class="stat-badge-cls" style="color: ${cHex};">All ${formattedClass}s</span>
-                    <span class="stat-badge-count">${classRoster.length}</span>
+                    <span class="stat-badge-count">${classRosterRaw.length}</span>
                 </div>`;
-
+                
             Object.keys(specCounts).sort().forEach(spec => {
                 const iconUrl = getSpecIcon(formattedClass, spec);
                 const iconHtml = iconUrl ? `<img src="${iconUrl}" style="width:16px; height:16px; border-radius:50%; vertical-align:middle; margin-right:5px; border: 1px solid #222;">` : '';
@@ -1390,6 +1342,91 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     initAtmosphere();
+
+    function createDonutChart(ctxId, rosterToCount, isRawMode) {
+        const counts = {};
+        rosterToCount.forEach(char => {
+            let cClass = isRawMode ? (char.class || 'Unknown') : getCharClass(char);
+            if (cClass !== 'Unknown') counts[cClass] = (counts[cClass] || 0) + 1;
+        });
+
+        const sortedClasses = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+        const donutLabels = sortedClasses;
+        const donutData = sortedClasses.map(cls => counts[cls]);
+        const donutColors = sortedClasses.map(cls => CLASS_COLORS[cls] || '#888');
+
+        const ctx = document.getElementById(ctxId);
+        if (!ctx) return null;
+
+        return new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: donutLabels, datasets: [{ data: donutData, backgroundColor: donutColors, borderColor: '#111', borderWidth: 2, hoverOffset: 6 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '65%',
+                onClick: (event, elements, chart) => {
+                    if (elements.length > 0) {
+                        // Get the name of the class that was clicked (e.g., "Paladin")
+                        const clickedClass = chart.data.labels[elements[0].index];
+                        const dynamicBadge = document.querySelector(`.dynamic-badge[data-class="${clickedClass}"]`);
+                        
+                        // If we are on a concise view with the class badges visible, trigger the in-place filter
+                        if (dynamicBadge && document.getElementById('concise-view').style.display !== 'none') {
+                            dynamicBadge.click(); 
+                        } else {
+                            // Otherwise (on the Home dashboard), route to the dedicated class roster page
+                            window.location.hash = 'class-' + clickedClass.toLowerCase();
+                        }
+                    }
+                },
+                onHover: (event, elements) => {
+                    // Change cursor to pointer when hovering over a slice
+                    event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                },
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#bbb', font: { family: 'Cinzel', size: 12 }, padding: 10,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    return data.labels.map((label, i) => {
+                                        const meta = chart.getDatasetMeta(0);
+                                        const style = meta.controller.getStyle(i);
+                                        const value = data.datasets[0].data[i];
+                                        const pct = Math.round((value / total) * 100) + '%';
+                                        return {
+                                            text: `${label}: ${value} (${pct})`, // Visible Math
+                                            fillStyle: style.backgroundColor, strokeStyle: style.borderColor,
+                                            lineWidth: style.borderWidth, hidden: isNaN(value) || meta.data[i].hidden, index: i,
+                                            fontColor: '#bbb' // Fixes the black text issue
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.9)', titleColor: '#fff', bodyFont: { family: 'Cinzel', size: 14, weight: 'bold' }, borderColor: '#ffd100', borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed !== null) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const pct = Math.round((context.parsed / total) * 100);
+                                    label += context.parsed + ' (' + pct + '%)'; 
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     // Initialize routing
     route();
