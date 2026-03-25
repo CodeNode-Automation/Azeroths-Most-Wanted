@@ -1,9 +1,8 @@
 name: Update WoW Guild Data
 
 on:
-  workflow_dispatch: # This allows manual triggers and API triggers
+  workflow_dispatch:
 
-# NEW: We must give the action global permission to write to both the repo and GitHub Pages
 permissions:
   contents: write
   pages: write      
@@ -26,47 +25,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Restore SQLite Database from SQL Dump
-        run: |
-          mkdir -p asset
-          if [ -f asset/guild.sql ]; then
-            echo "Restoring database from SQL dump..."
-            
-            # FORCE DELETE the old binary file so we always start with a clean slate!
-            rm -f asset/guild.db
-            
-            # Safely rebuild the DB from text
-            sqlite3 asset/guild.db < asset/guild.sql
-          fi
-
       - name: Run Python Script
         env:
           BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
           BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: python main.py
-
-      - name: Convert SQLite to Text Dump (History Protection)
-        run: |
-          if [ -f asset/guild.db ]; then
-            echo "Dumping database to text for permanent history..."
-            # Overwrite the text file only if the DB exists and is valid
-            sqlite3 asset/guild.db .dump > asset/guild.sql
-            # Delete the binary file so it never gets committed to git
-            rm asset/guild.db
-          fi
 
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Explicitly add the SQL, HTML, and our new decoupled JSON data files
-          git add asset/guild.sql index.html asset/roster.json asset/raw_roster.json
+          # Added asset/timeline.json to the tracking list
+          git add index.html asset/roster.json asset/raw_roster.json asset/timeline.json
           
-          git commit -m "Auto-update WoW guild data & SQL timeline" || echo "No changes to commit"
+          git commit -m "Auto-update WoW guild data" || echo "No changes to commit"
           git push
 
-  # --- NEW: Deploy to GitHub Pages ONLY after the data job above finishes ---
   deploy:
     needs: auto-update-wow-data
     runs-on: ubuntu-latest

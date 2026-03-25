@@ -66,7 +66,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (updateTimeEl) updateTimeEl.textContent = rawDate.toLocaleString(undefined, dateOptions);
     
     let tlTypeFilter = 'rare_plus';
-    let tlDateFilter = '7'; // Start with 7 days to match the heatmap
+    let tlDateFilter = 'all'; // Start with 7 days to match the heatmap
     let tlSpecificDate = null; 
     window.currentFilteredChars = null;
     window.activeClassExpanded = null;
@@ -1113,8 +1113,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                 
                 const eventDate = new Date(cleanTs).getTime();
                 if (!isNaN(eventDate)) {
-                    const daysMs = parseInt(tlDateFilter) * 24 * 60 * 60 * 1000;
-                    if ((now - eventDate) > daysMs) show = false;
+                    // Calculate based on Hours instead of Days
+                    const hoursMs = parseInt(tlDateFilter) * 60 * 60 * 1000;
+                    if ((now - eventDate) > hoursMs) show = false;
                 }
             }
 
@@ -1172,6 +1173,31 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (searchInput) searchInput.value = '';
         if (searchAutoComplete) searchAutoComplete.classList.remove('show');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // --- NEW: Reset Timeline Filters on Page Change ---
+        // This ensures the feed reliably appears when clicking a new character
+        tlTypeFilter = 'rare_plus';
+        tlDateFilter = 'all';
+        tlSpecificDate = null;
+
+        // Reset the Button UI to highlight "Rare+"
+        document.querySelectorAll('button.tl-btn').forEach(b => {
+            b.classList.remove('active');
+            if (b.getAttribute('data-type') === 'rare_plus') {
+                b.classList.add('active');
+            }
+        });
+
+        // Reset the Dropdown UI to "All Available"
+        const dateSelect = document.getElementById('tl-date-filter');
+        if (dateSelect) {
+            dateSelect.value = 'all';
+        }
+
+        // Clear any specific Heatmap day selections
+        document.querySelectorAll('.tt-heatmap').forEach(c => {
+            c.classList.remove('selected-date');
+        });
     }
 
     function showAnalyticsView() {
@@ -1847,7 +1873,187 @@ window.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Initialize routing
+    let timelineData = [];
+    let filteredTimelineData = [];
+    let currentTimelineIndex = 0;
+    const timelineBatchSize = 50;
+
+    async function fetchTimeline() {
+        try {
+            const response = await fetch('asset/timeline.json');
+            timelineData = await response.json();
+            // Run the filter immediately on load to populate the initial list
+            applyTimelineFilters(); 
+        } catch (error) {
+            console.error("Failed to load timeline data:", error);
+        }
+    }
+
+    function applyTimelineFilters() {
+        if (!timeline) return;
+
+        const now = Date.now();
+        
+        // 1. Filter the raw data array directly instead of the DOM elements
+        filteredTimelineData = timelineData.filter(event => {
+            const charName = (event.character_name || '').toLowerCase();
+            const eventType = event.type;
+            const timestampStr = event.timestamp || '';
+            const itemQuality = event.item_quality || 'COMMON';
+
+            // Filter by Character
+            if (window.currentFilteredChars && !window.currentFilteredChars.includes(charName)) return false;
+
+            // Filter by Rarity/Type
+            if (tlTypeFilter === 'rare_plus') {
+                if (eventType !== 'item') return false;
+                if (itemQuality === 'POOR' || itemQuality === 'COMMON' || itemQuality === 'UNCOMMON') return false;
+            } else if (tlTypeFilter === 'epic') {
+                if (eventType !== 'item' || (itemQuality !== 'EPIC' && itemQuality !== 'LEGENDARY')) return false;
+            } else if (tlTypeFilter === 'legendary') {
+                if (eventType !== 'item' || itemQuality !== 'LEGENDARY') return false;
+            } else if (tlTypeFilter !== 'all' && eventType !== tlTypeFilter) {
+                return false;
+            }
+
+            // Filter by Date (Hours)
+            if (tlSpecificDate && timestampStr) {
+                if (!timestampStr.startsWith(tlSpecificDate)) return false;
+            } else if (tlDateFilter !== 'all' && timestampStr) {
+                let cleanTs = timestampStr.replace('Z', '+00:00');
+                if (!cleanTs.includes('+') && !cleanTs.includes('Z')) cleanTs += 'Z';
+                const eventDate = new Date(cleanTs).getTime();
+                if (!isNaN(eventDate)) {
+                    const hoursMs = parseInt(tlDateFilter) * 60 * 60 * 1000;
+                    if ((now - eventDate) > hoursMs) return false;
+                }
+            }
+
+            return true;
+        });
+
+        // 2. Clear the old feed and reset the counter
+        const container = document.getElementById('timeline-feed-container');
+        if (container) container.innerHTML = '';
+        currentTimelineIndex = 0;
+
+        // 3. Handle empty states or render the first batch
+        let noResultsMsg = document.getElementById('tl-no-results');
+        if (filteredTimelineData.length === 0) {
+            if (container) container.style.display = 'none';
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.id = 'tl-no-results';
+                noResultsMsg.style.color = '#888';
+                noResultsMsg.style.textAlign = 'center';
+                noResultsMsg.style.padding = '20px';
+                noResultsMsg.style.fontStyle = 'italic';
+                noResultsMsg.innerText = 'No activity found for these filters yet... keep raiding!';
+                document.getElementById('timeline').appendChild(noResultsMsg);
+            } else {
+                noResultsMsg.style.display = 'block';
+            }
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        } else {
+            if (container) container.style.display = 'flex';
+            if (noResultsMsg) noResultsMsg.style.display = 'none';
+            renderTimelineBatch();
+        }
+    }
+
+    function renderTimelineBatch() {
+        const container = document.getElementById('timeline-feed-container');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        
+        if (!container) return;
+
+        const endIndex = Math.min(currentTimelineIndex + timelineBatchSize, filteredTimelineData.length);
+        
+        for (let i = currentTimelineIndex; i < endIndex; i++) {
+            const event = filteredTimelineData[i];
+            
+            // Restored the proper concise-item class from your production site!
+            const eventEl = document.createElement('div');
+            eventEl.className = 'concise-item tt-char'; 
+            eventEl.style.cursor = 'pointer';
+            eventEl.onclick = () => selectCharacter((event.character_name || '').toLowerCase());
+            
+            eventEl.setAttribute('data-char', (event.character_name || '').toLowerCase());
+            eventEl.setAttribute('data-class', event.class || 'Unknown');
+            eventEl.setAttribute('data-event-type', event.type);
+            eventEl.setAttribute('data-timestamp', event.timestamp);
+            if (event.item_quality) {
+                eventEl.setAttribute('data-quality', event.item_quality);
+            }
+            
+            // Format the date to match production (e.g., "Mar 24")
+            let date_str = event.timestamp.substring(0, 10);
+            try {
+                const cleanTs = event.timestamp.replace('Z', '+00:00');
+                const dt = new Date(cleanTs);
+                if (!isNaN(dt.getTime())) {
+                    date_str = dt.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+                }
+            } catch(e) {}
+            
+            const c_hex = CLASS_COLORS[event.class] || '#ffd100';
+            const c_name = (event.character_name || 'Unknown').charAt(0).toUpperCase() + (event.character_name || '').slice(1).toLowerCase();
+            
+            if (event.type === 'level_up') {
+                eventEl.style.borderLeftColor = c_hex;
+                eventEl.innerHTML = `
+                    <div class="timeline-node" style="background: #ffd100; box-shadow: 0 0 8px #ffd100;"></div>
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <span style="color: ${c_hex}; font-family:'Cinzel'; font-weight:bold; font-size:15px; text-shadow:1px 1px 2px #000;">${c_name}</span>
+                        <span style="color:#888; font-size:11px;">${date_str}</span>
+                    </div>
+                    <div class="event-box" style="border-left-color: #ffd100;">
+                        <span style="font-size: 14px;">⭐</span>
+                        <span style="color: #ffd100; font-weight: bold; text-shadow: 1px 1px 2px #000;">Reached Level ${event.level}</span>
+                    </div>
+                `;
+            } else {
+                const q = event.item_quality || 'COMMON';
+                const q_hex = QUALITY_COLORS[q] || '#ffffff';
+                eventEl.style.borderLeftColor = q_hex;
+                
+                eventEl.innerHTML = `
+                    <div class="timeline-node" style="background: ${q_hex}; box-shadow: 0 0 8px ${q_hex};"></div>
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <span style="color: ${c_hex}; font-family:'Cinzel'; font-weight:bold; font-size:15px; text-shadow:1px 1px 2px #000;">${c_name}</span>
+                        <span style="color:#888; font-size:11px;">${date_str}</span>
+                    </div>
+                    <div class="event-box" style="border-left-color: ${q_hex};">
+                        <img src="${event.item_icon}" alt="icon">
+                        <a href="https://www.wowhead.com/wotlk/item=${event.item_id}" target="_blank" onclick="event.stopPropagation();" style="color: ${q_hex}; font-weight:bold; text-decoration: none;">${event.item_name}</a>
+                    </div>
+                `;
+            }
+            
+            container.appendChild(eventEl);
+        }
+        
+        currentTimelineIndex = endIndex;
+        
+        if (currentTimelineIndex >= filteredTimelineData.length) {
+            if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        } else {
+            if (loadMoreBtn) loadMoreBtn.style.display = 'inline-block';
+        }
+        
+        if (typeof setupTooltips === 'function') {
+            setupTooltips();
+        }
+    }
+
+    fetchTimeline();
+    
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', renderTimelineBatch);
+    }
+
     route();
     window.addEventListener('hashchange', route);
 });

@@ -20,22 +20,30 @@ Thumbs.db
 desktop.ini
 
 # -----------------------------
-# Temporary Files
+# Temporary Files & Logs
 # -----------------------------
 *.tmp
 *.log
 
 # -----------------------------
-# VSCode Settings
+# IDE & Editor Settings
 # -----------------------------
 .vscode/
 
 # -----------------------------
-# Database & Binary Data
+# Databases & Binary Data
 # -----------------------------
 *.db
 *.sqlite
 *.sqlite3
+*.sql
+
+# -----------------------------
+# Project Specific (WoW Roster)
+# -----------------------------
+asset/guild.sql
+asset/guild.db
 create_sql.py
 restore_db.py
-_backup
+dump.py
+_backup/

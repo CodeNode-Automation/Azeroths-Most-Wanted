@@ -178,6 +178,8 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
 
     timeline_html = ""
     if timeline_data:
+        # We only generate the shell and the filters here.
+        # The actual events are loaded from timeline.json via JavaScript to keep index.html tiny.
         timeline_html += f"""
         <div id="timeline" class="timeline-container">
             <h2 id="timeline-title" class="timeline-title">📜 Guild Recent Activity</h2>
@@ -190,58 +192,24 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
                 </div>
                 <div class="filter-group">
                     <select id="tl-date-filter" class="tl-select">
-                        <option value="7">Last 7 Days</option>
-                        <option value="2">Last 48 Hours</option>
-                        <option value="1">Last 24 Hours</option>
-                        <option value="all">All Available</option>
+                        <option value="12">Last 12 Hours</option>
+                        <option value="24">Last 24 Hours</option>
+                        <option value="48">Last 48 Hours</option>
+                        <option value="all" selected>All Available</option>
                     </select>
                 </div>
             </div>
-            <div class="timeline-feed">
-"""
-        for event in timeline_data:
-            c_name = event.get("character_name", "Unknown").title()
-            c_cls = event.get("class", "Unknown")
-            c_hex = CLASS_COLORS.get(c_cls, "#ffd100")
-            ts = event.get("timestamp", "")
             
-            try:
-                dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
-                date_str = dt.strftime("%b %d")
-            except Exception: date_str = ts[:10]
-            
-            if event.get("type") == "level_up":
-                timeline_html += f"""
-                <div onclick="selectCharacter('{c_name.lower()}')" class="concise-item tt-char" data-char="{c_name.lower()}" data-event-type="level_up" data-timestamp="{ts}" style="border-left-color: {c_hex}; cursor: pointer;">
-                    <div class="timeline-node" style="background: #ffd100; box-shadow: 0 0 8px #ffd100;"></div>
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <span style="color: {c_hex}; font-family:'Cinzel'; font-weight:bold; font-size:15px; text-shadow:1px 1px 2px #000;">{c_name}</span>
-                        <span style="color:#888; font-size:11px;">{date_str}</span>
-                    </div>
-                    <div class="event-box" style="border-left-color: #ffd100;">
-                        <span style="font-size: 14px;">⭐</span>
-                        <span style="color: #ffd100; font-weight: bold; text-shadow: 1px 1px 2px #000;">Reached Level {event.get('level')}</span>
-                    </div>
-                </div>"""
-            else:
-                q = event.get('item_quality', 'COMMON')
-                q_hex = QUALITY_COLORS.get(q, "#ffffff")
-                timeline_html += f"""
-                <div onclick="selectCharacter('{c_name.lower()}')" class="concise-item tt-char" data-char="{c_name.lower()}" data-event-type="item" data-quality="{q}" data-timestamp="{ts}" style="border-left-color: {q_hex}; cursor: pointer;">
-                    <div class="timeline-node" style="background: {q_hex}; box-shadow: 0 0 8px {q_hex};"></div>
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <span style="color: {c_hex}; font-family:'Cinzel'; font-weight:bold; font-size:15px; text-shadow:1px 1px 2px #000;">{c_name}</span>
-                        <span style="color:#888; font-size:11px;">{date_str}</span>
-                    </div>
-                    <div class="event-box" style="border-left-color: {q_hex};">
-                        <img src="{event.get('item_icon')}" alt="icon">
-                        <a href="https://www.wowhead.com/wotlk/item={event.get('item_id')}" target="_blank" onclick="event.stopPropagation();" style="color: {q_hex}; font-weight:bold; text-decoration: none;">{event.get('item_name')}</a>
-                    </div>
-                </div>"""
-        timeline_html += """
+            <div class="timeline-feed" id="timeline-feed-container">
+                </div>
+
+            <div style="text-align: center; margin-top: 20px; margin-bottom: 40px;">
+                <button id="load-more-btn" style="padding: 10px 20px; cursor: pointer; display: none; background: rgba(0,0,0,0.8); color: #ffd100; border: 1px solid #ffd100; border-radius: 4px; font-family: 'Cinzel', serif; transition: all 0.3s ease;">Load More Activity</button>
             </div>
         </div>
-"""
+        """
+        
+    # [The rest of your script continues here with base_dir = os.path.dirname...]
 
     base_dir = os.path.dirname(__file__)
     try:
