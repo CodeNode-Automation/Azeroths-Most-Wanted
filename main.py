@@ -87,14 +87,14 @@ async def setup_database(session):
     """Ensures database schema exists via HTTP API."""
     print("📂 Ensuring Turso schema exists...")
     schema_queries = [
-        "CREATE TABLE IF NOT EXISTS characters (name TEXT PRIMARY KEY, class TEXT, race TEXT, faction TEXT, guild TEXT, level INTEGER, equipped_item_level INTEGER, xp INTEGER, xp_max INTEGER, health INTEGER, power INTEGER, last_login_ms INTEGER, portrait_url TEXT)",
+        "CREATE TABLE IF NOT EXISTS characters (name TEXT PRIMARY KEY, class TEXT, race TEXT, faction TEXT, guild TEXT, level INTEGER, equipped_item_level INTEGER, xp INTEGER, xp_max INTEGER, health INTEGER, power INTEGER, last_login_ms INTEGER, portrait_url TEXT, active_spec TEXT, honorable_kills INTEGER)",
         "CREATE TABLE IF NOT EXISTS gear (character_name TEXT, slot TEXT, item_id INTEGER, name TEXT, quality TEXT, icon_data TEXT, tooltip_params TEXT, last_detected TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (character_name, slot, item_id))",
         "CREATE TABLE IF NOT EXISTS timeline (timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, character_name TEXT, class TEXT, type TEXT, item_id INTEGER, item_name TEXT, item_quality TEXT, item_icon TEXT, level INTEGER)",
         "CREATE INDEX IF NOT EXISTS idx_timeline_timestamp ON timeline (timestamp DESC)",
         "CREATE TABLE IF NOT EXISTS daily_snapshot (id TEXT PRIMARY KEY, snapshot_date TEXT, val1 INTEGER, val2 INTEGER, val3 INTEGER)",
         "CREATE TABLE IF NOT EXISTS character_trends (char_name TEXT PRIMARY KEY, last_ilvl INTEGER, trend_ilvl INTEGER, last_hks INTEGER, trend_hks INTEGER)",
         "CREATE TABLE IF NOT EXISTS global_trends (id TEXT PRIMARY KEY, last_total INTEGER, trend_total INTEGER, last_active INTEGER, trend_active INTEGER, last_ready INTEGER, trend_ready INTEGER)",
-        "CREATE TABLE IF NOT EXISTS daily_roster_stats (date TEXT PRIMARY KEY, total_roster INTEGER DEFAULT 0, active_roster INTEGER DEFAULT 0)",
+        "CREATE TABLE IF NOT EXISTS daily_roster_stats (date TEXT PRIMARY KEY, total_roster INTEGER DEFAULT 0, active_roster INTEGER DEFAULT 0, avg_ilvl_70 INTEGER DEFAULT 0, total_hks INTEGER DEFAULT 0)",
         "CREATE TABLE IF NOT EXISTS char_history (char_name TEXT, record_date TEXT, ilvl INTEGER, hks INTEGER, PRIMARY KEY (char_name, record_date))"
     ]
     await push_turso_batch(session, [{"q": q} for q in schema_queries])
@@ -247,8 +247,8 @@ async def main_async():
             batch_stmts.append({
                 "q": """
                     INSERT OR REPLACE INTO characters 
-                    (name, level, class, race, faction, equipped_item_level, last_login_ms, portrait_url) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    (name, level, class, race, faction, equipped_item_level, last_login_ms, portrait_url, active_spec, honorable_kills) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 "params": [
                     char_name, 
@@ -258,7 +258,9 @@ async def main_async():
                     data.get('faction'),
                     data.get('equipped_item_level'),
                     data.get('last_login_ms'),
-                    data.get('portrait_url')
+                    data.get('portrait_url'),
+                    data.get('active_spec'),
+                    data.get('honorable_kills')
                 ]
             })
             for slot, item in data.items():
@@ -300,7 +302,7 @@ async def main_async():
         })
         
         batch_stmts.append({
-            "q": "INSERT OR REPLACE INTO daily_roster_stats (date, total_roster, active_roster) VALUES (?, ?, ?)",
+            "q": "INSERT OR REPLACE INTO daily_roster_stats (date, total_roster, active_roster, avg_ilvl_70, total_hks) VALUES (?, ?, ?, ?, ?)",
             "params": list(new_daily_stats_row)
         })
 

@@ -34,13 +34,26 @@ def process_global_trends(roster_data, raw_guild_roster, realm_data, gt_row):
     current_time_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
     fourteen_days_ms = 14 * 24 * 60 * 60 * 1000 
     
+    # New Analytics Aggregates
+    total_hks = 0
+    sum_ilvl_70 = 0
+    count_ilvl_70 = 0
+    
     for char in roster_data:
         p = char.get("profile") or {} 
         lvl = p.get('level', 0)
         ilvl = p.get('equipped_item_level', 0)
         
+        total_hks += p.get('honorable_kills', 0)
+        
         if lvl == 70 and ilvl >= 110: raid_ready_count += 1
+        if lvl == 70 and ilvl > 0:
+            sum_ilvl_70 += ilvl
+            count_ilvl_70 += 1
+            
         if current_time_ms - p.get('last_login_timestamp', 0) <= fourteen_days_ms: active_14_days += 1
+        
+    avg_ilvl_70 = round(sum_ilvl_70 / count_ilvl_70) if count_ilvl_70 > 0 else 0
             
     trend_total, trend_active, trend_ready = 0, 0, 0
     
@@ -66,7 +79,7 @@ def process_global_trends(roster_data, raw_guild_roster, realm_data, gt_row):
         new_gt_row = ('__GLOBAL__', total_members, 0, active_14_days, 0, raid_ready_count, 0)
 
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    new_daily_stats_row = (today_str, total_members, active_14_days)
+    new_daily_stats_row = (today_str, total_members, active_14_days, avg_ilvl_70, total_hks)
 
     if realm_data is None: realm_data = {}
     realm_data['global_trends'] = {

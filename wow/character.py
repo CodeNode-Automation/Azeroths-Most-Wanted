@@ -152,5 +152,7 @@ def update_character_state(char_data, history_data, timeline_data):
         history_data[char_data["char"]]["faction"] = get_safe_name("faction")
         history_data[char_data["char"]]["class"] = get_safe_name("character_class")
         history_data[char_data["char"]]["race"] = get_safe_name("race")
+        history_data[char_data["char"]]["active_spec"] = profile.get("active_spec")
+        history_data[char_data["char"]]["honorable_kills"] = profile.get("honorable_kills", 0)
 
     return history_data, timeline_data

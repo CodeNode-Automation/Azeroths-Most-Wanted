@@ -155,19 +155,35 @@
                 </div>
             </div> 
             <div id="analytics-view" style="display: none; animation: fadeInUp 0.5s forwards;">
-                <h2 style="color: #ffd100; font-family: 'Cinzel', serif; text-align: center; text-shadow: 0 2px 4px #000; margin-bottom: 30px; font-size: 32px;">Guild Analytics</h2>
+                <h2 style="color: #ffd100; font-family: 'Cinzel', serif; text-align: center; text-shadow: 0 2px 4px #000; margin-bottom: 20px; font-size: 32px;">Guild Analytics</h2>
+                
+                <div class="stat-box-container" style="max-width: 1100px; margin: 0 auto 40px auto; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div class="stat-box" style="border-color: #ff8000; box-shadow: inset 0 0 15px rgba(255,128,0,0.1);">
+                        <span id="kpi-avg-ilvl" class="stat-value" style="color: #ff8000;">0</span>
+                        <span class="stat-label">Avg Level 70 iLvl</span>
+                    </div>
+                    <div class="stat-box" style="border-color: #a335ee; box-shadow: inset 0 0 15px rgba(163,53,238,0.1);">
+                        <span id="kpi-epic-loot" class="stat-value" style="color: #a335ee;">0</span>
+                        <span class="stat-label">Epics Looted (7d)</span>
+                    </div>
+                    <div class="stat-box" style="border-color: #ff4400; box-shadow: inset 0 0 15px rgba(255,68,0,0.1);">
+                        <span id="kpi-total-hks" class="stat-value" style="color: #ff4400;">0</span>
+                        <span class="stat-label">Total Guild HKs</span>
+                    </div>
+                </div>
                 
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; max-width: 1100px; margin: 0 auto 30px auto;">
-                    <div class="heatmap-wrapper" style="flex: 2; min-width: 320px; max-width: 650px; margin: 0;">
-                        <h3 class="heatmap-title">🔥 Guild Activity (Last 7 Days)</h3>
-                        <div style="position: relative; height: 180px; width: 100%; margin-bottom: 20px;">
-                            <canvas id="analyticsActivityChart"></canvas>
+                    <div class="heatmap-wrapper" style="flex: 1; min-width: 300px; max-width: 480px; margin: 0; display: flex; flex-direction: column;">
+                        <h3 class="heatmap-title" style="justify-content: center;">🛡️ Raid Roles <span style="color:#aaa; font-size: 11px; margin-left:6px;">Known Specs</span></h3>
+                        <div style="position: relative; flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 250px;">
+                            <canvas id="roleDonutChart"></canvas>
                         </div>
                     </div>
-                    <div class="heatmap-wrapper" style="flex: 1.2; min-width: 300px; max-width: 480px; margin: 0; display: flex; flex-direction: column;">
-                        <h3 class="heatmap-title" style="justify-content: center;">📊 Class Distribution</h3>
-                        <div style="position: relative; flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 250px;">
-                            <canvas id="analyticsClassDonutChart"></canvas>
+
+                    <div class="heatmap-wrapper" style="flex: 2; min-width: 320px; max-width: 650px; margin: 0;">
+                        <h3 class="heatmap-title">🔥 Guild Activity (Last 7 Days)</h3>
+                        <div style="position: relative; height: 250px; width: 100%;">
+                            <canvas id="analyticsActivityChart"></canvas>
                         </div>
                     </div>
                 </div>
