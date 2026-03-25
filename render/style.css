@@ -429,21 +429,59 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     animation: smoothFadeIn 0.3s ease-out forwards;
 }
 
-/* Architecture View Styles */
+/* =========================================
+   ARCHITECTURE PIPELINE UPGRADES
+   ========================================= */
+
+.arch-pipeline {
+    display: flex;
+    flex-wrap: wrap; /* THE FIX: Allows wrapping instead of horizontal scrolling! */
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 15px;
+    padding: 20px 10px 40px 10px;
+}
+
+/* The Cards */
 .arch-card {
+    flex: 1 1 260px; /* Allows cards to stretch and wrap beautifully */
+    max-width: 340px; /* Prevents them from getting absurdly wide */
+    margin: 0;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex: 1 1 320px; /* Allows cards to wrap and fill space cleanly on mobile */
-    max-width: 500px;
-    background: rgba(0,0,0,0.6);
+    background: rgba(12, 12, 18, 0.85); /* Slightly deeper blue-black */
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
     border-top: 3px solid #ffd100;
     padding: 25px 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: pulseArchBorder 4s infinite alternate;
 }
 .arch-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(255, 209, 0, 0.15);
+    box-shadow: 0 15px 35px rgba(255, 209, 0, 0.15), inset 0 0 20px rgba(255,255,255,0.02);
+}
+
+@keyframes pulseArchBorder {
+    0% { border-top-color: #ffd100; box-shadow: 0 5px 15px rgba(255, 209, 0, 0.05); }
+    100% { border-top-color: #ff8000; box-shadow: 0 5px 25px rgba(255, 128, 0, 0.15); }
+}
+
+/* Phase Badges inside the cards */
+.arch-phase {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    border: 1px solid;
+    text-shadow: none;
+    text-align: center;
 }
 
 /* Modern Frosted Glass Pill Container */
@@ -451,24 +489,26 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
-    background: rgba(235, 235, 235, 0.85); /* Lightened for clarity, but slightly transparent */
-    backdrop-filter: blur(8px); /* Gives it a premium frosted glass look */
-    -webkit-backdrop-filter: blur(8px); /* Safari support */
-    padding: 12px 24px;
-    border-radius: 50px; 
+    flex-wrap: wrap; /* THE FIX: Allows multiple logos to stack instead of bleeding! */
+    gap: 12px; /* Reduced gap to fit better on mobile */
+    background: rgba(235, 235, 235, 0.85); 
+    backdrop-filter: blur(8px); 
+    -webkit-backdrop-filter: blur(8px); 
+    padding: 10px 18px; /* Reduced padding */
+    border-radius: 30px; /* Slightly less aggressive pill shape to accommodate stacked items */
     margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Soft highlighted rim */
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.5); /* Outer depth + inner glow */
-    min-height: 65px;
+    border: 1px solid rgba(255, 255, 255, 0.3); 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.5); 
+    min-height: 60px;
+    max-width: 100%; /* Ensures it never breaks outside the card */
 }
 
 .arch-logo-pill img {
-    height: 38px; 
+    height: 32px; /* Shrunk slightly to fit perfectly */
+    max-width: 100%;
     width: auto;
     object-fit: contain;
     margin: 0; 
-    /* A tiny, sharp dark shadow to pop the logo off the light glass */
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); 
 }
 
@@ -486,4 +526,45 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     line-height: 1.6;
     margin: 0;
     text-align: center;
+}
+
+/* Animated Data Arrows */
+.arch-connector {
+    flex: 0 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.data-stream {
+    stroke: #ffd100;
+    stroke-width: 2.5;
+    stroke-dasharray: 8, 8;
+    animation: dataFlow 1s linear infinite;
+}
+.stream-head {
+    fill: #ffd100;
+    filter: drop-shadow(0 0 3px #ffd100);
+}
+@keyframes dataFlow {
+    from { stroke-dashoffset: 16; }
+    to { stroke-dashoffset: 0; }
+}
+
+/* Mobile Layout: Snaps to a vertical downward waterfall */
+@media (max-width: 1100px) {
+    .arch-pipeline {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+    .arch-card {
+        flex: auto;
+        width: 100%;
+        max-width: 500px;
+    }
+    .arch-connector {
+        flex: 0 0 50px;
+        width: 100%;
+        transform: rotate(90deg); /* Points arrows down */
+    }
 }

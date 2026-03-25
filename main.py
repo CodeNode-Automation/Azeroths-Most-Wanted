@@ -48,7 +48,14 @@ async def fetch_turso(session, query):
     try:
         async with session.post(url, json=payload, headers=headers) as resp:
             data = await resp.json()
-            results = data[0].get("results", {}) if data else {}
+            
+            # Safely check if the response is a list before accessing index 0
+            if isinstance(data, list) and len(data) > 0:
+                results = data[0].get("results", {})
+            else:
+                print(f"⚠️ Unexpected Turso Response: {data}")
+                return []
+                
             if not results: return []
             cols = results.get("columns", [])
             rows = results.get("rows", [])
@@ -139,7 +146,7 @@ async def main_async():
         """
 
         # Fire all 5 Turso queries simultaneously
-        char_task = fetch_turso(session, "SELECT name, level FROM characters")
+        char_task = fetch_turso(session, "SELECT * FROM characters")
         gear_task = fetch_turso(session, "SELECT character_name, slot, item_id, name, quality, icon_data, tooltip_params FROM gear")
         trend_task = fetch_turso(session, trend_query)
         gt_task = fetch_turso(session, "SELECT * FROM global_trends WHERE id='__GLOBAL__'")
@@ -151,7 +158,7 @@ async def main_async():
 
         history_data = {}
         for row in char_rows:
-            history_data[row['name']] = {'level': row['level']}
+            history_data[row['name']] = dict(row)
             
         for row in gear_rows:
             char_n = row['character_name']
@@ -238,8 +245,21 @@ async def main_async():
         
         for char_name, data in history_data.items():
             batch_stmts.append({
-                "q": "INSERT OR REPLACE INTO characters (name, level) VALUES (?, ?)",
-                "params": [char_name, data.get('level', 0)]
+                "q": """
+                    INSERT OR REPLACE INTO characters 
+                    (name, level, class, race, faction, equipped_item_level, last_login_ms, portrait_url) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                "params": [
+                    char_name, 
+                    data.get('level', 0),
+                    data.get('class'),
+                    data.get('race'),
+                    data.get('faction'),
+                    data.get('equipped_item_level'),
+                    data.get('last_login_ms'),
+                    data.get('portrait_url')
+                ]
             })
             for slot, item in data.items():
                 if isinstance(item, dict) and 'item_id' in item:

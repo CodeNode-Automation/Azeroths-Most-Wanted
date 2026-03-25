@@ -16,6 +16,10 @@ async def fetch_wow_endpoint(session, token, realm, character_name, endpoint="",
     for attempt in range(retries):
         try:
             async with session.get(url, headers=headers, timeout=10) as response:
+                # Silently and immediately ignore 404s (e.g., missing PvP data or low-level alts)
+                if response.status == 404:
+                    return None
+                    
                 # Catch Rate Limits and Blizzard Gateway/Server Errors
                 if response.status in [429, 500, 502, 503, 504]:
                     wait_time = 2 ** attempt  # True Exponential Backoff: 1s, 2s, 4s, 8s...

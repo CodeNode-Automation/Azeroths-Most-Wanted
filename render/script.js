@@ -1182,6 +1182,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (architectureView) architectureView.style.display = 'none';
         if (searchInput) searchInput.value = '';
         if (searchAutoComplete) searchAutoComplete.classList.remove('show');
+        
+        // BUG FIX: Ensure the timeline is unhidden by default when switching views!
+        // (Analytics and Architecture will immediately hide it again if needed)
+        if (timeline) timeline.style.display = 'block';
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         // --- NEW: Reset Timeline Filters on Page Change ---

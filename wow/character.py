@@ -131,4 +131,26 @@ def update_character_state(char_data, history_data, timeline_data):
     history_data[char_data["char"]] = char_data["equipped"]
     history_data[char_data["char"]]["level"] = char_data.get("current_level", 0)
 
+    # NEW: Extract the missing profile data needed for the characters table
+    profile = char_data.get("profile", {})
+    if isinstance(profile, dict):
+        history_data[char_data["char"]]["last_login_ms"] = profile.get("last_login_timestamp")
+        history_data[char_data["char"]]["equipped_item_level"] = profile.get("equipped_item_level")
+        history_data[char_data["char"]]["portrait_url"] = char_data.get("render_url")
+        
+        # BULLETPROOF EXTRACTION: Safely handle nulls and mixed types from Blizzard
+        def get_safe_name(key):
+            obj = profile.get(key)
+            if isinstance(obj, dict):
+                name_obj = obj.get("name")
+                if isinstance(name_obj, dict):
+                    return name_obj.get("en_US")
+                if isinstance(name_obj, str):
+                    return name_obj
+            return None
+
+        history_data[char_data["char"]]["faction"] = get_safe_name("faction")
+        history_data[char_data["char"]]["class"] = get_safe_name("character_class")
+        history_data[char_data["char"]]["race"] = get_safe_name("race")
+
     return history_data, timeline_data
