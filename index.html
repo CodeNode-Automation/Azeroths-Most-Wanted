@@ -438,21 +438,59 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     animation: smoothFadeIn 0.3s ease-out forwards;
 }
 
-/* Architecture View Styles */
+/* =========================================
+   ARCHITECTURE PIPELINE UPGRADES
+   ========================================= */
+
+.arch-pipeline {
+    display: flex;
+    flex-wrap: wrap; /* THE FIX: Allows wrapping instead of horizontal scrolling! */
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 15px;
+    padding: 20px 10px 40px 10px;
+}
+
+/* The Cards */
 .arch-card {
+    flex: 1 1 260px; /* Allows cards to stretch and wrap beautifully */
+    max-width: 340px; /* Prevents them from getting absurdly wide */
+    margin: 0;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex: 1 1 320px; /* Allows cards to wrap and fill space cleanly on mobile */
-    max-width: 500px;
-    background: rgba(0,0,0,0.6);
+    background: rgba(12, 12, 18, 0.85); /* Slightly deeper blue-black */
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
     border-top: 3px solid #ffd100;
     padding: 25px 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: pulseArchBorder 4s infinite alternate;
 }
 .arch-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(255, 209, 0, 0.15);
+    box-shadow: 0 15px 35px rgba(255, 209, 0, 0.15), inset 0 0 20px rgba(255,255,255,0.02);
+}
+
+@keyframes pulseArchBorder {
+    0% { border-top-color: #ffd100; box-shadow: 0 5px 15px rgba(255, 209, 0, 0.05); }
+    100% { border-top-color: #ff8000; box-shadow: 0 5px 25px rgba(255, 128, 0, 0.15); }
+}
+
+/* Phase Badges inside the cards */
+.arch-phase {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    border: 1px solid;
+    text-shadow: none;
+    text-align: center;
 }
 
 /* Modern Frosted Glass Pill Container */
@@ -460,24 +498,26 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
-    background: rgba(235, 235, 235, 0.85); /* Lightened for clarity, but slightly transparent */
-    backdrop-filter: blur(8px); /* Gives it a premium frosted glass look */
-    -webkit-backdrop-filter: blur(8px); /* Safari support */
-    padding: 12px 24px;
-    border-radius: 50px; 
+    flex-wrap: wrap; /* THE FIX: Allows multiple logos to stack instead of bleeding! */
+    gap: 12px; /* Reduced gap to fit better on mobile */
+    background: rgba(235, 235, 235, 0.85); 
+    backdrop-filter: blur(8px); 
+    -webkit-backdrop-filter: blur(8px); 
+    padding: 10px 18px; /* Reduced padding */
+    border-radius: 30px; /* Slightly less aggressive pill shape to accommodate stacked items */
     margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Soft highlighted rim */
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.5); /* Outer depth + inner glow */
-    min-height: 65px;
+    border: 1px solid rgba(255, 255, 255, 0.3); 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.5); 
+    min-height: 60px;
+    max-width: 100%; /* Ensures it never breaks outside the card */
 }
 
 .arch-logo-pill img {
-    height: 38px; 
+    height: 32px; /* Shrunk slightly to fit perfectly */
+    max-width: 100%;
     width: auto;
     object-fit: contain;
     margin: 0; 
-    /* A tiny, sharp dark shadow to pop the logo off the light glass */
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); 
 }
 
@@ -495,6 +535,47 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     line-height: 1.6;
     margin: 0;
     text-align: center;
+}
+
+/* Animated Data Arrows */
+.arch-connector {
+    flex: 0 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.data-stream {
+    stroke: #ffd100;
+    stroke-width: 2.5;
+    stroke-dasharray: 8, 8;
+    animation: dataFlow 1s linear infinite;
+}
+.stream-head {
+    fill: #ffd100;
+    filter: drop-shadow(0 0 3px #ffd100);
+}
+@keyframes dataFlow {
+    from { stroke-dashoffset: 16; }
+    to { stroke-dashoffset: 0; }
+}
+
+/* Mobile Layout: Snaps to a vertical downward waterfall */
+@media (max-width: 1100px) {
+    .arch-pipeline {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+    .arch-card {
+        flex: auto;
+        width: 100%;
+        max-width: 500px;
+    }
+    .arch-connector {
+        flex: 0 0 50px;
+        width: 100%;
+        transform: rotate(90deg); /* Points arrows down */
+    }
 }
     </style>
 </head>
@@ -623,15 +704,15 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
                     </div>
                     <div id="stat-active" class="stat-box clickable" title="Click to view characters active within 14 days">
                         <span class="stat-value" style="color: #2ecc71; display: flex; align-items: center; justify-content: center;">
-                            388
-                            <span style="color: #2ecc71; font-size: 16px; text-shadow: none; margin-left: 6px;">▲ 18</span>
+                            387
+                            <span style="color: #e74c3c; font-size: 16px; text-shadow: none; margin-left: 6px;">▼ 1</span>
                         </span>
                         <span class="stat-label">Active (14 Days)</span>
                     </div>
                     <div id="stat-raidready" class="stat-box clickable" title="Click to view characters Level 70 with 110+ iLvl">
                         <span class="stat-value" style="color: #ff8000; display: flex; align-items: center; justify-content: center;">
                             17
-                            <span style="color: #2ecc71; font-size: 16px; text-shadow: none; margin-left: 6px;">▲ 2</span>
+                            <span style="color: #555; font-size: 16px; text-shadow: none; margin-left: 6px;">-</span>
                         </span>
                         <span class="stat-label">Raid Ready</span>
                     </div>
@@ -759,49 +840,81 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
                     Azeroth's Most Wanted Armory operates on a fully automated, zero-cost tech stack. By combining edge databases, static site generation, and GitHub Actions, the dashboard processes thousands of data points a day without a traditional backend or any recurring hosting fees.
                 </p>
                 
-                <div style="display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; width: 100%;">
-                    
+                <div class="arch-pipeline">
                     <div class="info-box arch-card">
                         <div class="arch-logo-pill">
                             <img src="asset/software_logo/python.png" alt="Python">
                         </div>
-                        <h3>Asynchronous Extraction</h3>
-                        <p>Python utilizes <strong>AsyncIO</strong> and <strong>Aiohttp</strong> to concurrently fetch live character profiles from the Blizzard REST API, processing vast amounts of data in seconds while bypassing standard rate-limit bottlenecks.</p>
+                        <div class="arch-phase" style="color: #3498db; border-color: #3498db; background: rgba(52, 152, 219, 0.1);">STEP 1: EXTRACTION</div>
+                        <h3>Asynchronous Pull</h3>
+                        <p>Python utilizes <strong>AsyncIO</strong> and <strong>Aiohttp</strong> to concurrently fetch live character profiles from the Blizzard REST API, processing vast amounts of data in seconds.</p>
                     </div>
-                    
+
+                    <div class="arch-connector">
+                        <svg width="50" height="24" viewBox="0 0 50 24">
+                            <line x1="0" y1="12" x2="40" y2="12" class="data-stream" />
+                            <polygon points="40,6 50,12 40,18" class="stream-head" />
+                        </svg>
+                    </div>
+
                     <div class="info-box arch-card">
                         <div class="arch-logo-pill">
                             <img src="asset/software_logo/turso.png" alt="Turso">
                             <img src="asset/software_logo/sqlite.png" alt="SQLite">
                         </div>
+                        <div class="arch-phase" style="color: #1abc9c; border-color: #1abc9c; background: rgba(26, 188, 156, 0.1);">STEP 2: STORAGE</div>
                         <h3>Edge Database</h3>
                         <p>Processed data is pushed in bulk transactions to a Turso edge database (libSQL/SQLite). This allows for infinite, free storage of historical guild trends and loot timelines.</p>
                     </div>
-                    
+
+                    <div class="arch-connector">
+                        <svg width="50" height="24" viewBox="0 0 50 24">
+                            <line x1="0" y1="12" x2="40" y2="12" class="data-stream" />
+                            <polygon points="40,6 50,12 40,18" class="stream-head" />
+                        </svg>
+                    </div>
+
                     <div class="info-box arch-card">
                         <div class="arch-logo-pill">
                             <img src="asset/software_logo/github.png" alt="GitHub">
                             <img src="asset/software_logo/cron.png" alt="Cron">
                         </div>
-                        <h3>CI/CD Automation</h3>
-                        <p>GitHub Actions acts as our server. A strict <strong>Cron</strong> schedule triggers the pipeline to update the database and rebuild the website, operating entirely without human intervention.</p>
+                        <div class="arch-phase" style="color: #9b59b6; border-color: #9b59b6; background: rgba(155, 89, 182, 0.1);">STEP 3: AUTOMATION</div>
+                        <h3>CI/CD Pipeline</h3>
+                        <p>GitHub Actions acts as our server. A strict <strong>Cron</strong> schedule triggers the pipeline to update the database and rebuild the website without human intervention.</p>
                     </div>
-                    
+
+                    <div class="arch-connector">
+                        <svg width="50" height="24" viewBox="0 0 50 24">
+                            <line x1="0" y1="12" x2="40" y2="12" class="data-stream" />
+                            <polygon points="40,6 50,12 40,18" class="stream-head" />
+                        </svg>
+                    </div>
+
                     <div class="info-box arch-card">
                         <div class="arch-logo-pill">
                             <img src="asset/software_logo/jinga.png" alt="Jinja2">
                             <img src="asset/software_logo/html5.png" alt="HTML5">
                         </div>
+                        <div class="arch-phase" style="color: #e67e22; border-color: #e67e22; background: rgba(230, 126, 34, 0.1);">STEP 4: COMPILATION</div>
                         <h3>Static Generation</h3>
                         <p><strong>Jinja2</strong> templates inject the latest database queries into raw HTML. The result is a lightning-fast, ultra-secure static frontend powered by HTML5 and modern CSS.</p>
                     </div>
-                    
+
+                    <div class="arch-connector">
+                        <svg width="50" height="24" viewBox="0 0 50 24">
+                            <line x1="0" y1="12" x2="40" y2="12" class="data-stream" />
+                            <polygon points="40,6 50,12 40,18" class="stream-head" />
+                        </svg>
+                    </div>
+
                     <div class="info-box arch-card">
                         <div class="arch-logo-pill">
                             <img src="asset/software_logo/json.png" alt="JSON">
                         </div>
-                        <h3>JSON & Data Visualization</h3>
-                        <p>Heavy payloads are pre-compiled into static <strong>JSON</strong> files. The frontend consumes this data natively, using <strong>Chart.js</strong> to render interactive heatmaps and analytics with zero database latency.</p>
+                        <div class="arch-phase" style="color: #f1c40f; border-color: #f1c40f; background: rgba(241, 196, 15, 0.1);">STEP 5: VISUALIZATION</div>
+                        <h3>Client-Side Rendering</h3>
+                        <p>Heavy payloads are pre-compiled into static <strong>JSON</strong> files. The frontend consumes this data natively, using <strong>Chart.js</strong> to render analytics with zero database latency.</p>
                     </div>
                 </div>
             </div>
@@ -869,10 +982,10 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     </div>
 
     <script id="dashboard-config" type="application/json">
-        {"last_updated": "2026-03-25T17:02:49.154282Z", "active_14_days": 388, "raid_ready_count": 17}
+        {"last_updated": "2026-03-25T18:10:34.417862Z", "active_14_days": 387, "raid_ready_count": 17}
     </script>
     <script id="heatmap-data" type="application/json">
-        [{"date": "2026-03-19", "day_name": "Thu", "count": 186, "loot": 161, "levels": 25, "total_roster": null, "active_roster": null}, {"date": "2026-03-20", "day_name": "Fri", "count": 121, "loot": 92, "levels": 29, "total_roster": null, "active_roster": null}, {"date": "2026-03-21", "day_name": "Sat", "count": 560, "loot": 453, "levels": 107, "total_roster": null, "active_roster": null}, {"date": "2026-03-22", "day_name": "Sun", "count": 664, "loot": 520, "levels": 144, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 566, "loot": 425, "levels": 141, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 563, "loot": 435, "levels": 128, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 351, "loot": 273, "levels": 78, "total_roster": 624, "active_roster": 388}]
+        [{"date": "2026-03-19", "day_name": "Thu", "count": 186, "loot": 161, "levels": 25, "total_roster": null, "active_roster": null}, {"date": "2026-03-20", "day_name": "Fri", "count": 121, "loot": 92, "levels": 29, "total_roster": null, "active_roster": null}, {"date": "2026-03-21", "day_name": "Sat", "count": 560, "loot": 453, "levels": 107, "total_roster": null, "active_roster": null}, {"date": "2026-03-22", "day_name": "Sun", "count": 664, "loot": 520, "levels": 144, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 566, "loot": 425, "levels": 141, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 563, "loot": 435, "levels": 128, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 392, "loot": 304, "levels": 88, "total_roster": 624, "active_roster": 387}]
     </script>
 
     <script>
@@ -2060,6 +2173,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (architectureView) architectureView.style.display = 'none';
         if (searchInput) searchInput.value = '';
         if (searchAutoComplete) searchAutoComplete.classList.remove('show');
+        
+        // BUG FIX: Ensure the timeline is unhidden by default when switching views!
+        // (Analytics and Architecture will immediately hide it again if needed)
+        if (timeline) timeline.style.display = 'block';
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         // --- NEW: Reset Timeline Filters on Page Change ---
