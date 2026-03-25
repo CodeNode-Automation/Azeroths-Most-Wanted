@@ -437,6 +437,65 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
 .animate-list-update {
     animation: smoothFadeIn 0.3s ease-out forwards;
 }
+
+/* Architecture View Styles */
+.arch-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1 1 320px; /* Allows cards to wrap and fill space cleanly on mobile */
+    max-width: 500px;
+    background: rgba(0,0,0,0.6);
+    border-top: 3px solid #ffd100;
+    padding: 25px 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.arch-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(255, 209, 0, 0.15);
+}
+
+/* Modern Frosted Glass Pill Container */
+.arch-logo-pill {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    background: rgba(235, 235, 235, 0.85); /* Lightened for clarity, but slightly transparent */
+    backdrop-filter: blur(8px); /* Gives it a premium frosted glass look */
+    -webkit-backdrop-filter: blur(8px); /* Safari support */
+    padding: 12px 24px;
+    border-radius: 50px; 
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Soft highlighted rim */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.5); /* Outer depth + inner glow */
+    min-height: 65px;
+}
+
+.arch-logo-pill img {
+    height: 38px; 
+    width: auto;
+    object-fit: contain;
+    margin: 0; 
+    /* A tiny, sharp dark shadow to pop the logo off the light glass */
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); 
+}
+
+.arch-card h3 {
+    color: #fff;
+    font-family: 'Cinzel', serif;
+    margin-top: 0;
+    margin-bottom: 12px;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+}
+.arch-card p {
+    color: #bbb;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    text-align: center;
+}
     </style>
 </head>
 <body>
@@ -447,7 +506,7 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
         </div>
     </div>
     <div id="intro-container" onclick="killIntro()" style="cursor: pointer;">
-        <video id="intro-video" autoplay muted playsinline poster="asset/amw.webp">
+        <video id="intro-video" autoplay muted playsinline>
             <source src="asset/Amw.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -510,6 +569,9 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
             <a href="#analytics" class="nav-btn nav-btn-home" title="View Guild Analytics" style="margin-left: 10px;">
               📊<span class="home-text"> Analytics</span>
             </a>
+            <a href="#architecture" class="nav-btn nav-btn-home" title="How the Website Works" style="margin-left: 10px;">
+              ⚙️<span class="home-text"> Architecture</span>
+            </a>
             <div class="custom-select-wrapper" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="customCharOptions">
                 <div class="custom-select" id="customCharSelect" tabindex="0">
                     <span class="selected-value">Select View...</span>
@@ -561,20 +623,20 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
                     </div>
                     <div id="stat-active" class="stat-box clickable" title="Click to view characters active within 14 days">
                         <span class="stat-value" style="color: #2ecc71; display: flex; align-items: center; justify-content: center;">
-                            378
-                            <span style="color: #e74c3c; font-size: 16px; text-shadow: none; margin-left: 6px;">▼ 9</span>
+                            370
+                            <span style="color: #e74c3c; font-size: 16px; text-shadow: none; margin-left: 6px;">▼ 8</span>
                         </span>
                         <span class="stat-label">Active (14 Days)</span>
                     </div>
                     <div id="stat-raidready" class="stat-box clickable" title="Click to view characters Level 70 with 110+ iLvl">
                         <span class="stat-value" style="color: #ff8000; display: flex; align-items: center; justify-content: center;">
-                            18
-                            <span style="color: #555; font-size: 16px; text-shadow: none; margin-left: 6px;">-</span>
+                            15
+                            <span style="color: #e74c3c; font-size: 16px; text-shadow: none; margin-left: 6px;">▼ 3</span>
                         </span>
                         <span class="stat-label">Raid Ready</span>
                     </div>
                     <div class="stat-box" title="Average level of scanned characters">
-                        <span class="stat-value">41</span>
+                        <span class="stat-value">40</span>
                         <span class="stat-label">Average Level</span>
                     </div>
                 </div>
@@ -685,6 +747,65 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
                     </div>
                 </div>
             </div>
+
+            <div id="architecture-view" style="display: none; animation: fadeInUp 0.5s forwards; width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #ffd100; font-family: 'Cinzel', serif; text-align: center; text-shadow: 0 2px 4px #000; margin-bottom: 10px; font-size: 32px;">System Architecture</h2>
+                
+                <p style="text-align: center; color: #2ecc71; font-family: 'Cinzel', serif; font-weight: bold; font-size: 18px; margin-bottom: 15px; letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
+                    ⚡ 100% FREE & SERVERLESS ⚡
+                </p>
+                
+                <p style="text-align: center; color: #bbb; max-width: 800px; margin: 0 auto 40px auto; font-size: 16px; line-height: 1.6;">
+                    Azeroth's Most Wanted Armory operates on a fully automated, zero-cost tech stack. By combining edge databases, static site generation, and GitHub Actions, the dashboard processes thousands of data points a day without a traditional backend or any recurring hosting fees.
+                </p>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; width: 100%;">
+                    
+                    <div class="info-box arch-card">
+                        <div class="arch-logo-pill">
+                            <img src="asset/software_logo/python.png" alt="Python">
+                        </div>
+                        <h3>Asynchronous Extraction</h3>
+                        <p>Python utilizes <strong>AsyncIO</strong> and <strong>Aiohttp</strong> to concurrently fetch live character profiles from the Blizzard REST API, processing vast amounts of data in seconds while bypassing standard rate-limit bottlenecks.</p>
+                    </div>
+                    
+                    <div class="info-box arch-card">
+                        <div class="arch-logo-pill">
+                            <img src="asset/software_logo/turso.png" alt="Turso">
+                            <img src="asset/software_logo/sqlite.png" alt="SQLite">
+                        </div>
+                        <h3>Edge Database</h3>
+                        <p>Processed data is pushed in bulk transactions to a Turso edge database (libSQL/SQLite). This allows for infinite, free storage of historical guild trends and loot timelines.</p>
+                    </div>
+                    
+                    <div class="info-box arch-card">
+                        <div class="arch-logo-pill">
+                            <img src="asset/software_logo/github.png" alt="GitHub">
+                            <img src="asset/software_logo/cron.png" alt="Cron">
+                        </div>
+                        <h3>CI/CD Automation</h3>
+                        <p>GitHub Actions acts as our server. A strict <strong>Cron</strong> schedule triggers the pipeline to update the database and rebuild the website, operating entirely without human intervention.</p>
+                    </div>
+                    
+                    <div class="info-box arch-card">
+                        <div class="arch-logo-pill">
+                            <img src="asset/software_logo/jinga.png" alt="Jinja2">
+                            <img src="asset/software_logo/html5.png" alt="HTML5">
+                        </div>
+                        <h3>Static Generation</h3>
+                        <p><strong>Jinja2</strong> templates inject the latest database queries into raw HTML. The result is a lightning-fast, ultra-secure static frontend powered by HTML5 and modern CSS.</p>
+                    </div>
+                    
+                    <div class="info-box arch-card">
+                        <div class="arch-logo-pill">
+                            <img src="asset/software_logo/json.png" alt="JSON">
+                        </div>
+                        <h3>JSON & Data Visualization</h3>
+                        <p>Heavy payloads are pre-compiled into static <strong>JSON</strong> files. The frontend consumes this data natively, using <strong>Chart.js</strong> to render interactive heatmaps and analytics with zero database latency.</p>
+                    </div>
+                </div>
+            </div>
+
             <div id="concise-view">
                 <h2 id="concise-view-title">Guild Overview</h2>
                 
@@ -748,10 +869,10 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     </div>
 
     <script id="dashboard-config" type="application/json">
-        {"last_updated": "2026-03-25T15:32:37.945934Z", "active_14_days": 378, "raid_ready_count": 18}
+        {"last_updated": "2026-03-25T16:41:54.631839Z", "active_14_days": 370, "raid_ready_count": 15}
     </script>
     <script id="heatmap-data" type="application/json">
-        [{"date": "2026-03-19", "day_name": "Thu", "count": 186, "loot": 161, "levels": 25, "total_roster": null, "active_roster": null}, {"date": "2026-03-20", "day_name": "Fri", "count": 121, "loot": 92, "levels": 29, "total_roster": null, "active_roster": null}, {"date": "2026-03-21", "day_name": "Sat", "count": 560, "loot": 453, "levels": 107, "total_roster": null, "active_roster": null}, {"date": "2026-03-22", "day_name": "Sun", "count": 664, "loot": 520, "levels": 144, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 566, "loot": 425, "levels": 141, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 563, "loot": 435, "levels": 128, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 272, "loot": 208, "levels": 64, "total_roster": 624, "active_roster": 378}]
+        [{"date": "2026-03-19", "day_name": "Thu", "count": 186, "loot": 161, "levels": 25, "total_roster": null, "active_roster": null}, {"date": "2026-03-20", "day_name": "Fri", "count": 121, "loot": 92, "levels": 29, "total_roster": null, "active_roster": null}, {"date": "2026-03-21", "day_name": "Sat", "count": 560, "loot": 453, "levels": 107, "total_roster": null, "active_roster": null}, {"date": "2026-03-22", "day_name": "Sun", "count": 664, "loot": 520, "levels": 144, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 566, "loot": 425, "levels": 141, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 563, "loot": 435, "levels": 128, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 313, "loot": 240, "levels": 73, "total_roster": 624, "active_roster": 370}]
     </script>
 
     <script>
@@ -835,7 +956,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     let analyticsActivityChartInst = null;
     let analyticsClassChartInst = null;
     const analyticsView = document.getElementById('analytics-view');   
-    
+    const architectureView = document.getElementById('architecture-view');
+
     const navbar = document.querySelector('.navbar');
     const emptyState = document.getElementById('empty-state');
     const conciseView = document.getElementById('concise-view');
@@ -986,6 +1108,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             selectValueText.innerHTML = "⚔️ Raid Ready";
         } else if (hash === 'analytics') {
             selectValueText.innerHTML = "📊 Analytics";
+        } else if (hash === 'architecture') {
+            selectValueText.innerHTML = "⚙️ Architecture";
         } else if (hash.startsWith('class-') || hash.startsWith('spec-') || hash.startsWith('filter-')) {
             selectValueText.innerHTML = "⚡ Filter Active";
         } else {
@@ -1039,9 +1163,12 @@ window.addEventListener('DOMContentLoaded', async () => {
                         {
                             label: 'Total Roster',
                             data: heatmapData.map(d => d.total_roster || 0),
-                            borderColor: '#3498db', // Blue
+                            borderColor: 'rgba(52, 152, 219, 0.3)',
                             backgroundColor: 'transparent',
                             borderWidth: 2,
+                            borderDash: [4, 4],
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
                             pointBackgroundColor: '#3498db',
                             pointBorderColor: '#fff',
                             tension: 0.3,
@@ -1051,13 +1178,16 @@ window.addEventListener('DOMContentLoaded', async () => {
                         {
                             label: 'Active Roster',
                             data: heatmapData.map(d => d.active_roster || 0),
-                            borderColor: '#2ecc71', // Green
-                            backgroundColor: 'transparent',
+                            borderColor: 'rgba(46, 204, 113, 0.6)',
+                            backgroundColor: 'rgba(46, 204, 113, 0.05)',
                             borderWidth: 2,
+                            borderDash: [4, 4],
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
                             pointBackgroundColor: '#2ecc71',
                             pointBorderColor: '#fff',
                             tension: 0.3,
-                            fill: false,
+                            fill: true,
                             yAxisID: 'y-roster'
                         }
                     ]
@@ -1927,6 +2057,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         conciseView.style.display = 'none';
         fullCardContainer.style.display = 'none';
         if (analyticsView) analyticsView.style.display = 'none';
+        if (architectureView) architectureView.style.display = 'none';
         if (searchInput) searchInput.value = '';
         if (searchAutoComplete) searchAutoComplete.classList.remove('show');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2084,24 +2215,58 @@ window.addEventListener('DOMContentLoaded', async () => {
                     labels: heatmapData.map(d => d.day_name),
                     datasets: [
                         {
-                            label: 'Loot Drops', data: heatmapData.map(d => d.loot || 0),
-                            borderColor: '#a335ee', backgroundColor: 'rgba(163, 53, 238, 0.1)',
-                            borderWidth: 2, pointBackgroundColor: '#a335ee', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y'
+                            label: 'Loot Drops',
+                            data: heatmapData.map(d => d.loot || 0),
+                            borderColor: '#a335ee', // Epic Purple
+                            backgroundColor: 'rgba(163, 53, 238, 0.1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#a335ee',
+                            pointBorderColor: '#fff',
+                            tension: 0.3,
+                            fill: true,
+                            yAxisID: 'y'
                         },
                         {
-                            label: 'Level Ups', data: heatmapData.map(d => d.levels || 0),
-                            borderColor: '#ffd100', backgroundColor: 'rgba(255, 209, 0, 0.1)',
-                            borderWidth: 2, pointBackgroundColor: '#ffd100', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y'
+                            label: 'Level Ups',
+                            data: heatmapData.map(d => d.levels || 0),
+                            borderColor: '#ffd100', // Gold
+                            backgroundColor: 'rgba(255, 209, 0, 0.1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ffd100',
+                            pointBorderColor: '#fff',
+                            tension: 0.3,
+                            fill: true,
+                            yAxisID: 'y'
                         },
                         {
-                            label: 'Total Roster', data: heatmapData.map(d => d.total_roster || 0),
-                            borderColor: '#3498db', backgroundColor: 'transparent',
-                            borderWidth: 2, pointBackgroundColor: '#3498db', pointBorderColor: '#fff', tension: 0.3, fill: false, yAxisID: 'y-roster'
+                            label: 'Total Roster',
+                            data: heatmapData.map(d => d.total_roster || 0),
+                            borderColor: 'rgba(52, 152, 219, 0.3)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            pointBackgroundColor: '#3498db',
+                            pointBorderColor: '#fff',
+                            tension: 0.3,
+                            fill: false,
+                            yAxisID: 'y-roster'
                         },
                         {
-                            label: 'Active Roster', data: heatmapData.map(d => d.active_roster || 0),
-                            borderColor: '#2ecc71', backgroundColor: 'transparent',
-                            borderWidth: 2, pointBackgroundColor: '#2ecc71', pointBorderColor: '#fff', tension: 0.3, fill: false, yAxisID: 'y-roster'
+                            label: 'Active Roster',
+                            data: heatmapData.map(d => d.active_roster || 0),
+                            borderColor: 'rgba(46, 204, 113, 0.6)',
+                            backgroundColor: 'rgba(46, 204, 113, 0.05)',
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            pointBackgroundColor: '#2ecc71',
+                            pointBorderColor: '#fff',
+                            tension: 0.3,
+                            fill: true,
+                            yAxisID: 'y-roster'
                         }
                     ]
                 },
@@ -2121,6 +2286,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         // 5. Duplicate Class Donut Chart from Main Page
         if(analyticsClassChartInst) analyticsClassChartInst.destroy();
         analyticsClassChartInst = createDonutChart('analyticsClassDonutChart', rawGuildRoster, true);
+    }
+
+    function showArchitectureView() {
+        hideAllViews();
+        if (architectureView) architectureView.style.display = 'block';
+        if (navbar) navbar.style.background = '#111';
+        if (timeline) timeline.style.display = 'none'; 
     }
 
     window.returnToHome = function() {
@@ -2217,6 +2389,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             showHomeView();
         } else if (hash === 'analytics') {
             showAnalyticsView();
+            updateDropdownLabel('all');
+        } else if (hash === 'architecture') {
+            showArchitectureView();
             updateDropdownLabel('all');
         } else if (hash === 'total') {
             showConciseView(`Total Guild Roster (${rawGuildRoster.length})`, rawGuildRoster.sort((a,b) => b.level - a.level), true, true);
