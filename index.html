@@ -1158,10 +1158,10 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     </div>
 
     <script id="dashboard-config" type="application/json">
-        {"last_updated": "2026-03-26T15:32:16.395128Z", "active_14_days": 384, "raid_ready_count": 17}
+        {"last_updated": "2026-03-26T15:42:07.156080Z", "active_14_days": 384, "raid_ready_count": 17}
     </script>
     <script id="heatmap-data" type="application/json">
-        [{"date": "2026-03-20", "day_name": "Fri", "count": 121, "loot": 92, "levels": 29, "total_roster": null, "active_roster": null}, {"date": "2026-03-21", "day_name": "Sat", "count": 560, "loot": 453, "levels": 107, "total_roster": null, "active_roster": null}, {"date": "2026-03-22", "day_name": "Sun", "count": 664, "loot": 520, "levels": 144, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 566, "loot": 425, "levels": 141, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 563, "loot": 435, "levels": 128, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 731, "loot": 565, "levels": 166, "total_roster": 624, "active_roster": 388}, {"date": "2026-03-26", "day_name": "Thu", "count": 284, "loot": 216, "levels": 68, "total_roster": 620, "active_roster": 384}]
+        [{"date": "2026-03-20", "day_name": "Fri", "count": 121, "loot": 92, "levels": 29, "total_roster": null, "active_roster": null}, {"date": "2026-03-21", "day_name": "Sat", "count": 560, "loot": 453, "levels": 107, "total_roster": null, "active_roster": null}, {"date": "2026-03-22", "day_name": "Sun", "count": 664, "loot": 520, "levels": 144, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 566, "loot": 425, "levels": 141, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 563, "loot": 435, "levels": 128, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 731, "loot": 565, "levels": 166, "total_roster": 624, "active_roster": 388}, {"date": "2026-03-26", "day_name": "Thu", "count": 285, "loot": 217, "levels": 68, "total_roster": 620, "active_roster": 384}]
     </script>
 
     <script>
@@ -1645,6 +1645,12 @@ window.addEventListener('DOMContentLoaded', async () => {
             const rankSize = index < 3 ? '18px' : '15px';
             const portraitURL = char.render_url || getClassIcon(cClass);
 
+            // --- NEW: Trend Arrow Logic for PvE ---
+            const trend = p.trend_pve || p.trend_ilvl || 0; 
+            let trendHTML = '<span style="color: #555; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">-</span>';
+            if (trend > 0) trendHTML = `<span style="color: #2ecc71; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▲ ${trend}</span>`;
+            else if (trend < 0) trendHTML = `<span style="color: #e74c3c; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▼ ${Math.abs(trend)}</span>`;
+
             pveHTML += `
             <div class="pvp-row tt-char ${podiumClass}" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px;">
                 <div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000;">#${index + 1}</div>
@@ -1655,6 +1661,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div style="display: flex; align-items: center; color: #ff8000; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000;">
                     ${p.equipped_item_level || 0} <span style="font-size:10px; color:#888; margin-left: 3px;">iLvl</span>
+                    ${trendHTML}
                 </div>
             </div>`;
         });
@@ -2138,6 +2145,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             let displaySpecClass = '';
             let statValue = '???';
             let statColor = 'color:#666;';
+            let trendHTML = ''; // <-- NEW: Trend Variable
 
             // 3. Populate Variables
             if (deepChar && deepChar.profile) {
@@ -2158,6 +2166,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                 
                 statValue = currentSortMethod === 'hks' ? (p.honorable_kills || 0).toLocaleString() : (p.equipped_item_level || 0);
                 statColor = currentSortMethod === 'hks' ? 'color: #ff4400;' : '';
+
+                // NEW: Calculate Trend based on the current ladder view
+                if (currentSortMethod === 'hks' || currentSortMethod === 'ilvl') {
+                    const trend = currentSortMethod === 'hks' ? (p.trend_pvp || p.trend_hks || 0) : (p.trend_pve || p.trend_ilvl || 0);
+                    if (trend > 0) trendHTML = `<span style="color: #2ecc71; font-size: 12px; margin-left: 10px; width: 30px; text-align: right; display: inline-block;">▲ ${trend}</span>`;
+                    else if (trend < 0) trendHTML = `<span style="color: #e74c3c; font-size: 12px; margin-left: 10px; width: 30px; text-align: right; display: inline-block;">▼ ${Math.abs(trend)}</span>`;
+                    else trendHTML = `<span style="color: #555; font-size: 12px; margin-left: 10px; width: 30px; text-align: right; display: inline-block;">-</span>`;
+                }
             } else {
                 displayName = char.name || 'Unknown';
                 cClass = char.class || 'Unknown';
@@ -2168,7 +2184,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 displaySpecClass = cClass;
             }
 
-            // NEW: Inject Podium Classes & Rank Number if we are on a Ladder View
+            // Inject Podium Classes & Rank Number if we are on a Ladder View
             const hash = window.location.hash.substring(1);
             const isLadderView = hash === 'ladder-pve' || hash === 'ladder-pvp';
             let podiumClass = '';
@@ -2193,7 +2209,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="c-stats-info">
                         <span>Level <span class="c-val-lvl">${level}</span></span>
-                        <span>${statLabel} <span class="c-val-ilvl" style="${statColor}">${statValue}</span></span>
+                        <span style="display:flex; align-items:center; justify-content:flex-end;">${statLabel} <span class="c-val-ilvl" style="${statColor} margin-left:4px;">${statValue}</span>${trendHTML}</span>
                     </div>
                 </div>`;
             }
@@ -2208,7 +2224,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="c-stats-info">
                     <span>Level <span class="c-val-lvl">${level}</span></span>
-                    <span>${statLabel} <span class="c-val-ilvl" style="${statColor}">${statValue}</span></span>
+                    <span style="display:flex; align-items:center; justify-content:flex-end;">${statLabel} <span class="c-val-ilvl" style="${statColor} margin-left:4px;">${statValue}</span>${trendHTML}</span>
                 </div>
             </a>`;
         }).join('');
