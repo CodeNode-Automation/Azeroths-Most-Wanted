@@ -250,6 +250,7 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     .heatmap-wrapper, 
     #pve-leaderboard-container, 
     #pvp-leaderboard-container,
+    #concise-left-col,
     #concise-badges-wrapper,
     #concise-donut-container {
         min-width: 100% !important; 
@@ -613,6 +614,93 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
         transform: rotate(90deg); /* Points arrows down */
     }
 }
+
+/* =========================================
+   PHASE 3 ENHANCEMENTS (Hero, Sparklines, Podiums)
+   ========================================= */
+
+/* Hero Search Bar */
+.hero-search-box {
+    display: flex; align-items: center; background: rgba(0, 0, 0, 0.7); border: 1px solid #444; border-radius: 25px; transition: 0.3s; box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.5); overflow: hidden;
+}
+.hero-search-box:focus-within { border-color: #ffd100; box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 209, 0, 0.3); background: rgba(10,10,10,0.9); }
+.hero-search-box input { background: transparent; border: none; color: #fff; font-family: 'Cinzel'; outline: none; transition: 0.3s; }
+.hero-search-box input::placeholder { color: #888; }
+
+/* Stat Box Sparklines & Layout */
+.sparkline-box { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+.sparkline-canvas { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; z-index: 1; opacity: 0.4; pointer-events: none; }
+.trend-indicator { font-size: 14px; margin-left: 6px; text-shadow: none; font-family: 'Inter', sans-serif; font-weight: bold; }
+
+/* Recent Milestones Banner */
+.milestone-banner { display: flex; align-items: center; background: linear-gradient(90deg, rgba(20,20,20,0.9) 0%, rgba(30,30,30,0.8) 50%, rgba(20,20,20,0.9) 100%); border: 1px solid #333; border-left: 4px solid #ffd100; border-right: 4px solid #ffd100; border-radius: 6px; padding: 12px 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
+.milestone-icon { font-size: 24px; margin-right: 15px; animation: pulseGlow 2s infinite alternate; }
+.milestone-text { flex: 1; font-family: 'Cinzel', serif; font-size: 15px; color: #eee; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.milestone-highlight { color: #ffd100; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+.milestone-epic { color: #a335ee; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+
+/* Podium Leaderboards */
+.podium-1 { border-color: #ffd100 !important; background: linear-gradient(90deg, rgba(255, 209, 0, 0.15) 0%, rgba(0,0,0,0.6) 100%) !important; box-shadow: 0 0 15px rgba(255,209,0,0.2) !important; transform: scale(1.02); z-index: 3; margin-bottom: 10px;}
+.podium-2 { border-color: #c0c0c0 !important; background: linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, rgba(0,0,0,0.6) 100%) !important; transform: scale(1.01); z-index: 2; margin-bottom: 6px;}
+.podium-3 { border-color: #cd7f32 !important; background: linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, rgba(0,0,0,0.6) 100%) !important; z-index: 1; margin-bottom: 6px;}
+
+.view-all-btn { display: block; width: 100%; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.6); border: 1px solid; border-radius: 6px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.3s; text-align: center; }
+.view-all-btn:hover { background: rgba(255,255,255,0.05); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+/* =========================================
+   MOBILE OVERRIDE: Prevent Hero Search from Collapsing & Jumping
+   ========================================= */
+@media (max-width: 800px) {
+    .hero-search-box {
+        width: 100% !important;
+        border-radius: 25px !important;
+        cursor: text !important;
+        justify-content: flex-start !important;
+    }
+    .hero-search-box input {
+        display: block !important;
+        width: 100% !important;
+        opacity: 1 !important;
+        padding: 0 15px !important;
+        position: relative !important;
+        pointer-events: auto !important;
+        font-size: 16px !important; /* 🛑 STOPS iOS AUTO-ZOOM JUMP */
+        box-sizing: border-box !important;
+    }
+    .hero-search-box .search-icon {
+        position: relative !important;
+        left: 0 !important;
+        transform: none !important;
+        pointer-events: none !important;
+    }
+}
+
+/* =========================================
+   DESKTOP OVERRIDE: Fix the "Giant Tablet" Navbar (Keep Hamburger)
+   ========================================= */
+@media (min-width: 801px) {
+    .controls-wrapper {
+        border-radius: 0 !important; /* Kills the pill shape */
+        width: 100% !important;
+        max-width: 100% !important; /* Forces it to span the full screen */
+        padding: 12px 40px !important; /* Adds nice breathing room */
+        background: rgba(15, 15, 15, 0.95) !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        justify-content: flex-start !important; 
+    }
+
+    /* Add a little space between the hamburger and the "Select View" dropdown */
+    .custom-select-wrapper {
+        margin-left: 25px !important; 
+    }
+
+    /* Push the search bar all the way to the right side of the screen */
+    .controls-wrapper .search-container {
+        margin-left: auto !important;
+        margin-bottom: 0 !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -734,35 +822,48 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
                 <img src="asset/amw.webp" alt="Azeroths Most Wanted Logo" class="main-logo">
                 
                 <h2 style="color: #ffd100; font-family: 'Cinzel', serif; font-size: 28px; letter-spacing: 1.5px; text-shadow: 0 2px 4px #000; margin-top: 0;">Azeroths Most Wanted Armory</h2>
-                <p style="font-family: 'Marcellus', serif; max-width: 600px; margin: 0 auto 30px auto; color: #bbb; font-size: 16px;">
-                    Inspect dynamic equipment, stats, and loot history. Select a member from the dropdown or search above, or click a stat box below to filter.
+                <p style="font-family: 'Marcellus', serif; max-width: 600px; margin: 0 auto 20px auto; color: #bbb; font-size: 16px;">
+                    Search for a hero below, or select a stat box to filter the roster. Inspect dynamic equipment, stats, and guild loot history.
                 </p>
+
+                <div class="search-container" style="position: relative; max-width: 450px; margin: 0 auto 35px auto; width: 100%;">
+                    <div class="search-box hero-search-box" style="box-sizing: border-box;">
+                        <span class="search-icon" style="font-size: 18px; padding-left: 15px;">🔍</span>
+                        <input type="text" id="heroCharSearch" autocomplete="off" placeholder="Search for a guild member..." style="width: 100%; height: 46px; font-size: 16px; padding: 0 15px; box-sizing: border-box;" />
+                    </div>
+                    <div id="hero-search-autocomplete" class="search-autocomplete" style="width: 100%; top: calc(100% + 8px);"></div>
+                </div>
                 
-                <div class="stat-box-container">
-                    <div id="stat-total" class="stat-box clickable" title="Click to view all 622 members">
-                        <span class="stat-value" style="display: flex; align-items: center; justify-content: center;">
-                            622 
-                            <span style="color: #555; font-size: 16px; text-shadow: none; margin-left: 6px;">-</span>
-                        </span>
-                        <span class="stat-label">Total Roster</span>
+                <div class="stat-box-container" style="max-width: 1200px; margin: 0 auto 30px auto; z-index: 10;">
+                    <div id="stat-total" class="stat-box clickable sparkline-box" title="Click to view all members">
+                        <canvas id="spark-total" class="sparkline-canvas"></canvas>
+                        <span class="stat-value" style="position: relative; z-index: 2;">622 <span id="trend-total" class="trend-indicator"></span></span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Total Roster</span>
                     </div>
-                    <div id="stat-active" class="stat-box clickable" title="Click to view characters active within 14 days">
-                        <span class="stat-value" style="color: #2ecc71; display: flex; align-items: center; justify-content: center;">
-                            386
-                            <span style="color: #555; font-size: 16px; text-shadow: none; margin-left: 6px;">-</span>
-                        </span>
-                        <span class="stat-label">Active (14 Days)</span>
+                    <div id="stat-active" class="stat-box clickable sparkline-box" title="Click to view characters active within 14 days" style="border-bottom-color: #2ecc71;">
+                        <canvas id="spark-active" class="sparkline-canvas"></canvas>
+                        <span class="stat-value" style="color: #2ecc71; position: relative; z-index: 2;">386 <span id="trend-active" class="trend-indicator"></span></span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Active (14 Days)</span>
                     </div>
-                    <div id="stat-raidready" class="stat-box clickable" title="Click to view characters Level 70 with 110+ iLvl">
-                        <span class="stat-value" style="color: #ff8000; display: flex; align-items: center; justify-content: center;">
-                            18
-                            <span style="color: #555; font-size: 16px; text-shadow: none; margin-left: 6px;">-</span>
-                        </span>
-                        <span class="stat-label">Raid Ready</span>
+                    <div id="stat-raidready" class="stat-box clickable sparkline-box" title="Click to view Level 70s" style="border-bottom-color: #ff8000;">
+                        <canvas id="spark-ready" class="sparkline-canvas"></canvas>
+                        <span class="stat-value" style="color: #ff8000; position: relative; z-index: 2;">18 <span id="trend-ready" class="trend-indicator"></span></span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Raid Ready</span>
                     </div>
-                    <div class="stat-box" title="Average level of scanned characters">
-                        <span class="stat-value">41</span>
-                        <span class="stat-label">Average Level</span>
+                    <div id="stat-avgilvl" class="stat-box clickable" title="Click to sort Level 70s by Item Level" style="border-bottom-color: #a335ee;">
+                        <span id="home-kpi-ilvl" class="stat-value" style="color: #a335ee; position: relative; z-index: 2;">0</span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Avg Lvl 70 iLvl</span>
+                    </div>
+                    <div id="stat-hks" class="stat-box clickable" title="Click to view PvP Leaderboard" style="border-bottom-color: #ff4400;">
+                        <span id="home-kpi-hks" class="stat-value" style="color: #ff4400; position: relative; z-index: 2;">0</span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Total Guild HKs</span>
+                    </div>
+                </div>
+
+                <div id="recent-milestones-container" style="display:none; width: 100%; max-width: 1050px; margin: 0 auto 30px auto; animation: fadeInUp 0.5s forwards;">
+                    <div class="milestone-banner">
+                        <span class="milestone-icon">🌟</span>
+                        <div id="milestone-text" class="milestone-text"></div>
                     </div>
                 </div>
 
@@ -821,12 +922,14 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
 
                 <div id="leaderboards-wrapper" style="display:flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 1000px; margin: 40px auto 20px auto; justify-content: center;">
                     <div id="pve-leaderboard-container" style="display:none; flex: 1; min-width: 320px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
-                        <h3 style="font-family: 'Cinzel'; color: #ff8000; text-align: center; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 2px 4px #000;">🛡️ Top 50 Item Level 🛡️</h3>
+                        <h3 style="font-family: 'Cinzel'; color: #ff8000; text-align: center; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 2px 4px #000;">🛡️ Top 25 Item Level 🛡️</h3>
                         <div id="pve-leaderboard" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                        <button onclick="window.location.hash='ladder-pve'" class="view-all-btn" style="border-color: #ff8000; color: #ff8000;">View Full PvE Ladder ➔</button>
                     </div>
                     <div id="pvp-leaderboard-container" style="display:none; flex: 1; min-width: 320px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
-                        <h3 style="font-family: 'Cinzel'; color: #ff4400; text-align: center; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 2px 4px #000;">⚔️ Top 50 Honorable Kills ⚔️</h3>
+                        <h3 style="font-family: 'Cinzel'; color: #ff4400; text-align: center; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 2px 4px #000;">⚔️ Top 25 Honorable Kills ⚔️</h3>
                         <div id="pvp-leaderboard" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                        <button onclick="window.location.hash='ladder-pvp'" class="view-all-btn" style="border-color: #ff4400; color: #ff4400;">View Full PvP Ladder ➔</button>
                     </div>
                 </div>
             </div> 
@@ -834,15 +937,15 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
                 <h2 style="color: #ffd100; font-family: 'Cinzel', serif; text-align: center; text-shadow: 0 2px 4px #000; margin-bottom: 20px; font-size: 32px;">Guild Analytics</h2>
                 
                 <div class="stat-box-container" style="max-width: 1100px; margin: 0 auto 40px auto; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <div class="stat-box" style="border-color: #ff8000; box-shadow: inset 0 0 15px rgba(255,128,0,0.1);">
+                    <div class="stat-box clickable" onclick="window.location.hash='ladder-pve'" style="border-color: #ff8000; box-shadow: inset 0 0 15px rgba(255,128,0,0.1);" title="View Full PvE Ladder">
                         <span id="kpi-avg-ilvl" class="stat-value" style="color: #ff8000;">0</span>
                         <span class="stat-label">Avg Level 70 iLvl</span>
                     </div>
-                    <div class="stat-box" style="border-color: #a335ee; box-shadow: inset 0 0 15px rgba(163,53,238,0.1);">
+                    <div class="stat-box clickable" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});" style="border-color: #a335ee; box-shadow: inset 0 0 15px rgba(163,53,238,0.1);" title="Scroll to Activity Chart">
                         <span id="kpi-epic-loot" class="stat-value" style="color: #a335ee;">0</span>
                         <span class="stat-label">Epics Looted (7d)</span>
                     </div>
-                    <div class="stat-box" style="border-color: #ff4400; box-shadow: inset 0 0 15px rgba(255,68,0,0.1);">
+                    <div class="stat-box clickable" onclick="window.location.hash='ladder-pvp'" style="border-color: #ff4400; box-shadow: inset 0 0 15px rgba(255,68,0,0.1);" title="View Full PvP Ladder">
                         <span id="kpi-total-hks" class="stat-value" style="color: #ff4400;">0</span>
                         <span class="stat-label">Total Guild HKs</span>
                     </div>
@@ -989,18 +1092,22 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
             <div id="concise-view">
                 <h2 id="concise-view-title">Guild Overview</h2>
                 
-                <div id="concise-top-stats" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; width: 100%; max-width: 1100px; margin: 0 auto 30px auto;">
+                <div id="concise-content-wrapper" style="display: flex; flex-wrap: wrap; gap: 25px; width: 100%; max-width: 1100px; margin: 0 auto; align-items: flex-start;">
                     
-                    <div id="concise-donut-container" class="heatmap-wrapper" style="flex: 1.2; min-width: 300px; max-width: 100%; margin: 0; display: none; flex-direction: column;">
+                    <div id="concise-left-col" style="flex: 1; min-width: 300px; max-width: 350px; display: flex; flex-direction: column; gap: 20px;">
+                        <div id="concise-donut-container" class="heatmap-wrapper" style="width: 100%; max-width: 100%; margin: 0; display: none; flex-direction: column;">
                         </div>
 
-                    <div id="concise-badges-wrapper" style="flex: 2; min-width: 320px; max-width: 650px; display: flex; flex-direction: column; justify-content: center;">
-                        <div id="concise-class-badges" class="class-stat-container" style="display:none; margin-bottom: 20px; width: 100%; justify-content: center;"></div>
+                        <div id="concise-badges-wrapper" style="width: 100%; display: flex; flex-direction: column; justify-content: center;">
+                            <div id="concise-class-badges" class="class-stat-container" style="display:none; width: 100%; justify-content: center; margin-bottom: 0;"></div>
+                        </div>
+                    </div>
+
+                    <div id="concise-center-col" style="flex: 2; min-width: 300px; width: 100%;">
+                        <div id="concise-char-list"></div>
                     </div>
                     
                 </div>
-
-                <div id="concise-char-list"></div>
             </div>
 
             <div id="full-card-container" class="full-card-container"></div>
@@ -1051,10 +1158,10 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     </div>
 
     <script id="dashboard-config" type="application/json">
-        {"last_updated": "2026-03-26T15:02:15.872729Z", "active_14_days": 386, "raid_ready_count": 18}
+        {"last_updated": "2026-03-26T15:13:06.553969Z", "active_14_days": 386, "raid_ready_count": 18}
     </script>
     <script id="heatmap-data" type="application/json">
-        [{"date": "2026-03-20", "day_name": "Fri", "count": 121, "loot": 92, "levels": 29, "total_roster": null, "active_roster": null}, {"date": "2026-03-21", "day_name": "Sat", "count": 560, "loot": 453, "levels": 107, "total_roster": null, "active_roster": null}, {"date": "2026-03-22", "day_name": "Sun", "count": 664, "loot": 520, "levels": 144, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 566, "loot": 425, "levels": 141, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 563, "loot": 435, "levels": 128, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 731, "loot": 565, "levels": 166, "total_roster": 624, "active_roster": 388}, {"date": "2026-03-26", "day_name": "Thu", "count": 260, "loot": 196, "levels": 64, "total_roster": 622, "active_roster": 386}]
+        [{"date": "2026-03-20", "day_name": "Fri", "count": 121, "loot": 92, "levels": 29, "total_roster": null, "active_roster": null}, {"date": "2026-03-21", "day_name": "Sat", "count": 560, "loot": 453, "levels": 107, "total_roster": null, "active_roster": null}, {"date": "2026-03-22", "day_name": "Sun", "count": 664, "loot": 520, "levels": 144, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 566, "loot": 425, "levels": 141, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 563, "loot": 435, "levels": 128, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 731, "loot": 565, "levels": 166, "total_roster": 624, "active_roster": 388}, {"date": "2026-03-26", "day_name": "Thu", "count": 280, "loot": 214, "levels": 66, "total_roster": 622, "active_roster": 386}]
     </script>
 
     <script>
@@ -1193,6 +1300,38 @@ window.addEventListener('DOMContentLoaded', async () => {
     const searchInput = document.getElementById('charSearch');
     const searchAutoComplete = document.getElementById('search-autocomplete');
     
+    const heroSearchInput = document.getElementById('heroCharSearch');
+    const heroSearchAutoComplete = document.getElementById('hero-search-autocomplete');
+    
+    if (heroSearchInput) {
+        heroSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query === '') { heroSearchAutoComplete.classList.remove('show'); return; }
+            const results = rosterData.filter(c => c.profile && c.profile.name && c.profile.name.toLowerCase().includes(query)).slice(0, 6);
+            if (results.length > 0) {
+                heroSearchAutoComplete.innerHTML = results.map(c => {
+                    const cClass = getCharClass(c);
+                    const cHex = CLASS_COLORS[cClass] || '#fff';
+                    return `
+                        <div class="autocomplete-item" onclick="selectCharacter('${c.profile.name.toLowerCase()}')" style="border-left: 3px solid ${cHex}; padding: 12px;">
+                            <img src="${c.render_url || getClassIcon(cClass)}" class="ac-icon" style="border-color: ${cHex};">
+                            <div class="ac-info"><span class="ac-name" style="color: ${cHex}; font-size: 16px;">${c.profile.name}</span><span class="ac-meta">Level ${c.profile.level} ${cClass}</span></div>
+                        </div>`;
+                }).join('');
+                heroSearchAutoComplete.classList.add('show');
+            } else {
+                heroSearchAutoComplete.classList.remove('show');
+            }
+        });
+        heroSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = e.target.value.toLowerCase().trim();
+                const results = rosterData.filter(c => c.profile && c.profile.name && c.profile.name.toLowerCase().includes(query));
+                if (results.length > 0) window.location.hash = results[0].profile.name.toLowerCase();
+            }
+        });
+    }
+
     // NEW: Force mobile keyboards to open when tapping the collapsed search icon
     const searchBox = document.querySelector('.search-box');
     if (searchBox && searchInput) {
@@ -1200,7 +1339,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             searchInput.focus();
         });
     }
-
+    
     const customSelect = document.getElementById('customCharSelect');
     const customOptions = document.getElementById('customCharOptions');
     const selectValueText = customSelect ? customSelect.querySelector('.selected-value') : null;
@@ -1487,7 +1626,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const topPve = rosterData
         .filter(c => c.profile && (c.profile.equipped_item_level || 0) > 0)
         .sort((a, b) => (b.profile.equipped_item_level || 0) - (a.profile.equipped_item_level || 0))
-        .slice(0, 50);
+        .slice(0, 25);
 
     if (topPve.length > 0 && pveContainer) {
         pveWrapper.style.display = 'block';
@@ -1501,19 +1640,13 @@ window.addEventListener('DOMContentLoaded', async () => {
             const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" style="width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 3px; border: 1px solid #222;">` : '';
             const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
 
+            let podiumClass = index === 0 ? 'podium-1' : index === 1 ? 'podium-2' : index === 2 ? 'podium-3' : '';
             const rankColor = index === 0 ? '#ffd100' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#777';
             const rankSize = index < 3 ? '18px' : '15px';
-            const ilvl = p.equipped_item_level || 0;
             const portraitURL = char.render_url || getClassIcon(cClass);
 
-            // --- NEW: Trend Arrow Logic for PvE ---
-            const trend = p.trend_pve || 0; 
-            let trendHTML = '<span style="color: #555; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">-</span>';
-            if (trend > 0) trendHTML = `<span style="color: #2ecc71; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▲ ${trend}</span>`;
-            else if (trend < 0) trendHTML = `<span style="color: #e74c3c; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▼ ${Math.abs(trend)}</span>`;
-
             pveHTML += `
-            <div class="pvp-row tt-char" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px;">
+            <div class="pvp-row tt-char ${podiumClass}" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px;">
                 <div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000;">#${index + 1}</div>
                 <img src="${portraitURL}" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid ${cHex}; object-fit: cover; margin-right: 12px;">
                 <div style="flex: 1; display: flex; flex-direction: column;">
@@ -1521,8 +1654,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                     <span style="color: #aaa; font-size: 10px; font-style: italic;">${specIconHtml}${displaySpecClass}</span>
                 </div>
                 <div style="display: flex; align-items: center; color: #ff8000; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000;">
-                    ${ilvl} <span style="font-size:10px; color:#888; margin-left: 3px;">iLvl</span>
-                    ${trendHTML}
+                    ${p.equipped_item_level || 0} <span style="font-size:10px; color:#888; margin-left: 3px;">iLvl</span>
                 </div>
             </div>`;
         });
@@ -1535,7 +1667,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const topPvp = rosterData
         .filter(c => c.profile && (c.profile.honorable_kills || 0) > 0)
         .sort((a, b) => (b.profile.honorable_kills || 0) - (a.profile.honorable_kills || 0))
-        .slice(0, 50);
+        .slice(0, 25); // Changed to Top 25
 
     if (topPvp.length > 0 && pvpContainer) {
         pvpWrapper.style.display = 'block';
@@ -1549,19 +1681,20 @@ window.addEventListener('DOMContentLoaded', async () => {
             const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" style="width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 3px; border: 1px solid #222;">` : '';
             const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
 
+            let podiumClass = index === 0 ? 'podium-1' : index === 1 ? 'podium-2' : index === 2 ? 'podium-3' : '';
             const rankColor = index === 0 ? '#ffd100' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#777';
             const rankSize = index < 3 ? '18px' : '15px';
             const hkCount = (p.honorable_kills || 0).toLocaleString();
             const portraitURL = char.render_url || getClassIcon(cClass);
 
-            // --- NEW: Trend Arrow Logic for PvP ---
+            // --- Trend Arrow Logic for PvP ---
             const trend = p.trend_pvp || 0; 
             let trendHTML = '<span style="color: #555; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">-</span>';
             if (trend > 0) trendHTML = `<span style="color: #2ecc71; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▲ ${trend}</span>`;
             else if (trend < 0) trendHTML = `<span style="color: #e74c3c; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▼ ${Math.abs(trend)}</span>`;
 
             pvpHTML += `
-            <div class="pvp-row tt-char" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px;">
+            <div class="pvp-row tt-char ${podiumClass}" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px;">
                 <div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000;">#${index + 1}</div>
                 <img src="${portraitURL}" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid ${cHex}; object-fit: cover; margin-right: 12px;">
                 <div style="flex: 1; display: flex; flex-direction: column;">
@@ -1991,10 +2124,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         `;
 
         // Generate the HTML for the list
-        let listHTML = sortedCharacters.map(char => {
+        let listHTML = sortedCharacters.map((char, index) => {
             let statLabel = currentSortMethod === 'hks' ? 'HKs' : 'iLvl';
             
-            // 1. Identify if we have a deep profile (scanned data) or just raw roster data
+            // 1. Identify if we have a deep profile
             let deepChar = isRawMode ? rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === char.name.toLowerCase()) : char;
             
             // 2. Setup Variables
@@ -2006,7 +2139,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             let statValue = '???';
             let statColor = 'color:#666;';
 
-            // 3. Populate Variables based on data availability
+            // 3. Populate Variables
             if (deepChar && deepChar.profile) {
                 const p = deepChar.profile;
                 isClickable = true;
@@ -2026,7 +2159,6 @@ window.addEventListener('DOMContentLoaded', async () => {
                 statValue = currentSortMethod === 'hks' ? (p.honorable_kills || 0).toLocaleString() : (p.equipped_item_level || 0);
                 statColor = currentSortMethod === 'hks' ? 'color: #ff4400;' : '';
             } else {
-                // Fallback for characters lacking a deep scan (e.g., levels 1-9)
                 displayName = char.name || 'Unknown';
                 cClass = char.class || 'Unknown';
                 raceName = char.race || 'Unknown';
@@ -2036,10 +2168,24 @@ window.addEventListener('DOMContentLoaded', async () => {
                 displaySpecClass = cClass;
             }
 
-            // 4. Render the unified HTML
+            // NEW: Inject Podium Classes & Rank Number if we are on a Ladder View
+            const hash = window.location.hash.substring(1);
+            const isLadderView = hash === 'ladder-pve' || hash === 'ladder-pvp';
+            let podiumClass = '';
+            let rankHtml = '';
+            
+            if (isLadderView) {
+                podiumClass = index === 0 ? 'podium-1' : index === 1 ? 'podium-2' : index === 2 ? 'podium-3' : '';
+                const rankColor = index === 0 ? '#ffd100' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#777';
+                const rankSize = index < 3 ? '18px' : '15px';
+                rankHtml = `<div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000; margin-right: 10px; display: flex; align-items: center; justify-content: center;">#${index + 1}</div>`;
+            }
+
+            // 4. Render the HTML
             if (!isClickable) {
                 return `
-                <div class="concise-char-bar" data-class="${cClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default;">
+                <div class="concise-char-bar ${podiumClass}" data-class="${cClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default;">
+                    ${rankHtml}
                     <div class="c-main-info">
                         <img src="${portraitURL}" class="c-portrait" loading="lazy" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
                         <span class="c-name" style="color:${cHex};">${displayName}</span>
@@ -2053,7 +2199,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
 
             return `
-            <a href="javascript:void(0)" onclick="selectCharacter('${displayName.toLowerCase()}')" class="concise-char-bar tt-char" data-char="${displayName.toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex};">
+            <a href="javascript:void(0)" onclick="selectCharacter('${displayName.toLowerCase()}')" class="concise-char-bar tt-char ${podiumClass}" data-char="${displayName.toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex};">
+                ${rankHtml}
                 <div class="c-main-info">
                     <img src="${portraitURL}" class="c-portrait" loading="lazy" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
                     <span class="c-name" style="color:${cHex};">${displayName}</span>
@@ -2638,33 +2785,96 @@ window.addEventListener('DOMContentLoaded', async () => {
         hideAllViews();
         emptyState.style.display = 'block';
         if (navbar) navbar.style.background = 'rgba(15, 15, 15, 0.85)';
-        if (timeline) {
-            timeline.style.display = 'block';
-            timelineTitle.innerHTML = "📜 Guild Recent Activity";
-            window.currentFilteredChars = null; 
-            applyTimelineFilters();
-        }
+        if (timeline) { timeline.style.display = 'block'; timelineTitle.innerHTML = "📜 Guild Recent Activity"; window.currentFilteredChars = null; applyTimelineFilters(); }
         
         const specContainer = document.getElementById('home-spec-container');
         if (specContainer) specContainer.style.display = 'none';
         document.querySelectorAll('.clickable-class').forEach(b => b.classList.remove('active-filter'));
         window.activeClassExpanded = null;
-        
-        tlSpecificDate = null;
-        document.querySelectorAll('.tt-heatmap').forEach(c => c.classList.remove('selected-date'));
         updateDropdownLabel('all');
+
+        // Populate New KPIs
+        let totalIlvl = 0, lvl70Count = 0, totalHks = 0;
+        rosterData.forEach(c => {
+            if (c.profile) {
+                if (c.profile.level === 70 && c.profile.equipped_item_level) { totalIlvl += c.profile.equipped_item_level; lvl70Count++; }
+                if (c.profile.honorable_kills) totalHks += c.profile.honorable_kills;
+            }
+        });
+        const kpiIlvl = document.getElementById('home-kpi-ilvl');
+        if (kpiIlvl) kpiIlvl.innerText = lvl70Count > 0 ? Math.round(totalIlvl / lvl70Count) : 0;
+        const kpiHks = document.getElementById('home-kpi-hks');
+        if (kpiHks) kpiHks.innerText = totalHks >= 1000000 ? (totalHks/1000000).toFixed(1) + 'M' : totalHks.toLocaleString();
+
+        document.getElementById('stat-avgilvl').onclick = () => { window.location.hash = 'ladder-pve'; };
+        document.getElementById('stat-hks').onclick = () => { window.location.hash = 'ladder-pvp'; };
+
+        // "Yesterday" Sparklines & Math
+        if (heatmapData && heatmapData.length >= 2) {
+            const today = heatmapData[heatmapData.length - 1];
+            const yesterday = heatmapData[heatmapData.length - 2];
+            
+            function applyTrend(elementId, todayVal, yestVal) {
+                const el = document.getElementById(elementId);
+                if (!el || yestVal == null) return;
+                const diff = todayVal - yestVal;
+                if (diff > 0) el.innerHTML = `<span style="color:#2ecc71;">▲ ${diff}</span>`;
+                else if (diff < 0) el.innerHTML = `<span style="color:#e74c3c;">▼ ${Math.abs(diff)}</span>`;
+                else el.innerHTML = `<span style="color:#555;">-</span>`;
+            }
+
+            applyTrend('trend-total', today.total_roster, yesterday.total_roster);
+            applyTrend('trend-active', today.active_roster, yesterday.active_roster);
+            // Raid Ready math isn't stored historically in heatmapData, so we leave it static or estimate it
+
+            // Draw Sparklines
+            function drawSpark(canvasId, dataKey, colorStr) {
+                const ctx = document.getElementById(canvasId);
+                if (!ctx) return;
+                const dataPoints = heatmapData.map(d => d[dataKey] || 0);
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: heatmapData.map(d => d.day_name), datasets: [{ data: dataPoints, borderColor: colorStr, borderWidth: 2, tension: 0.4, pointRadius: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false, min: Math.min(...dataPoints) * 0.95 } } }
+                });
+            }
+            drawSpark('spark-total', 'total_roster', 'rgba(255, 209, 0, 0.5)');
+            drawSpark('spark-active', 'active_roster', 'rgba(46, 204, 113, 0.5)');
+        }
+
+        // Recent Milestones logic
+        if (timelineData && timelineData.length > 0) {
+            const milestoneCont = document.getElementById('recent-milestones-container');
+            const milestoneText = document.getElementById('milestone-text');
+            // Find the most recent Epic/Legendary loot OR Level 70
+            const recent = timelineData.find(e => 
+                (e.type === 'item' && (e.item_quality === 'EPIC' || e.item_quality === 'LEGENDARY')) || 
+                (e.type === 'level_up' && e.level === 70)
+            );
+            if (recent) {
+                milestoneCont.style.display = 'block';
+                const charName = `<span class="milestone-highlight">${recent.character_name}</span>`;
+                if (recent.type === 'level_up') {
+                    milestoneText.innerHTML = `Congratulations to ${charName} for reaching <span class="milestone-highlight">Level 70!</span> 🎉`;
+                } else {
+                    const qClass = recent.item_quality === 'LEGENDARY' ? 'color:#ff8000;' : 'color:#a335ee;';
+                    milestoneText.innerHTML = `${charName} just looted <a href="https://www.wowhead.com/wotlk/item=${recent.item_id}" target="_blank" style="${qClass} font-weight:bold; text-decoration:none;">[${recent.item_name}]</a>!`;
+                }
+            }
+        }
     }
 
     window.selectCharacter = function(charName) {
         window.location.hash = charName;
     }
 
-    function showConciseView(title, characters, isRawRoster = false, showBadges = true) {
+    // Added defaultSort parameter to override the standard "level" start
+    function showConciseView(title, characters, isRawRoster = false, showBadges = true, defaultSort = 'level') {
         hideAllViews();
         conciseView.style.display = 'flex';
         if (navbar) navbar.style.background = '#111';
         
-        currentSortMethod = 'level';
+        currentSortMethod = defaultSort; // Apply the requested sort method immediately
         renderConciseList(title, characters, isRawRoster);
         
         window.currentFilteredChars = characters.map(c => {
@@ -2683,17 +2893,41 @@ window.addEventListener('DOMContentLoaded', async () => {
         const hash = window.location.hash.substring(1);
         const donutContainer = document.getElementById('concise-donut-container');
         
-        if (hash === 'total' || hash === 'active' || hash === 'raidready') {
+        // Expanded array of views that get charts
+        const chartViews = ['total', 'active', 'raidready', 'ladder-pve', 'ladder-pvp'];
+
+        if (chartViews.includes(hash)) {
             if (donutContainer) {
                 donutContainer.style.display = 'flex';
                 donutContainer.style.flexDirection = 'column';
                 donutContainer.style.alignItems = 'center';
                 donutContainer.style.gap = '20px';
                 
-                let kpiHtml = '';
+               let kpiHtml = '';
                 if (hash === 'raidready') {
                     const avgIlvl = Math.round(characters.reduce((sum, c) => sum + ((c.profile && c.profile.equipped_item_level) || 0), 0) / characters.length) || 0;
                     kpiHtml = `<div class="stat-box" style="margin-bottom: 5px; min-width: 200px; border-color: #ff8000;"><span class="stat-value" style="color:#ff8000;">${avgIlvl}</span><span class="stat-label">Average iLvl</span></div>`;
+                } else if (hash === 'ladder-pve') {
+                    const avgIlvl = Math.round(characters.reduce((sum, c) => sum + ((c.profile && c.profile.equipped_item_level) || 0), 0) / characters.length) || 0;
+                    
+                    const lvl70s = characters.filter(c => {
+                        const p = isRawRoster ? rosterData.find(deep => deep.profile?.name?.toLowerCase() === (c.name || '').toLowerCase())?.profile : c.profile;
+                        return p && p.level === 70;
+                    });
+                    const avgLvl70Ilvl = lvl70s.length > 0 ? Math.round(lvl70s.reduce((sum, c) => {
+                        const p = isRawRoster ? rosterData.find(deep => deep.profile?.name?.toLowerCase() === (c.name || '').toLowerCase())?.profile : c.profile;
+                        return sum + ((p && p.equipped_item_level) || 0);
+                    }, 0) / lvl70s.length) : 0;
+                    
+                    kpiHtml = `
+                        <div style="display:flex; gap:15px; margin-bottom: 5px; flex-wrap: wrap; justify-content:center;">
+                            <div class="stat-box" style="border-color: #ff8000;"><span class="stat-value" style="color:#ff8000;">${avgIlvl}</span><span class="stat-label">Avg iLvl</span></div>
+                            <div class="stat-box" style="border-color: #a335ee;"><span class="stat-value" style="color:#a335ee;">${avgLvl70Ilvl}</span><span class="stat-label">Avg Lvl 70 iLvl</span></div>
+                        </div>`;
+                } else if (hash === 'ladder-pvp') {
+                    const totalHks = characters.reduce((sum, c) => sum + ((c.profile && c.profile.honorable_kills) || 0), 0) || 0;
+                    const displayHks = totalHks >= 1000000 ? (totalHks/1000000).toFixed(1) + 'M' : totalHks.toLocaleString();
+                    kpiHtml = `<div class="stat-box" style="margin-bottom: 5px; min-width: 200px; border-color: #ff4400;"><span class="stat-value" style="color:#ff4400;">${displayHks}</span><span class="stat-label">Total HKs</span></div>`;
                 } else if (hash === 'active' || hash === 'total') {
                     // Match raw roster names to deep profile roster to get accurate levels and iLvls
                     const avgLvl = Math.round(characters.reduce((sum, c) => {
@@ -2719,21 +2953,21 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 let chartsHtml = kpiHtml + `<div style="display:flex; gap: 30px; flex-wrap: wrap; justify-content: center; width: 100%;">`;
-                if (hash === 'raidready') {
-                    chartsHtml += `<div style="flex: 1; min-width: 280px; max-width: 350px; height: 280px; position: relative;"><h4 style="text-align:center; color:#ffd100; font-family:'Cinzel'; margin-top:0;">Raid Roles</h4><canvas id="conciseRoleChart"></canvas></div>`;
-                } else {
-                    chartsHtml += `<div style="flex: 1; min-width: 280px; max-width: 350px; height: 280px; position: relative;"><h4 style="text-align:center; color:#ffd100; font-family:'Cinzel'; margin-top:0;">Raid Roles</h4><canvas id="conciseRoleChart"></canvas></div>`;
-                    chartsHtml += `<div style="flex: 1; min-width: 280px; max-width: 350px; height: 280px; position: relative;"><h4 style="text-align:center; color:#ffd100; font-family:'Cinzel'; margin-top:0;">Class Distribution</h4><canvas id="conciseClassChart"></canvas></div>`;
-                }
-                chartsHtml += `</div>`;
                 
+                // Show Roles on everything.
+                chartsHtml += `<div style="flex: 1; min-width: 280px; max-width: 350px; height: 280px; position: relative;"><h4 style="text-align:center; color:#ffd100; font-family:'Cinzel'; margin-top:0;">Raid Roles</h4><canvas id="conciseRoleChart"></canvas></div>`;
+                
+                // Show Class Distribution
+                chartsHtml += `<div style="flex: 1; min-width: 280px; max-width: 350px; height: 280px; position: relative;"><h4 style="text-align:center; color:#ffd100; font-family:'Cinzel'; margin-top:0;">Class Distribution</h4><canvas id="conciseClassChart"></canvas></div>`;
+
+                chartsHtml += `</div>`;
                 donutContainer.innerHTML = chartsHtml;
 
                 if (window.conciseRoleChartInstance) window.conciseRoleChartInstance.destroy();
                 if (window.conciseClassChartInstance) window.conciseClassChartInstance.destroy();
 
                 window.conciseRoleChartInstance = drawRoleChart('conciseRoleChart', characters, isRawRoster);
-                if (hash !== 'raidready') window.conciseClassChartInstance = createDonutChart('conciseClassChart', characters, isRawRoster);
+                window.conciseClassChartInstance = createDonutChart('conciseClassChart', characters, isRawRoster);
             }
         } else {
             if (donutContainer) donutContainer.style.display = 'none';
@@ -2892,7 +3126,23 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             showConciseView(`Raid Role: ${targetRoleName}s (${filteredRoster.length})`, filteredRoster, false, true);
             updateDropdownLabel('all');
+
+        } else if (hash === 'ladder-pve') {
+            const sortedPve = [...rosterData].filter(c => c.profile && (c.profile.equipped_item_level || 0) > 0)
+                .sort((a, b) => (b.profile.equipped_item_level || 0) - (a.profile.equipped_item_level || 0));
+            // Passed 'true' for Badges, and 'ilvl' for the default sort!
+            showConciseView(`Full PvE Ladder (${sortedPve.length})`, sortedPve, false, true, 'ilvl');
+            updateDropdownLabel('all');
+            
+        } else if (hash === 'ladder-pvp') {
+            const sortedPvp = [...rosterData].filter(c => c.profile && (c.profile.honorable_kills || 0) > 0)
+                .sort((a, b) => (b.profile.honorable_kills || 0) - (a.profile.honorable_kills || 0));
+            // Passed 'true' for Badges, and 'hks' for the default sort!
+            showConciseView(`Full PvP Ladder (${sortedPvp.length})`, sortedPvp, false, true, 'hks');
+            updateDropdownLabel('all');
+            
         } else {
+            // Final fallback: Look for a specific character
             const char = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === hash);
             if (char) {
                 showFullCardView(hash);
