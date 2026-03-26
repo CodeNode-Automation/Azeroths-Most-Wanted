@@ -1711,6 +1711,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         }
+		
+		// Trigger the MVP render
+        if (typeof renderMVPs === 'function') renderMVPs();
     }
 
     window.selectCharacter = function(charName) {
@@ -2567,6 +2570,69 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    // ==========================================
+    // ROLLING 7-DAY MVP LOGIC
+    // ==========================================
+    window.renderMVPs = function() {
+        const mvpContainer = document.getElementById('weekly-mvps-container');
+        const mvpPveList = document.getElementById('mvp-pve-list');
+        const mvpPvpList = document.getElementById('mvp-pvp-list');
+        
+        if (!mvpContainer || !mvpPveList || !mvpPvpList) return;
+
+        // Sort for PvE (Biggest positive trend_pve / trend_ilvl)
+        const topTrendPve = [...rosterData]
+            .filter(c => c.profile && (c.profile.trend_pve || c.profile.trend_ilvl || 0) > 0)
+            .sort((a, b) => (b.profile.trend_pve || b.profile.trend_ilvl || 0) - (a.profile.trend_pve || a.profile.trend_ilvl || 0))
+            .slice(0, 3);
+
+        // Sort for PvP (Biggest positive trend_pvp / trend_hks)
+        const topTrendPvp = [...rosterData]
+            .filter(c => c.profile && (c.profile.trend_pvp || c.profile.trend_hks || 0) > 0)
+            .sort((a, b) => (b.profile.trend_pvp || b.profile.trend_hks || 0) - (a.profile.trend_pvp || a.profile.trend_hks || 0))
+            .slice(0, 3);
+
+        // If no one made any progress this week, hide the banner
+        if (topTrendPve.length === 0 && topTrendPvp.length === 0) {
+            mvpContainer.style.display = 'none';
+            return;
+        }
+        
+        mvpContainer.style.display = 'block';
+
+        function generateMvpHtml(chars, isPvp) {
+            if (chars.length === 0) return `<div style="text-align:center; color:#888; font-style:italic; font-size: 13px; padding: 10px;">No positive trends this week.</div>`;
+            
+            return chars.map((char, index) => {
+                const p = char.profile;
+                const cClass = getCharClass(char);
+                const cHex = CLASS_COLORS[cClass] || '#fff';
+                const portraitURL = char.render_url || getClassIcon(cClass);
+                const trend = isPvp ? (p.trend_pvp || p.trend_hks || 0) : (p.trend_pve || p.trend_ilvl || 0);
+                const label = isPvp ? 'HKs' : 'iLvl';
+                
+                // Re-use our awesome Podium CSS classes!
+                const podiumClass = index === 0 ? 'podium-1' : index === 1 ? 'podium-2' : 'podium-3';
+                const rankColor = index === 0 ? '#ffd100' : index === 1 ? '#c0c0c0' : '#cd7f32';
+                
+                return `
+                <div class="pvp-row tt-char ${podiumClass}" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px; margin-bottom: 0;">
+                    <div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: 18px; width: 30px; text-shadow: 1px 1px 2px #000;">#${index + 1}</div>
+                    <img src="${portraitURL}" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid ${cHex}; object-fit: cover; margin-right: 12px;">
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <span style="color: ${cHex}; font-family: 'Cinzel'; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px #000;">${p.name}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; color: #2ecc71; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000;">
+                        ▲ ${trend.toLocaleString()} <span style="font-size:10px; color:#888; margin-left: 3px;">${label}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        mvpPveList.innerHTML = generateMvpHtml(topTrendPve, false);
+        mvpPvpList.innerHTML = generateMvpHtml(topTrendPvp, true);
+    };
 
     route();
     window.addEventListener('hashchange', route);
