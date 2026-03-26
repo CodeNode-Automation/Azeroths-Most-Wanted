@@ -143,15 +143,22 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
 
     nav_controls = f"""
         <div class="controls-wrapper">
-            <a href="javascript:void(0)" onclick="returnToHome()" class="nav-btn nav-btn-home" title="Return to guild stats page">
-              🛡️<span class="home-text"> Armory Home</span>
-            </a>
-            <a href="#analytics" class="nav-btn nav-btn-home" title="View Guild Analytics" style="margin-left: 10px;">
-              📊<span class="home-text"> Analytics</span>
-            </a>
-            <a href="#architecture" class="nav-btn nav-btn-home" title="How the Website Works" style="margin-left: 10px;">
-              ⚙️<span class="home-text"> Architecture</span>
-            </a>
+            <button class="mobile-menu-toggle" aria-label="Toggle Menu">
+                <span></span><span></span><span></span>
+            </button>
+            
+            <div class="nav-links-container">
+                <a href="javascript:void(0)" onclick="returnToHome()" class="nav-btn nav-btn-home" title="Return to guild stats page">
+                  🛡️<span class="home-text"> Armory Home</span>
+                </a>
+                <a href="#analytics" class="nav-btn nav-btn-home" title="View Guild Analytics">
+                  📊<span class="home-text"> Analytics</span>
+                </a>
+                <a href="#architecture" class="nav-btn nav-btn-home" title="How the Website Works">
+                  ⚙️<span class="home-text"> Architecture</span>
+                </a>
+            </div>
+
             <div class="custom-select-wrapper" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="customCharOptions">
                 <div class="custom-select" id="customCharSelect" tabindex="0">
                     <span class="selected-value">Select View...</span>
@@ -169,6 +176,7 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
                     </div>
                 </div>
             </div>
+            
             <div class="search-container">
                 <div class="search-box">
                     <span class="search-icon">🔍</span>

@@ -69,10 +69,22 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
 
 /* Navbar & Navigation Buttons */
 .navbar { position: sticky; top: 0; width: 100%; z-index: 100; background: rgba(15, 15, 15, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid #333; display: flex; justify-content: center; align-items: center; padding: 10px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
-.controls-wrapper { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center; position: relative; width: 100%; max-width: 1400px; }
+.controls-wrapper { display: flex; gap: 15px; align-items: center; flex-wrap: nowrap; justify-content: space-between; position: relative; width: 100%; max-width: 1400px; }
 .nav-btn { text-decoration: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 6px; font-size: 14px; transition: 0.3s; color: white; cursor: pointer; white-space: nowrap; }
-.nav-btn-home { background: repeating-linear-gradient(45deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px), linear-gradient(135deg, #1f1f1f, #0a0a0a); border: 1px solid #444; color: #ffd100; font-family: 'Cinzel'; }
+.nav-btn-home { background: repeating-linear-gradient(45deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px), linear-gradient(135deg, #1f1f1f, #0a0a0a); border: 1px solid #444; color: #ffd100; font-family: 'Cinzel'; margin-left: 0 !important; width: 90%; justify-content: flex-start; }
 .nav-btn-home:hover { border-color: #ffd100; box-shadow: 0 0 10px rgba(255,209,0,0.3); transform: translateY(-1px); }
+.home-text { display: inline; }
+
+/* Universal Hamburger Menu Activation */
+.mobile-menu-toggle { display: flex; flex-direction: column; justify-content: space-around; width: 28px; height: 22px; background: transparent; border: none; cursor: pointer; padding: 0; z-index: 120; position: relative; }
+.mobile-menu-toggle span { width: 28px; height: 3px; background: #ffd100; border-radius: 10px; transition: all 0.3s linear; position: relative; transform-origin: 1px; }
+.mobile-menu-toggle.open span:nth-child(1) { transform: rotate(45deg); }
+.mobile-menu-toggle.open span:nth-child(2) { opacity: 0; }
+.mobile-menu-toggle.open span:nth-child(3) { transform: rotate(-45deg); }
+
+/* Universal Slide-out Sidebar */
+.nav-links-container { position: fixed; top: 0; left: -100%; height: 100vh; width: 250px; flex-direction: column; background: rgba(15, 15, 15, 0.98); backdrop-filter: blur(10px); border-right: 1px solid #333; padding-top: 80px; padding-left: 20px; align-items: flex-start; transition: left 0.3s ease-in-out; z-index: 110; box-shadow: 5px 0 15px rgba(0,0,0,0.8); display: flex; gap: 10px; }
+.nav-links-container.open { left: 0; }
 
 /* Custom Dropdown Menu */
 .custom-select-wrapper { position: relative; user-select: none; font-family: 'Cinzel'; z-index: 105; cursor: url('https://wow.zamimg.com/images/wow/cursor/select.png'), pointer !important; }
@@ -201,7 +213,10 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
 .event-box img { width: 18px; height: 18px; border-radius: 4px; border: 1px solid #111; }
 .event-box span { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.dashboard-footer { text-align: center; padding: 40px; color: #666; font-size: 14px; width: 100%; border-top: 1px solid #222; margin-top: 40px; clear: both; }
+.dashboard-footer { text-align: center; padding: 40px 20px; color: #666; font-size: 13px; width: 100%; border-top: 1px solid #222; margin-top: 40px; clear: both; background: rgba(10, 10, 10, 0.8); }
+.footer-tech-stack { font-family: 'Cinzel', serif; color: #aaa; font-size: 14px; margin-bottom: 12px; letter-spacing: 1px; }
+.footer-update-info { margin-bottom: 25px; font-size: 13px; color: #888; }
+.footer-disclaimer { max-width: 800px; margin: 0 auto; font-size: 11px; line-height: 1.6; color: #444; font-style: italic; }
 
 /* 📱 Responsive Layout Shifts 📱 */
 @media (max-width: 1050px) { 
@@ -221,36 +236,54 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
     .c-stats-info { width: 100%; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
     .stat-badge { min-width: 80px; padding: 6px 10px; } 
     .gear-grid-container { grid-template-columns: 1fr; }
+    
+    /* 🔥 NEW FIXES: Override inline HTML widths to prevent horizontal overflow */
+    .heatmap-wrapper, 
+    #pve-leaderboard-container, 
+    #pvp-leaderboard-container,
+    #concise-badges-wrapper,
+    #concise-donut-container {
+        min-width: 100% !important; 
+        max-width: 100% !important; 
+        width: 100% !important; 
+        flex: 1 1 100% !important; 
+        box-sizing: border-box;
+    }
+    
+    /* 🔥 NEW FIXES: Force KPI stat boxes to wrap into a 2x2 grid instead of squishing */
+    .stat-box { 
+        min-width: 45% !important; 
+        flex: 1 1 45% !important; 
+    }
 }
 
-/* Expanding Mobile Search Bar & Navbar layout */
-@media (max-width: 700px) {
+/* 🔥 NEW FIX: Kill phantom hover tooltips on touch devices (phones/tablets) */
+@media (hover: none) and (pointer: coarse), (max-width: 800px) {
+    .custom-tooltip {
+        display: none !important;
+    }
+}
+
+/* Expanding Mobile Search Bar layout */
+@media (max-width: 850px) {
     .navbar { padding: 10px; }
-    .controls-wrapper { justify-content: space-between; flex-wrap: nowrap; gap: 8px; }
-    .home-text { display: none; }
-    .nav-btn-home { padding: 8px 12px; }
+    .controls-wrapper { gap: 8px; }
     
-    .custom-select { min-width: 0; width: 160px; padding: 8px 12px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* Shrink the dropdown to fit next to the hamburger */
+    .custom-select { min-width: 0; width: 140px; padding: 8px 12px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
+    /* Search Bar Collapse Logic & Z-Index Fix */
     .search-box { padding: 0; width: 38px; border-radius: 20px; overflow: hidden; justify-content: center; }
     .search-box input { width: 0; padding: 0; opacity: 0; cursor: pointer; }
     .search-icon { padding: 8px; cursor: pointer; }
     
-    .search-container { position: static; }
+    /* 🔥 THE FIX: Elevate the parent container's flex z-index so it escapes the trap */
+    .search-container { position: static; z-index: 130; }
+    .search-container:focus-within { z-index: 9999; }
     
-    .search-box:focus-within { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 100%; height: 42px; z-index: 110; background: rgba(10,10,10,0.95); box-shadow: 0 5px 15px rgba(0,0,0,0.9); border-color: #ffd100; justify-content: flex-start; padding: 0 15px; }
+    .search-box:focus-within { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 100%; height: 42px; z-index: 9999; background: rgba(10,10,10,0.98); box-shadow: 0 5px 15px rgba(0,0,0,0.9); border-color: #ffd100; justify-content: flex-start; padding: 0 15px; }
     .search-box:focus-within input { width: 100%; padding: 0 10px; opacity: 1; cursor: text; }
-    .search-autocomplete { width: 100%; top: calc(100% + 5px); }
-}
-
-/* 🕸️ Breathing animation for the corner spiderwebs */
-.corner-web {
-    animation: breatheWeb 6s ease-in-out infinite alternate;
-}
-
-@keyframes breatheWeb {
-    0% { opacity: 0.3; transform: scale(0.98); filter: drop-shadow(0 0 5px rgba(163, 53, 238, 0.2)); }
-    100% { opacity: 0.7; transform: scale(1.02); filter: drop-shadow(0 0 15px rgba(163, 53, 238, 0.6)); }
+    .search-autocomplete { width: 100%; top: calc(100% + 5px); z-index: 10000; }
 }
 
 /* =========================================
@@ -324,17 +357,20 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
 /* 4. Swipeable Class Badges on Mobile */
 @media (max-width: 600px) {
     .class-stat-container {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        justify-content: flex-start;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        justify-content: flex-start !important; /* Prevents center-locking the scroll */
         padding-bottom: 15px;
-        /* Hide scrollbar for a clean UI */
+        padding-left: 20px;
+        padding-right: 20px;
         -ms-overflow-style: none;
         scrollbar-width: none;
         scroll-snap-type: x mandatory;
     }
-    .class-stat-container::-webkit-scrollbar {
-        display: none;
+    .class-stat-container::-webkit-scrollbar { display: none; }
+    .stat-badge {
+        flex: 0 0 auto !important;
+        scroll-snap-align: center;
     }
     .stat-badge {
         flex: 0 0 auto; /* Prevent badges from shrinking */
