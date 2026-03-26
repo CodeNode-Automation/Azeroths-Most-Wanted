@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timezone, timedelta
 from jinja2 import Environment, FileSystemLoader
 
-def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, raw_guild_roster=None, roster_history=None):
+def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, raw_guild_roster=None, roster_history=None, prev_mvps=None):
     """
     Generates the interactive, high-performance HTML dashboard utilizing Jinja2 templates.
     """
@@ -242,7 +242,8 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
     dashboard_config = {
         "last_updated": last_updated_iso,
         "active_14_days": active_14_days,
-        "raid_ready_count": raid_ready_count
+        "raid_ready_count": raid_ready_count,
+        "prev_mvps": prev_mvps
     }
     safe_config = json.dumps(dashboard_config)
 

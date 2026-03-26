@@ -132,8 +132,14 @@ async def main_async():
 
         print("📂 Fetching historical state into memory concurrently...")
         
-        today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        seven_days_ago_str = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc)
+        today_str = today.strftime("%Y-%m-%d")
+        
+        # Calculate the baseline: the Monday immediately preceding the most recent Tuesday
+        days_since_tuesday = (today.weekday() - 1) % 7
+        last_tuesday = today - timedelta(days=days_since_tuesday)
+        anchor_monday_str = (last_tuesday - timedelta(days=1)).strftime("%Y-%m-%d")
+        prev_anchor_monday_str = (last_tuesday - timedelta(days=8)).strftime("%Y-%m-%d")
         
         trend_query = f"""
             SELECT char_name, ilvl, hks 
@@ -141,20 +147,63 @@ async def main_async():
                 SELECT char_name, ilvl, hks, 
                        ROW_NUMBER() OVER(PARTITION BY char_name ORDER BY record_date ASC) as rn
                 FROM char_history
-                WHERE record_date >= '{seven_days_ago_str}' AND record_date < '{today_str}'
+                WHERE record_date >= '{anchor_monday_str}' AND record_date < '{today_str}'
             ) WHERE rn = 1
         """
 
-        # Fire all 5 Turso queries simultaneously
+        prev_mvp_query = f"""
+            SELECT s.char_name, 
+                   (e.ilvl - s.ilvl) as prev_trend_ilvl, 
+                   (e.hks - s.hks) as prev_trend_hks
+            FROM (
+                SELECT char_name, ilvl, hks 
+                FROM (
+                    SELECT char_name, ilvl, hks, 
+                           ROW_NUMBER() OVER(PARTITION BY char_name ORDER BY record_date ASC) as rn
+                    FROM char_history
+                    WHERE record_date >= '{prev_anchor_monday_str}' AND record_date <= '{anchor_monday_str}'
+                ) WHERE rn = 1
+            ) s
+            JOIN (
+                SELECT char_name, ilvl, hks 
+                FROM (
+                    SELECT char_name, ilvl, hks, 
+                           ROW_NUMBER() OVER(PARTITION BY char_name ORDER BY record_date DESC) as rn
+                    FROM char_history
+                    WHERE record_date <= '{anchor_monday_str}'
+                ) WHERE rn = 1
+            ) e ON s.char_name = e.char_name
+        """
+
+        # Fire all 6 Turso queries simultaneously
         char_task = fetch_turso(session, "SELECT * FROM characters")
         gear_task = fetch_turso(session, "SELECT character_name, slot, item_id, name, quality, icon_data, tooltip_params FROM gear")
         trend_task = fetch_turso(session, trend_query)
         gt_task = fetch_turso(session, "SELECT * FROM global_trends WHERE id='__GLOBAL__'")
         timeline_task = fetch_turso(session, "SELECT character_name, type, level, item_id FROM timeline")
+        prev_mvp_task = fetch_turso(session, prev_mvp_query)
 
-        char_rows, gear_rows, trend_rows, gt_rows, timeline_rows = await asyncio.gather(
-            char_task, gear_task, trend_task, gt_task, timeline_task
+        char_rows, gear_rows, trend_rows, gt_rows, timeline_rows, prev_mvp_rows = await asyncio.gather(
+            char_task, gear_task, trend_task, gt_task, timeline_task, prev_mvp_task
         )
+
+        top_prev_pve = None
+        top_prev_pvp = None
+        max_prev_ilvl = 0
+        max_prev_hks = 0
+        
+        for row in prev_mvp_rows:
+            if row.get('prev_trend_ilvl', 0) > max_prev_ilvl:
+                max_prev_ilvl = row['prev_trend_ilvl']
+                top_prev_pve = row['char_name']
+            if row.get('prev_trend_hks', 0) > max_prev_hks:
+                max_prev_hks = row['prev_trend_hks']
+                top_prev_pvp = row['char_name']
+                
+        prev_mvps = {
+            "pve": {"name": top_prev_pve, "score": max_prev_ilvl} if top_prev_pve else None,
+            "pvp": {"name": top_prev_pvp, "score": max_prev_hks} if top_prev_pvp else None
+        }
 
         history_data = {}
         for row in char_rows:
@@ -335,7 +384,7 @@ async def main_async():
         roster_history = {row['date']: row for row in await fetch_turso(session, "SELECT * FROM daily_roster_stats ORDER BY date DESC LIMIT 7")}
 
         # Pass the full dashboard_feed back in so the heatmap math can run!
-        generate_html_dashboard(roster_data, realm_data, dashboard_feed, raw_guild_roster, roster_history)
+        generate_html_dashboard(roster_data, realm_data, dashboard_feed, raw_guild_roster, roster_history, prev_mvps)
         print("🎉 ALL DONE! The pipeline ran successfully.")
 
 def main():

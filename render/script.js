@@ -2581,28 +2581,29 @@ window.addEventListener('DOMContentLoaded', async () => {
         
         if (!mvpContainer || !mvpPveList || !mvpPvpList) return;
 
-        // Sort for PvE (Biggest positive trend_pve / trend_ilvl)
         const topTrendPve = [...rosterData]
             .filter(c => c.profile && (c.profile.trend_pve || c.profile.trend_ilvl || 0) > 0)
             .sort((a, b) => (b.profile.trend_pve || b.profile.trend_ilvl || 0) - (a.profile.trend_pve || a.profile.trend_ilvl || 0))
             .slice(0, 3);
 
-        // Sort for PvP (Biggest positive trend_pvp / trend_hks)
         const topTrendPvp = [...rosterData]
             .filter(c => c.profile && (c.profile.trend_pvp || c.profile.trend_hks || 0) > 0)
             .sort((a, b) => (b.profile.trend_pvp || b.profile.trend_hks || 0) - (a.profile.trend_pvp || a.profile.trend_hks || 0))
             .slice(0, 3);
 
-        // If no one made any progress this week, hide the banner
-        if (topTrendPve.length === 0 && topTrendPvp.length === 0) {
-            mvpContainer.style.display = 'none';
-            return;
-        }
-        
         mvpContainer.style.display = 'block';
 
         function generateMvpHtml(chars, isPvp) {
-            if (chars.length === 0) return `<div style="text-align:center; color:#888; font-style:italic; font-size: 13px; padding: 10px;">No positive trends this week.</div>`;
+            if (chars.length === 0) {
+                const icon = isPvp ? '⚔️' : '🛡️';
+                const action = isPvp ? 'get some HKs' : 'equip some upgrades';
+                return `
+                <div style="text-align:center; padding: 25px 10px; border: 1px dashed #555; border-radius: 8px; background: rgba(0,0,0,0.3); margin-top: 5px;">
+                    <div style="font-size: 28px; margin-bottom: 12px; filter: grayscale(50%);">${icon}</div>
+                    <div style="color:#ffd100; font-family: 'Cinzel'; font-size: 16px; margin-bottom: 6px; text-shadow: 1px 1px 2px #000;">The Week Just Started!</div>
+                    <div style="color:#aaa; font-style:italic; font-size: 13px;">Log in and ${action} to claim the #1 spot.</div>
+                </div>`;
+            }
             
             return chars.map((char, index) => {
                 const p = char.profile;
@@ -2612,7 +2613,6 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const trend = isPvp ? (p.trend_pvp || p.trend_hks || 0) : (p.trend_pve || p.trend_ilvl || 0);
                 const label = isPvp ? 'HKs' : 'iLvl';
                 
-                // Re-use our awesome Podium CSS classes!
                 const podiumClass = index === 0 ? 'podium-1' : index === 1 ? 'podium-2' : 'podium-3';
                 const rankColor = index === 0 ? '#ffd100' : index === 1 ? '#c0c0c0' : '#cd7f32';
                 
@@ -2630,8 +2630,57 @@ window.addEventListener('DOMContentLoaded', async () => {
             }).join('');
         }
 
-        mvpPveList.innerHTML = generateMvpHtml(topTrendPve, false);
-        mvpPvpList.innerHTML = generateMvpHtml(topTrendPvp, true);
+        function generateGloatingHtml(mvpData, isPvp) {
+            const label = isPvp ? 'HKs' : 'iLvl';
+            
+            // If there is no previous MVP data, return a sleek placeholder
+            if (!mvpData || !mvpData.name) {
+                return `
+                <div style="background: rgba(255, 209, 0, 0.02); border: 1px dashed rgba(255, 209, 0, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 12px; display: flex; align-items: center;">
+                    <div style="margin-right: 12px; font-size: 22px; filter: grayscale(100%); opacity: 0.5;">👑</div>
+                    <div style="width: 32px; height: 32px; border-radius: 50%; border: 2px dashed #555; background: rgba(0,0,0,0.5); margin-right: 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #555;">?</div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <span style="color: #888; font-family: 'Cinzel'; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">Reigning Champion</span>
+                        <span style="color: #aaa; font-family: 'Cinzel'; font-weight: bold; font-size: 15px; font-style: italic;">Awaiting Data</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; opacity: 0.5;">
+                        <span style="color: #888; font-size: 10px;">Last Week's ${label}</span>
+                    </div>
+                </div>`;
+            }
+
+            // If we have a champion, render their actual banner
+            const char = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === mvpData.name.toLowerCase());
+            
+            // Fallback in case the winning character left the guild
+            if (!char) return ''; 
+            
+            const p = char.profile;
+            const cClass = getCharClass(char);
+            const cHex = CLASS_COLORS[cClass] || '#fff';
+            const portraitURL = char.render_url || getClassIcon(cClass);
+            
+            return `
+            <div style="background: rgba(255, 209, 0, 0.05); border: 1px solid rgba(255, 209, 0, 0.5); border-radius: 8px; padding: 10px; margin-bottom: 12px; display: flex; align-items: center; box-shadow: 0 0 10px rgba(255, 209, 0, 0.1);">
+                <div style="margin-right: 12px; font-size: 22px; filter: drop-shadow(0 0 5px #ffd100);">👑</div>
+                <img src="${portraitURL}" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ffd100; object-fit: cover; margin-right: 12px; cursor: pointer;" onclick="selectCharacter('${p.name.toLowerCase()}')">
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <span style="color: #ffd100; font-family: 'Cinzel'; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">Reigning Champion</span>
+                    <span style="color: ${cHex}; font-family: 'Cinzel'; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000; cursor: pointer;" onclick="selectCharacter('${p.name.toLowerCase()}')">${p.name}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                    <span style="color: #fff; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000;">+${mvpData.score.toLocaleString()}</span>
+                    <span style="font-size: 10px; color: #aaa;">Last Week's ${label}</span>
+                </div>
+            </div>`;
+        }
+
+        const prevMvps = config.prev_mvps || {};
+        const pveGloat = generateGloatingHtml(prevMvps.pve, false);
+        const pvpGloat = generateGloatingHtml(prevMvps.pvp, true);
+
+        mvpPveList.innerHTML = pveGloat + generateMvpHtml(topTrendPve, false);
+        mvpPvpList.innerHTML = pvpGloat + generateMvpHtml(topTrendPvp, true);
     };
 
     route();
