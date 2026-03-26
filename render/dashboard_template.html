@@ -85,35 +85,48 @@
                 <img src="asset/amw.webp" alt="Azeroths Most Wanted Logo" class="main-logo">
                 
                 <h2 style="color: #ffd100; font-family: 'Cinzel', serif; font-size: 28px; letter-spacing: 1.5px; text-shadow: 0 2px 4px #000; margin-top: 0;">Azeroths Most Wanted Armory</h2>
-                <p style="font-family: 'Marcellus', serif; max-width: 600px; margin: 0 auto 30px auto; color: #bbb; font-size: 16px;">
-                    Inspect dynamic equipment, stats, and loot history. Select a member from the dropdown or search above, or click a stat box below to filter.
+                <p style="font-family: 'Marcellus', serif; max-width: 600px; margin: 0 auto 20px auto; color: #bbb; font-size: 16px;">
+                    Search for a hero below, or select a stat box to filter the roster. Inspect dynamic equipment, stats, and guild loot history.
                 </p>
+
+                <div class="search-container" style="position: relative; max-width: 450px; margin: 0 auto 35px auto; width: 100%;">
+                    <div class="search-box hero-search-box" style="box-sizing: border-box;">
+                        <span class="search-icon" style="font-size: 18px; padding-left: 15px;">🔍</span>
+                        <input type="text" id="heroCharSearch" autocomplete="off" placeholder="Search for a guild member..." style="width: 100%; height: 46px; font-size: 16px; padding: 0 15px; box-sizing: border-box;" />
+                    </div>
+                    <div id="hero-search-autocomplete" class="search-autocomplete" style="width: 100%; top: calc(100% + 8px);"></div>
+                </div>
                 
-                <div class="stat-box-container">
-                    <div id="stat-total" class="stat-box clickable" title="Click to view all {{ display_total_members }} members">
-                        <span class="stat-value" style="display: flex; align-items: center; justify-content: center;">
-                            {{ display_total_members }} 
-                            {{ trend_total_html | safe }}
-                        </span>
-                        <span class="stat-label">Total Roster</span>
+                <div class="stat-box-container" style="max-width: 1200px; margin: 0 auto 30px auto; z-index: 10;">
+                    <div id="stat-total" class="stat-box clickable sparkline-box" title="Click to view all members">
+                        <canvas id="spark-total" class="sparkline-canvas"></canvas>
+                        <span class="stat-value" style="position: relative; z-index: 2;">{{ display_total_members }} <span id="trend-total" class="trend-indicator"></span></span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Total Roster</span>
                     </div>
-                    <div id="stat-active" class="stat-box clickable" title="Click to view characters active within 14 days">
-                        <span class="stat-value" style="color: #2ecc71; display: flex; align-items: center; justify-content: center;">
-                            {{ active_14_days }}
-                            {{ trend_active_html | safe }}
-                        </span>
-                        <span class="stat-label">Active (14 Days)</span>
+                    <div id="stat-active" class="stat-box clickable sparkline-box" title="Click to view characters active within 14 days" style="border-bottom-color: #2ecc71;">
+                        <canvas id="spark-active" class="sparkline-canvas"></canvas>
+                        <span class="stat-value" style="color: #2ecc71; position: relative; z-index: 2;">{{ active_14_days }} <span id="trend-active" class="trend-indicator"></span></span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Active (14 Days)</span>
                     </div>
-                    <div id="stat-raidready" class="stat-box clickable" title="Click to view characters Level 70 with 110+ iLvl">
-                        <span class="stat-value" style="color: #ff8000; display: flex; align-items: center; justify-content: center;">
-                            {{ raid_ready_count }}
-                            {{ trend_ready_html | safe }}
-                        </span>
-                        <span class="stat-label">Raid Ready</span>
+                    <div id="stat-raidready" class="stat-box clickable sparkline-box" title="Click to view Level 70s" style="border-bottom-color: #ff8000;">
+                        <canvas id="spark-ready" class="sparkline-canvas"></canvas>
+                        <span class="stat-value" style="color: #ff8000; position: relative; z-index: 2;">{{ raid_ready_count }} <span id="trend-ready" class="trend-indicator"></span></span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Raid Ready</span>
                     </div>
-                    <div class="stat-box" title="Average level of scanned characters">
-                        <span class="stat-value">{{ avg_level }}</span>
-                        <span class="stat-label">Average Level</span>
+                    <div id="stat-avgilvl" class="stat-box clickable" title="Click to sort Level 70s by Item Level" style="border-bottom-color: #a335ee;">
+                        <span id="home-kpi-ilvl" class="stat-value" style="color: #a335ee; position: relative; z-index: 2;">0</span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Avg Lvl 70 iLvl</span>
+                    </div>
+                    <div id="stat-hks" class="stat-box clickable" title="Click to view PvP Leaderboard" style="border-bottom-color: #ff4400;">
+                        <span id="home-kpi-hks" class="stat-value" style="color: #ff4400; position: relative; z-index: 2;">0</span>
+                        <span class="stat-label" style="position: relative; z-index: 2;">Total Guild HKs</span>
+                    </div>
+                </div>
+
+                <div id="recent-milestones-container" style="display:none; width: 100%; max-width: 1050px; margin: 0 auto 30px auto; animation: fadeInUp 0.5s forwards;">
+                    <div class="milestone-banner">
+                        <span class="milestone-icon">🌟</span>
+                        <div id="milestone-text" class="milestone-text"></div>
                     </div>
                 </div>
 
@@ -145,12 +158,14 @@
 
                 <div id="leaderboards-wrapper" style="display:flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 1000px; margin: 40px auto 20px auto; justify-content: center;">
                     <div id="pve-leaderboard-container" style="display:none; flex: 1; min-width: 320px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
-                        <h3 style="font-family: 'Cinzel'; color: #ff8000; text-align: center; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 2px 4px #000;">🛡️ Top 50 Item Level 🛡️</h3>
+                        <h3 style="font-family: 'Cinzel'; color: #ff8000; text-align: center; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 2px 4px #000;">🛡️ Top 25 Item Level 🛡️</h3>
                         <div id="pve-leaderboard" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                        <button onclick="window.location.hash='ladder-pve'" class="view-all-btn" style="border-color: #ff8000; color: #ff8000;">View Full PvE Ladder ➔</button>
                     </div>
                     <div id="pvp-leaderboard-container" style="display:none; flex: 1; min-width: 320px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
-                        <h3 style="font-family: 'Cinzel'; color: #ff4400; text-align: center; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 2px 4px #000;">⚔️ Top 50 Honorable Kills ⚔️</h3>
+                        <h3 style="font-family: 'Cinzel'; color: #ff4400; text-align: center; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 2px 4px #000;">⚔️ Top 25 Honorable Kills ⚔️</h3>
                         <div id="pvp-leaderboard" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                        <button onclick="window.location.hash='ladder-pvp'" class="view-all-btn" style="border-color: #ff4400; color: #ff4400;">View Full PvP Ladder ➔</button>
                     </div>
                 </div>
             </div> 
@@ -158,15 +173,15 @@
                 <h2 style="color: #ffd100; font-family: 'Cinzel', serif; text-align: center; text-shadow: 0 2px 4px #000; margin-bottom: 20px; font-size: 32px;">Guild Analytics</h2>
                 
                 <div class="stat-box-container" style="max-width: 1100px; margin: 0 auto 40px auto; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <div class="stat-box" style="border-color: #ff8000; box-shadow: inset 0 0 15px rgba(255,128,0,0.1);">
+                    <div class="stat-box clickable" onclick="window.location.hash='ladder-pve'" style="border-color: #ff8000; box-shadow: inset 0 0 15px rgba(255,128,0,0.1);" title="View Full PvE Ladder">
                         <span id="kpi-avg-ilvl" class="stat-value" style="color: #ff8000;">0</span>
                         <span class="stat-label">Avg Level 70 iLvl</span>
                     </div>
-                    <div class="stat-box" style="border-color: #a335ee; box-shadow: inset 0 0 15px rgba(163,53,238,0.1);">
+                    <div class="stat-box clickable" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});" style="border-color: #a335ee; box-shadow: inset 0 0 15px rgba(163,53,238,0.1);" title="Scroll to Activity Chart">
                         <span id="kpi-epic-loot" class="stat-value" style="color: #a335ee;">0</span>
                         <span class="stat-label">Epics Looted (7d)</span>
                     </div>
-                    <div class="stat-box" style="border-color: #ff4400; box-shadow: inset 0 0 15px rgba(255,68,0,0.1);">
+                    <div class="stat-box clickable" onclick="window.location.hash='ladder-pvp'" style="border-color: #ff4400; box-shadow: inset 0 0 15px rgba(255,68,0,0.1);" title="View Full PvP Ladder">
                         <span id="kpi-total-hks" class="stat-value" style="color: #ff4400;">0</span>
                         <span class="stat-label">Total Guild HKs</span>
                     </div>
@@ -313,18 +328,22 @@
             <div id="concise-view">
                 <h2 id="concise-view-title">Guild Overview</h2>
                 
-                <div id="concise-top-stats" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; width: 100%; max-width: 1100px; margin: 0 auto 30px auto;">
+                <div id="concise-content-wrapper" style="display: flex; flex-wrap: wrap; gap: 25px; width: 100%; max-width: 1100px; margin: 0 auto; align-items: flex-start;">
                     
-                    <div id="concise-donut-container" class="heatmap-wrapper" style="flex: 1.2; min-width: 300px; max-width: 100%; margin: 0; display: none; flex-direction: column;">
+                    <div id="concise-left-col" style="flex: 1; min-width: 300px; max-width: 350px; display: flex; flex-direction: column; gap: 20px;">
+                        <div id="concise-donut-container" class="heatmap-wrapper" style="width: 100%; max-width: 100%; margin: 0; display: none; flex-direction: column;">
                         </div>
 
-                    <div id="concise-badges-wrapper" style="flex: 2; min-width: 320px; max-width: 650px; display: flex; flex-direction: column; justify-content: center;">
-                        <div id="concise-class-badges" class="class-stat-container" style="display:none; margin-bottom: 20px; width: 100%; justify-content: center;"></div>
+                        <div id="concise-badges-wrapper" style="width: 100%; display: flex; flex-direction: column; justify-content: center;">
+                            <div id="concise-class-badges" class="class-stat-container" style="display:none; width: 100%; justify-content: center; margin-bottom: 0;"></div>
+                        </div>
+                    </div>
+
+                    <div id="concise-center-col" style="flex: 2; min-width: 300px; width: 100%;">
+                        <div id="concise-char-list"></div>
                     </div>
                     
                 </div>
-
-                <div id="concise-char-list"></div>
             </div>
 
             <div id="full-card-container" class="full-card-container"></div>
