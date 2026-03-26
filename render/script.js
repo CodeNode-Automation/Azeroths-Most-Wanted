@@ -478,6 +478,12 @@ window.addEventListener('DOMContentLoaded', async () => {
             const rankSize = index < 3 ? '18px' : '15px';
             const portraitURL = char.render_url || getClassIcon(cClass);
 
+            // --- NEW: Trend Arrow Logic for PvE ---
+            const trend = p.trend_pve || p.trend_ilvl || 0; 
+            let trendHTML = '<span style="color: #555; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">-</span>';
+            if (trend > 0) trendHTML = `<span style="color: #2ecc71; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▲ ${trend}</span>`;
+            else if (trend < 0) trendHTML = `<span style="color: #e74c3c; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▼ ${Math.abs(trend)}</span>`;
+
             pveHTML += `
             <div class="pvp-row tt-char ${podiumClass}" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px;">
                 <div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000;">#${index + 1}</div>
@@ -488,6 +494,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div style="display: flex; align-items: center; color: #ff8000; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000;">
                     ${p.equipped_item_level || 0} <span style="font-size:10px; color:#888; margin-left: 3px;">iLvl</span>
+                    ${trendHTML}
                 </div>
             </div>`;
         });
@@ -971,6 +978,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             let displaySpecClass = '';
             let statValue = '???';
             let statColor = 'color:#666;';
+            let trendHTML = ''; // <-- NEW: Trend Variable
 
             // 3. Populate Variables
             if (deepChar && deepChar.profile) {
@@ -991,6 +999,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                 
                 statValue = currentSortMethod === 'hks' ? (p.honorable_kills || 0).toLocaleString() : (p.equipped_item_level || 0);
                 statColor = currentSortMethod === 'hks' ? 'color: #ff4400;' : '';
+
+                // NEW: Calculate Trend based on the current ladder view
+                if (currentSortMethod === 'hks' || currentSortMethod === 'ilvl') {
+                    const trend = currentSortMethod === 'hks' ? (p.trend_pvp || p.trend_hks || 0) : (p.trend_pve || p.trend_ilvl || 0);
+                    if (trend > 0) trendHTML = `<span style="color: #2ecc71; font-size: 12px; margin-left: 10px; width: 30px; text-align: right; display: inline-block;">▲ ${trend}</span>`;
+                    else if (trend < 0) trendHTML = `<span style="color: #e74c3c; font-size: 12px; margin-left: 10px; width: 30px; text-align: right; display: inline-block;">▼ ${Math.abs(trend)}</span>`;
+                    else trendHTML = `<span style="color: #555; font-size: 12px; margin-left: 10px; width: 30px; text-align: right; display: inline-block;">-</span>`;
+                }
             } else {
                 displayName = char.name || 'Unknown';
                 cClass = char.class || 'Unknown';
@@ -1001,7 +1017,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 displaySpecClass = cClass;
             }
 
-            // NEW: Inject Podium Classes & Rank Number if we are on a Ladder View
+            // Inject Podium Classes & Rank Number if we are on a Ladder View
             const hash = window.location.hash.substring(1);
             const isLadderView = hash === 'ladder-pve' || hash === 'ladder-pvp';
             let podiumClass = '';
@@ -1026,7 +1042,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="c-stats-info">
                         <span>Level <span class="c-val-lvl">${level}</span></span>
-                        <span>${statLabel} <span class="c-val-ilvl" style="${statColor}">${statValue}</span></span>
+                        <span style="display:flex; align-items:center; justify-content:flex-end;">${statLabel} <span class="c-val-ilvl" style="${statColor} margin-left:4px;">${statValue}</span>${trendHTML}</span>
                     </div>
                 </div>`;
             }
@@ -1041,7 +1057,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="c-stats-info">
                     <span>Level <span class="c-val-lvl">${level}</span></span>
-                    <span>${statLabel} <span class="c-val-ilvl" style="${statColor}">${statValue}</span></span>
+                    <span style="display:flex; align-items:center; justify-content:flex-end;">${statLabel} <span class="c-val-ilvl" style="${statColor} margin-left:4px;">${statValue}</span>${trendHTML}</span>
                 </div>
             </a>`;
         }).join('');
