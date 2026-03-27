@@ -919,12 +919,37 @@ window.addEventListener('DOMContentLoaded', async () => {
 
         // Apply Sorting before mapping HTML
         let sortedCharacters = [...characters];
+        const hashUrl = window.location.hash.substring(1);
+
         sortedCharacters.sort((a, b) => {
             let valA, valB;
             
             // Handle Raw vs Full data structures
             const profA = isRawMode ? (rosterData.find(c => c.profile && c.profile.name === a.name)?.profile || a) : (a.profile || a);
             const profB = isRawMode ? (rosterData.find(c => c.profile && c.profile.name === b.name)?.profile || b) : (b.profile || b);
+            const nameA = (profA.name || '').toLowerCase();
+            const nameB = (profB.name || '').toLowerCase();
+
+            // Override sorting for ALL War Effort challenges
+            if (hashUrl.startsWith('war-effort-')) {
+                if (hashUrl === 'war-effort-xp' && window.warEffortContext) {
+                    valA = window.warEffortContext[nameA] || 0;
+                    valB = window.warEffortContext[nameB] || 0;
+                    return valB - valA; // High to Low Contributions
+                } else if (hashUrl === 'war-effort-zenith' && window.warEffortContextRaw) {
+                    valA = window.warEffortContextRaw[nameA] || 0;
+                    valB = window.warEffortContextRaw[nameB] || 0;
+                    return valB - valA; // Newest first (highest timestamp)
+                } else if (hashUrl === 'war-effort-loot' && window.warEffortContext) {
+                    valA = window.warEffortContext[nameA] ? window.warEffortContext[nameA].length : 0;
+                    valB = window.warEffortContext[nameB] ? window.warEffortContext[nameB].length : 0;
+                    return valB - valA; // High to Low Contributions (Array length)
+                } else if (hashUrl === 'war-effort-hk') {
+                    valA = profA.trend_pvp || profA.trend_hks || 0;
+                    valB = profB.trend_pvp || profB.trend_hks || 0;
+                    return valB - valA; // High to Low Contributions
+                }
+            }
 
             if (currentSortMethod === 'ilvl') {
                 valA = profA.equipped_item_level || 0;
@@ -939,25 +964,26 @@ window.addEventListener('DOMContentLoaded', async () => {
                 valB = profB.honorable_kills || 0;
                 return valB - valA; // High to Low
             } else if (currentSortMethod === 'name') {
-                valA = (profA.name || '').toLowerCase();
-                valB = (profB.name || '').toLowerCase();
-                return valA.localeCompare(valB); // A to Z
+                return nameA.localeCompare(nameB); // A to Z
             }
             return 0;
         });
 
-        // Add Sorting Dropdown UI to the top of the list
-        let sortUI = `
-            <div class="sort-controls" style="animation: fadeIn 0.3s forwards;">
-                <span style="color: #888; font-size: 14px;">Sort By:</span>
-                <select id="concise-sort-dropdown" class="sort-select">
-                    <option value="ilvl" ${currentSortMethod === 'ilvl' ? 'selected' : ''}>Item Level</option>
-                    <option value="level" ${currentSortMethod === 'level' ? 'selected' : ''}>Character Level</option>
-                    <option value="hks" ${currentSortMethod === 'hks' ? 'selected' : ''}>Honorable Kills</option>
-                    <option value="name" ${currentSortMethod === 'name' ? 'selected' : ''}>Name (A-Z)</option>
-                </select>
-            </div>
-        `;
+        // Add Sorting Dropdown UI to the top of the list (Hide for ALL specific War Effort pages)
+        let sortUI = '';
+        if (!hashUrl.startsWith('war-effort-')) {
+            sortUI = `
+                <div class="sort-controls" style="animation: fadeIn 0.3s forwards;">
+                    <span style="color: #888; font-size: 14px;">Sort By:</span>
+                    <select id="concise-sort-dropdown" class="sort-select">
+                        <option value="ilvl" ${currentSortMethod === 'ilvl' ? 'selected' : ''}>Item Level</option>
+                        <option value="level" ${currentSortMethod === 'level' ? 'selected' : ''}>Character Level</option>
+                        <option value="hks" ${currentSortMethod === 'hks' ? 'selected' : ''}>Honorable Kills</option>
+                        <option value="name" ${currentSortMethod === 'name' ? 'selected' : ''}>Name (A-Z)</option>
+                    </select>
+                </div>
+            `;
+        }
 
         // Generate the HTML for the list
         let listHTML = sortedCharacters.map((char, index) => {
@@ -974,7 +1000,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             let displaySpecClass = '';
             let statValue = '???';
             let statColor = 'color:#666;';
-            let trendHTML = ''; // <-- NEW: Trend Variable
+            let trendHTML = '';
 
             // 3. Populate Variables
             if (deepChar && deepChar.profile) {
@@ -996,7 +1022,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 statValue = currentSortMethod === 'hks' ? (p.honorable_kills || 0).toLocaleString() : (p.equipped_item_level || 0);
                 statColor = currentSortMethod === 'hks' ? 'color: #ff4400;' : '';
 
-                // NEW: Calculate Trend based on the current ladder view
+                // Calculate Trend based on the current ladder view
                 if (currentSortMethod === 'hks' || currentSortMethod === 'ilvl') {
                     const trend = currentSortMethod === 'hks' ? (p.trend_pvp || p.trend_hks || 0) : (p.trend_pve || p.trend_ilvl || 0);
                     if (trend > 0) trendHTML = `<span style="color: #2ecc71; font-size: 12px; margin-left: 10px; width: 30px; text-align: right; display: inline-block;">▲ ${trend}</span>`;
@@ -1014,8 +1040,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Inject Podium Classes & Rank Number if we are on a Ladder View
-            const hash = window.location.hash.substring(1);
-            const isLadderView = hash === 'ladder-pve' || hash === 'ladder-pvp';
+            const isLadderView = hashUrl === 'ladder-pve' || hashUrl === 'ladder-pvp';
             let podiumClass = '';
             let rankHtml = '';
             
@@ -1026,63 +1051,118 @@ window.addEventListener('DOMContentLoaded', async () => {
                 rankHtml = `<div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000; margin-right: 10px; display: flex; align-items: center; justify-content: center;">#${index + 1}</div>`;
             }
 
+            // --- NEW: Custom War Effort Stats Overrides ---
+            let statsHtml = `
+                <span>Level <span class="c-val-lvl">${level}</span></span>
+                <span style="display:flex; align-items:center; justify-content:flex-end;">${statLabel} <span class="c-val-ilvl" style="${statColor} margin-left:4px;">${statValue}</span>${trendHTML}</span>
+            `;
+            let barStyleOverride = '';
+            let innerWrapperStyle = 'display: flex; align-items: center; width: 100%;';
+            let cStatsStyleOverride = 'display:flex; align-items:center; justify-content:flex-end; flex:1;';
+
+            if (hashUrl.startsWith('war-effort-')) {
+                // By default, stretch the bars
+                barStyleOverride = 'width: 100%; max-width: 100%; margin-bottom: 8px; padding: 12px 15px;';
+                
+                if (hashUrl === 'war-effort-hk') {
+                    const trendVal = deepChar && deepChar.profile ? (deepChar.profile.trend_pvp || deepChar.profile.trend_hks || 0) : 0;
+                    statsHtml = `<span style="color:#ff4400; font-weight:bold; font-size:18px; text-shadow: 1px 1px 2px #000;">+${trendVal.toLocaleString()} HKs Contributed</span>`;
+                } else if (window.warEffortContext) {
+                    const charKey = displayName.toLowerCase();
+                    const contextData = window.warEffortContext[charKey];
+                    
+                    if (contextData) {
+                        if (hashUrl === 'war-effort-xp') {
+                            statsHtml = `<span style="color:#ffd100; font-weight:bold; font-size:18px; text-shadow: 1px 1px 2px #000;">+${contextData} Levels Contributed</span>`;
+                        } else if (hashUrl === 'war-effort-loot') {
+                            // Turn the main bar into a column so we can stack the character info on top, and loot on the bottom
+                            barStyleOverride = 'width: 100%; max-width: 100%; margin-bottom: 8px; padding: 15px; flex-direction: column; align-items: flex-start; height: auto;';
+                            innerWrapperStyle = 'display: flex; align-items: center; width: 100%; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px;';
+                            cStatsStyleOverride = 'display:flex; width: 100%; flex-direction: column; align-items: flex-start;';
+
+                            const itemBadges = contextData.map(itemHtml => `<div style="background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 6px; border: 1px solid #444; white-space: nowrap;">${itemHtml}</div>`).join('');
+                            statsHtml = `
+                                <span style="color:#888; font-size:11px; text-transform:uppercase; margin-bottom: 8px;">Epic Loot Acquired:</span>
+                                <div style="display:flex; flex-wrap:wrap; justify-content:flex-start; gap:8px; font-size:13px; line-height:1.2;">
+                                    ${itemBadges}
+                                </div>
+                            `;
+                        } else if (hashUrl === 'war-effort-zenith') {
+                            statsHtml = `
+                                <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content: center;">
+                                    <span style="color:#888; font-size:11px; text-transform:uppercase;">Reached Level 70 on:</span>
+                                    <span style="color:#3FC7EB; font-weight:bold; font-size:16px; text-shadow: 1px 1px 2px #000; margin-top: 4px;">${contextData}</span>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+            }
+
             // 4. Render the HTML
             if (!isClickable) {
                 return `
-                <div class="concise-char-bar ${podiumClass}" data-class="${cClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default;">
-                    ${rankHtml}
-                    <div class="c-main-info">
-                        <img src="${portraitURL}" class="c-portrait" loading="lazy" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
-                        <span class="c-name" style="color:${cHex};">${displayName}</span>
-                        <span class="c-meta">${raceName} ${displaySpecClass}</span>
+                <div class="concise-char-bar ${podiumClass}" data-class="${cClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default; ${barStyleOverride}">
+                    <div style="${innerWrapperStyle}">
+                        <div style="display: flex; align-items: center;">
+                            ${rankHtml}
+                            <div class="c-main-info">
+                                <img src="${portraitURL}" class="c-portrait" loading="lazy" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
+                                <span class="c-name" style="color:${cHex};">${displayName}</span>
+                                <span class="c-meta">${raceName} ${displaySpecClass}</span>
+                            </div>
+                        </div>
+                        ${hashUrl !== 'war-effort-loot' ? `<div class="c-stats-info" style="${cStatsStyleOverride}">${statsHtml}</div>` : ''}
                     </div>
-                    <div class="c-stats-info">
-                        <span>Level <span class="c-val-lvl">${level}</span></span>
-                        <span style="display:flex; align-items:center; justify-content:flex-end;">${statLabel} <span class="c-val-ilvl" style="${statColor} margin-left:4px;">${statValue}</span>${trendHTML}</span>
-                    </div>
+                    ${hashUrl === 'war-effort-loot' ? `<div class="c-stats-info" style="${cStatsStyleOverride}">${statsHtml}</div>` : ''}
                 </div>`;
             }
 
             return `
-            <a href="javascript:void(0)" onclick="selectCharacter('${displayName.toLowerCase()}')" class="concise-char-bar tt-char ${podiumClass}" data-char="${displayName.toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex};">
-                ${rankHtml}
-                <div class="c-main-info">
-                    <img src="${portraitURL}" class="c-portrait" loading="lazy" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
-                    <span class="c-name" style="color:${cHex};">${displayName}</span>
-                    <span class="c-meta">${raceName} &bull; ${specIconHtml}${displaySpecClass}</span>
+            <div onclick="selectCharacter('${displayName.toLowerCase()}')" class="concise-char-bar tt-char ${podiumClass}" data-char="${displayName.toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex}; ${barStyleOverride}">
+                <div style="${innerWrapperStyle}">
+                    <div style="display: flex; align-items: center;">
+                        ${rankHtml}
+                        <div class="c-main-info">
+                            <img src="${portraitURL}" class="c-portrait" loading="lazy" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
+                            <span class="c-name" style="color:${cHex};">${displayName}</span>
+                            <span class="c-meta">${raceName} &bull; ${specIconHtml}${displaySpecClass}</span>
+                        </div>
+                    </div>
+                    ${hashUrl !== 'war-effort-loot' ? `<div class="c-stats-info" style="${cStatsStyleOverride}">${statsHtml}</div>` : ''}
                 </div>
-                <div class="c-stats-info">
-                    <span>Level <span class="c-val-lvl">${level}</span></span>
-                    <span style="display:flex; align-items:center; justify-content:flex-end;">${statLabel} <span class="c-val-ilvl" style="${statColor} margin-left:4px;">${statValue}</span>${trendHTML}</span>
-                </div>
-            </a>`;
+                ${hashUrl === 'war-effort-loot' ? `<div class="c-stats-info" style="${cStatsStyleOverride}">${statsHtml}</div>` : ''}
+            </div>`;
         }).join('');
         
         // Inject the sorting UI and the List HTML
         conciseList.innerHTML = sortUI + listHTML;
 
-        // Bind the event listener to the newly created dropdown
-        document.getElementById('concise-sort-dropdown').addEventListener('change', function(e) {
-            currentSortMethod = e.target.value;
-            // Re-render the list with the exact same parameters but new sort
-            renderConciseList(title, characters, isRawMode);
-            
-            // Re-apply any active spec filters to the newly rendered HTML
-            if (typeof applyTimelineFilters === 'function') {
-                 // Trigger a click on the active badge to re-filter the DOM elements
-                 const activeBadge = document.querySelector('.dynamic-badge.active-filter');
-                 if (activeBadge) {
-                     // Briefly remove the class so the click handler re-applies it correctly
-                     activeBadge.classList.remove('active-filter'); 
-                     activeBadge.click();
-                 }
-            }
-        });
+        // Bind the event listener to the newly created dropdown if it exists
+        const sortDropdown = document.getElementById('concise-sort-dropdown');
+        if (sortDropdown) {
+            sortDropdown.addEventListener('change', function(e) {
+                currentSortMethod = e.target.value;
+                // Re-render the list with the exact same parameters but new sort
+                renderConciseList(title, characters, isRawMode);
+                
+                // Re-apply any active spec filters to the newly rendered HTML
+                if (typeof applyTimelineFilters === 'function') {
+                     // Trigger a click on the active badge to re-filter the DOM elements
+                     const activeBadge = document.querySelector('.dynamic-badge.active-filter');
+                     if (activeBadge) {
+                         // Briefly remove the class so the click handler re-applies it correctly
+                         activeBadge.classList.remove('active-filter'); 
+                         activeBadge.click();
+                     }
+                }
+            });
+        } 
 
-        setupTooltips();
-    }
+        setupTooltips();
+    }
 
-    function setupTooltips() {
+    function setupTooltips() {
         const tt_chars = document.querySelectorAll('.tt-char:not(.tt-bound)');
         tt_chars.forEach(trigger => {
             trigger.classList.add('tt-bound');
@@ -1651,8 +1731,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         const kpiHks = document.getElementById('home-kpi-hks');
         if (kpiHks) kpiHks.innerText = totalHks >= 1000000 ? (totalHks/1000000).toFixed(1) + 'M' : totalHks.toLocaleString();
 
-        document.getElementById('stat-avgilvl').onclick = () => { window.location.hash = 'ladder-pve'; };
-        document.getElementById('stat-hks').onclick = () => { window.location.hash = 'ladder-pvp'; };
+        const statAvgIlvl = document.getElementById('stat-avgilvl');
+        if (statAvgIlvl) statAvgIlvl.onclick = () => { window.location.hash = 'ladder-pve'; };
+        
+        const statHks = document.getElementById('stat-hks');
+        if (statHks) statHks.onclick = () => { window.location.hash = 'ladder-pvp'; };
 
         // "Yesterday" Sparklines & Math
         if (heatmapData && heatmapData.length >= 2) {
@@ -1730,19 +1813,27 @@ window.addEventListener('DOMContentLoaded', async () => {
             return c.profile && c.profile.name ? c.profile.name.toLowerCase() : '';
         });
         
-        if (showBadges) renderDynamicBadges(characters, isRawRoster);
-        else {
+        const hash = window.location.hash.substring(1);
+        const chartViews = ['total', 'active', 'raidready', 'ladder-pve', 'ladder-pvp'];
+
+        if (showBadges) {
+            renderDynamicBadges(characters, isRawRoster);
+            document.getElementById('concise-left-col').style.display = 'flex';
+        } else {
             document.getElementById('concise-class-badges').style.display = 'none';
             const specContainer = document.getElementById('concise-spec-container');
             if (specContainer) specContainer.style.display = 'none';
+            
+            // Fix: Completely collapse the left column if no charts and no badges are needed
+            if (!chartViews.includes(hash)) {
+                document.getElementById('concise-left-col').style.display = 'none';
+            } else {
+                document.getElementById('concise-left-col').style.display = 'flex';
+            }
         }
 
        // Draw the dynamic charts & KPIs
-        const hash = window.location.hash.substring(1);
         const donutContainer = document.getElementById('concise-donut-container');
-        
-        // Expanded array of views that get charts
-        const chartViews = ['total', 'active', 'raidready', 'ladder-pve', 'ladder-pvp'];
 
         if (chartViews.includes(hash)) {
             if (donutContainer) {
@@ -1989,6 +2080,79 @@ window.addEventListener('DOMContentLoaded', async () => {
             showConciseView(`Full PvP Ladder (${sortedPvp.length})`, sortedPvp, false, true, 'hks');
             updateDropdownLabel('all');
             
+        } else if (hash.startsWith('war-effort-')) {
+            const type = hash.replace('war-effort-', '');
+            
+            const realNow = new Date();
+            const berlinString = realNow.toLocaleString("en-US", {timeZone: "Europe/Berlin"});
+            const berlinNow = new Date(berlinString);
+            const lastReset = new Date(berlinNow);
+            lastReset.setHours(0, 0, 0, 0);
+            let day = lastReset.getDay();
+            let diff = (day >= 2) ? (day - 2) : (day + 5); 
+            lastReset.setDate(lastReset.getDate() - diff);
+            const lastResetMs = lastReset.getTime();
+
+            let filteredRoster = [];
+            let title = "";
+            window.warEffortContext = {}; // Initialize custom display context
+            window.warEffortContextRaw = {}; // Initialize raw values for sorting
+
+            if (type === 'hk') {
+                filteredRoster = rosterData.filter(c => c.profile && (c.profile.trend_pvp || c.profile.trend_hks || 0) > 0);
+                title = `🩸 Blood of the Enemy Contributors (${filteredRoster.length})`;
+                // Note: The 'false' flag here hides the Class Badges
+                showConciseView(title, filteredRoster, false, false, 'hks'); 
+            } else {
+                const contributors = new Set();
+                if (typeof timelineData !== 'undefined') {
+                    timelineData.forEach(e => {
+                        let cleanTs = (e.timestamp || '').replace('Z', '+00:00');
+                        if (!cleanTs.includes('+') && !cleanTs.includes('Z')) cleanTs += 'Z';
+                        const eventDate = new Date(cleanTs).getTime();
+                        if (eventDate >= lastResetMs) {
+                            const cName = (e.character_name || '').toLowerCase();
+                            
+                            if (type === 'xp' && e.type === 'level_up') {
+                                contributors.add(cName);
+                                window.warEffortContext[cName] = (window.warEffortContext[cName] || 0) + 1;
+                            }
+                            if (type === 'loot' && e.type === 'item' && (e.item_quality === 'EPIC' || e.item_quality === 'LEGENDARY')) {
+                                contributors.add(cName);
+                                window.warEffortContext[cName] = window.warEffortContext[cName] || [];
+                                const qColor = QUALITY_COLORS[e.item_quality] || '#a335ee';
+                                window.warEffortContext[cName].push(`<a href="https://www.wowhead.com/wotlk/item=${e.item_id}" target="_blank" style="color:${qColor}; text-decoration:none;" onclick="event.stopPropagation();">[${e.item_name}]</a>`);
+                            }
+                            if (type === 'zenith' && e.type === 'level_up' && e.level === 70) {
+                                contributors.add(cName);
+                                const dateObj = new Date(cleanTs);
+                                const dd = String(dateObj.getDate()).padStart(2, '0');
+                                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                const yyyy = dateObj.getFullYear();
+                                const HH = String(dateObj.getHours()).padStart(2, '0');
+                                const MM = String(dateObj.getMinutes()).padStart(2, '0');
+                                window.warEffortContext[cName] = `${dd}.${mm}.${yyyy} ${HH}:${MM}`;
+                                window.warEffortContextRaw[cName] = dateObj.getTime(); // Store the raw timestamp for perfect sorting!
+                            }
+                        }
+                    });
+                }
+                filteredRoster = rosterData.filter(c => c.profile && c.profile.name && contributors.has(c.profile.name.toLowerCase()));
+                
+                if (type === 'xp') title = `🛡️ Hero's Journey Contributors (${filteredRoster.length})`;
+                if (type === 'loot') title = `🐉 Dragon's Hoard Contributors (${filteredRoster.length})`;
+                if (type === 'zenith') title = `⚡ The Zenith Cohort (${filteredRoster.length})`;
+                
+                let sortPref = type === 'loot' ? 'ilvl' : 'level';
+                // Note: The 'false' flag here hides the Class Badges
+                showConciseView(title, filteredRoster, false, false, sortPref); 
+            }
+            
+            // Explicitly hide timeline entirely for these pages
+            if (timeline) timeline.style.display = 'none';
+            
+            updateDropdownLabel('all');
+            
         } else {
             // Final fallback: Look for a specific character
             const char = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === hash);
@@ -2001,10 +2165,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Setup clickable stat boxes
-    document.getElementById('stat-total').addEventListener('click', () => { window.location.hash = 'total'; });
-    document.getElementById('stat-active').addEventListener('click', () => { window.location.hash = 'active'; });
-    document.getElementById('stat-raidready').addEventListener('click', () => { window.location.hash = 'raidready'; });
+    // Setup clickable stat boxes safely
+    const statTotal = document.getElementById('stat-total');
+    if (statTotal) statTotal.addEventListener('click', () => { window.location.hash = 'total'; });
+
+    const statActive = document.getElementById('stat-active');
+    if (statActive) statActive.addEventListener('click', () => { window.location.hash = 'active'; });
+
+    const statRaidReady = document.getElementById('stat-raidready');
+    if (statRaidReady) statRaidReady.addEventListener('click', () => { window.location.hash = 'raidready'; });
 
     // 🔥 RESTORED: Dynamic Home Page Class Pop-outs
     document.querySelectorAll('.clickable-class').forEach(badge => {
@@ -2373,6 +2542,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             applyTimelineFilters(); 
             if (typeof window.renderGuildXPBar === 'function') window.renderGuildXPBar(); 
             
+            route();
+            
         } catch (error) {
             console.error("Failed to load timeline data:", error);
         }
@@ -2680,60 +2851,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         mvpPveList.innerHTML = pveGloat + generateMvpHtml(topTrendPve, false);
         mvpPvpList.innerHTML = pvpGloat + generateMvpHtml(topTrendPvp, true);
 
-        // --- NEW: Live Countdown Timer Logic ---
-        let countdownEl = document.getElementById('mvp-countdown');
-        if (!countdownEl) {
-            countdownEl = document.createElement('div');
-            countdownEl.id = 'mvp-countdown';
-            countdownEl.style.textAlign = 'center';
-            countdownEl.style.marginBottom = '25px';
-            
-            // Insert it between the H3 title and the flex container lists
-            mvpContainer.insertBefore(countdownEl, mvpContainer.children[1]);
-
-            function updateCountdown() {
-                const realNow = new Date();
-                
-                // Get current Berlin time as a pseudo-local Date object
-                const berlinString = realNow.toLocaleString("en-US", {timeZone: "Europe/Berlin"});
-                const berlinNow = new Date(berlinString);
-                
-                // Calculate the upcoming Tuesday at 00:00 Berlin time
-                const nextResetBerlin = new Date(berlinNow);
-                nextResetBerlin.setHours(0, 0, 0, 0);
-                
-                let day = nextResetBerlin.getDay();
-                let diff = (2 - day + 7) % 7; 
-                
-                // If it is currently Tuesday but past 00:00, target NEXT Tuesday
-                if (diff === 0 && berlinNow > nextResetBerlin) {
-                    diff = 7;
-                }
-                nextResetBerlin.setDate(nextResetBerlin.getDate() + diff);
-
-                // Calculate difference in milliseconds natively
-                const timeLeft = nextResetBerlin - berlinNow;
-                
-                const d = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-                const h = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-                const el = document.getElementById('mvp-countdown');
-                if (el) {
-                    el.innerHTML = `
-                        <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 209, 0, 0.2); padding: 8px 18px; border-radius: 6px; display: inline-block; box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 0 2px 5px rgba(0,0,0,0.5);">
-                            <span style="color:#c0c0c0; font-family: 'Cinzel', serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px #000;">Next Crowning Ceremony: </span>
-                            <span style="color:#ff8000; font-family: 'Cinzel', serif; font-weight:bold; font-size: 18px; text-shadow: 0 0 8px rgba(255, 128, 0, 0.6), 1px 1px 2px #000; margin-left: 6px;">
-                            ${d}d ${h}h ${m}m ${s}s</span>
-                        </div>`;
-                }
-            }
-
-            // Start the clock
-            setInterval(updateCountdown, 1000);
-            updateCountdown();
-        }
     };
 
     // ==========================================
@@ -2742,6 +2859,55 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.renderGuildXPBar = function() {
         const xpContainer = document.getElementById('guild-xp-container');
         if (!xpContainer || !timelineData || timelineData.length === 0) return;
+
+        // --- Live Countdown Timer Logic ---
+        let countdownEl = document.getElementById('war-effort-countdown');
+        if (!countdownEl) {
+            countdownEl = document.createElement('div');
+            countdownEl.id = 'war-effort-countdown';
+            countdownEl.style.textAlign = 'center';
+            countdownEl.style.marginBottom = '25px';
+            
+            // Insert it between the H3 title and the progress bars
+            xpContainer.insertBefore(countdownEl, xpContainer.children[1]);
+
+            function updateWarEffortCountdown() {
+                const realNow = new Date();
+                const berlinString = realNow.toLocaleString("en-US", {timeZone: "Europe/Berlin"});
+                const berlinNow = new Date(berlinString);
+                
+                const nextResetBerlin = new Date(berlinNow);
+                nextResetBerlin.setHours(0, 0, 0, 0);
+                
+                let day = nextResetBerlin.getDay();
+                let diff = (2 - day + 7) % 7; 
+                
+                if (diff === 0 && berlinNow > nextResetBerlin) {
+                    diff = 7;
+                }
+                nextResetBerlin.setDate(nextResetBerlin.getDate() + diff);
+
+                const timeLeft = nextResetBerlin - berlinNow;
+                
+                const d = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const h = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                const el = document.getElementById('war-effort-countdown');
+                if (el) {
+                    el.innerHTML = `
+                        <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 209, 0, 0.2); padding: 8px 18px; border-radius: 6px; display: inline-block; box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 0 2px 5px rgba(0,0,0,0.5);">
+                            <span style="color:#c0c0c0; font-family: 'Cinzel', serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px #000;">Next Weekly Reset: </span>
+                            <span style="color:#ff8000; font-family: 'Cinzel', serif; font-weight:bold; font-size: 18px; text-shadow: 0 0 8px rgba(255, 128, 0, 0.6), 1px 1px 2px #000; margin-left: 6px;">
+                            ${d}d ${h}h ${m}m ${s}s</span>
+                        </div>`;
+                }
+            }
+
+            setInterval(updateWarEffortCountdown, 1000);
+            updateWarEffortCountdown();
+        }
 
         // 1. Calculate the Berlin Time Reset Anchor
         const realNow = new Date();
@@ -2755,9 +2921,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         lastReset.setDate(lastReset.getDate() - diff);
         const lastResetMs = lastReset.getTime();
 
-        // 2. Tally Leveling Effort (From Timeline)
+        // 2. Tally Leveling Effort & Zenith (From Timeline)
         let totalLevels = 0;
+        let totalZenith = 0;
         const levelContributors = {};
+        const zenithContributors = {};
+        
         timelineData.forEach(event => {
             if (event.type === 'level_up') {
                 let cleanTs = event.timestamp.replace('Z', '+00:00');
@@ -2768,6 +2937,11 @@ window.addEventListener('DOMContentLoaded', async () => {
                     totalLevels++;
                     const charName = event.character_name || 'Unknown';
                     levelContributors[charName] = (levelContributors[charName] || 0) + 1;
+                    
+                    if (event.level === 70) {
+                        totalZenith++;
+                        zenithContributors[charName] = (zenithContributors[charName] || 0) + 1;
+                    }
                 }
             }
         });
@@ -2786,11 +2960,46 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // 4. Inject Dynamic Animations for BOTH Bars
+        // 3b. Tally Dragon's Hoard (Epic Loot from Timeline)
+        let totalLoot = 0;
+        const lootContributors = {};
+        timelineData.forEach(event => {
+            if (event.type === 'item' && (event.item_quality === 'EPIC' || event.item_quality === 'LEGENDARY')) {
+                let cleanTs = event.timestamp.replace('Z', '+00:00');
+                if (!cleanTs.includes('+') && !cleanTs.includes('Z')) cleanTs += 'Z';
+                const eventDate = new Date(cleanTs).getTime();
+                
+                if (eventDate >= lastResetMs) {
+                    totalLoot++;
+                    const charName = event.character_name || 'Unknown';
+                    lootContributors[charName] = (lootContributors[charName] || 0) + 1;
+                }
+            }
+        });
+
+        // 4. Inject Dynamic Animations for Bars
         if (!document.getElementById('war-effort-styles')) {
             const style = document.createElement('style');
             style.id = 'war-effort-styles';
             style.innerHTML = `
+                .war-effort-link:hover { color: #fff !important; }
+                
+                .progress-bar-glow::after {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; bottom: 0; right: 0;
+                    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+                    background-size: 200% 100%;
+                    animation: shimmerWave 2.5s infinite linear;
+                    z-index: 1;
+                    pointer-events: none;
+                }
+                
+                @keyframes shimmerWave {
+                    0% { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                }
+
                 @keyframes pulseSlowXP { 0% { opacity: 0.8; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.2); } }
                 @keyframes pulseFastXP { 0% { opacity: 0.7; filter: brightness(1.2); } 100% { opacity: 1; filter: brightness(1.5); } }
                 @keyframes pulseMaxXP { 0% { opacity: 0.8; filter: brightness(1.5); box-shadow: 0 0 20px #ff8000; } 100% { opacity: 1; filter: brightness(2); box-shadow: 0 0 40px #ffd100; } }
@@ -2798,6 +3007,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                 @keyframes pulseSlowHK { 0% { opacity: 0.8; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.2); } }
                 @keyframes pulseFastHK { 0% { opacity: 0.7; filter: brightness(1.2); } 100% { opacity: 1; filter: brightness(1.5); } }
                 @keyframes pulseMaxHK { 0% { opacity: 0.8; filter: brightness(1.5); box-shadow: 0 0 20px #e74c3c; } 100% { opacity: 1; filter: brightness(2); box-shadow: 0 0 40px #ff4400; } }
+
+                @keyframes pulseSlowLOOT { 0% { opacity: 0.8; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.2); } }
+                @keyframes pulseFastLOOT { 0% { opacity: 0.7; filter: brightness(1.2); } 100% { opacity: 1; filter: brightness(1.5); } }
+                @keyframes pulseMaxLOOT { 0% { opacity: 0.8; filter: brightness(1.5); box-shadow: 0 0 20px #a335ee; } 100% { opacity: 1; filter: brightness(2); box-shadow: 0 0 40px #ff8000; } }
+
+                @keyframes pulseSlowZENITH { 0% { opacity: 0.8; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.2); } }
+                @keyframes pulseFastZENITH { 0% { opacity: 0.7; filter: brightness(1.2); } 100% { opacity: 1; filter: brightness(1.5); } }
+                @keyframes pulseMaxZENITH { 0% { opacity: 0.8; filter: brightness(1.5); box-shadow: 0 0 20px #3FC7EB; } 100% { opacity: 1; filter: brightness(2); box-shadow: 0 0 40px #00e5ff; } }
             `;
             document.head.appendChild(style);
         }
@@ -2809,17 +3026,22 @@ window.addEventListener('DOMContentLoaded', async () => {
             const textEl = document.getElementById(textId);
             const dynamicGlow = 10 + (pct * 0.25);
             
-            const isXP = (type === 'XP');
-            const colorBase = isXP ? '#8B6508' : '#8B0000';
-            const colorMid = isXP ? '#ffd100' : '#e74c3c';
-            const colorMax = isXP ? '#ff8000' : '#ff4400';
-            const labelName = isXP ? 'Levels' : 'HKs';
+            let colorBase, colorMid, colorMax, labelName, glowColor;
+            if (type === 'XP') {
+                colorBase = '#8B6508'; colorMid = '#ffd100'; colorMax = '#ff8000'; labelName = 'Levels'; glowColor = '#ffd100';
+            } else if (type === 'HK') {
+                colorBase = '#8B0000'; colorMid = '#e74c3c'; colorMax = '#ff4400'; labelName = 'HKs'; glowColor = '#ff0000';
+            } else if (type === 'LOOT') {
+                colorBase = '#4b0082'; colorMid = '#a335ee'; colorMax = '#ff8000'; labelName = 'Epics'; glowColor = '#ff8000';
+            } else { // ZENITH
+                colorBase = '#006064'; colorMid = '#3FC7EB'; colorMax = '#00e5ff'; labelName = 'Max Levels'; glowColor = '#00e5ff';
+            }
 
             if (fillEl) {
                 setTimeout(() => { 
                     fillEl.style.width = pct + '%'; 
                     if (pct >= 100) {
-                        fillEl.style.background = `linear-gradient(90deg, ${colorMid}, ${colorMax}, ${isXP ? '#ffd100' : '#ff0000'})`;
+                        fillEl.style.background = `linear-gradient(90deg, ${colorMid}, ${colorMax}, ${glowColor})`;
                         fillEl.style.boxShadow = `0 0 40px ${colorMax}`;
                         fillEl.style.animation = `pulseMax${type} 0.5s infinite alternate`;
                     } else if (pct >= 75) {
@@ -2841,7 +3063,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (textEl) {
                 if (pct >= 100) {
                     textEl.innerText = `${currentVal.toLocaleString()} / ${maxVal.toLocaleString()} ➔ GOAL CRUSHED!`;
-                    textEl.style.color = isXP ? '#ffd100' : '#ff4400';
+                    textEl.style.color = colorMid;
                     textEl.style.textShadow = `0 0 10px ${colorMax}, 1px 1px 2px #000`;
                 } else {
                     textEl.innerText = `${currentVal.toLocaleString()} / ${maxVal.toLocaleString()} ${labelName} Gained`;
@@ -2849,10 +3071,12 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        renderBar('guild-xp-fill', 'guild-xp-text', totalLevels, 1000, 'XP');
+        renderBar('guild-xp-fill', 'guild-xp-text', totalLevels, 750, 'XP');
         renderBar('guild-hk-fill', 'guild-hk-text', totalHks, 500, 'HK');
+        renderBar('guild-loot-fill', 'guild-loot-text', totalLoot, 100, 'LOOT');
+        renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, 10, 'ZENITH');
 
-        // 6. Tooltip Generator Helper
+        // 6. Tooltip Generator Helper (Updated to Route on Click)
         function bindTooltip(triggerId, contributorsDict, titleText, labelText) {
             const tooltipTrigger = document.getElementById(triggerId);
             if (!tooltipTrigger) return;
@@ -2861,7 +3085,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             let tooltipHtml = `<div style="font-family:'Cinzel'; color:#ffd100; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #555; padding-bottom:4px;">${titleText}</div>`;
             
             if (sortedContributors.length === 0) {
-                tooltipHtml += `<div style="color:#aaa; font-style:italic;">The war effort just began!</div>`;
+                tooltipHtml += `<div style="color:#aaa; font-style:italic;">The challenges just began!</div>`;
             } else {
                 const topList = sortedContributors.slice(0, 15);
                 topList.forEach(([name, count], index) => {
@@ -2899,24 +3123,24 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             newTrigger.addEventListener('mousemove', e => displayTooltip(e.clientX, e.clientY));
             newTrigger.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+            
+            // --- NEW: Interactive Navigation ---
             newTrigger.addEventListener('click', e => {
                 e.stopPropagation();
-                if (tooltip.classList.contains('visible')) tooltip.classList.remove('visible');
-                else displayTooltip(e.clientX, e.clientY - 40);
+                tooltip.classList.remove('visible');
+                
+                if (triggerId === 'guild-xp-tooltip-trigger') window.location.hash = 'war-effort-xp';
+                else if (triggerId === 'guild-hk-tooltip-trigger') window.location.hash = 'war-effort-hk';
+                else if (triggerId === 'guild-loot-tooltip-trigger') window.location.hash = 'war-effort-loot';
+                else if (triggerId === 'guild-zenith-tooltip-trigger') window.location.hash = 'war-effort-zenith';
             });
         }
 
         bindTooltip('guild-xp-tooltip-trigger', levelContributors, "Top Leveling Heroes", "levels");
         bindTooltip('guild-hk-tooltip-trigger', hkContributors, "Top PvP Slayers", "HKs");
-
-        // 7. Global click listener to close tooltips on mobile
-        document.addEventListener('click', e => {
-            if (tooltip.classList.contains('visible') && !e.target.closest('#guild-xp-tooltip-trigger') && !e.target.closest('#guild-hk-tooltip-trigger')) {
-                tooltip.classList.remove('visible');
-            }
-        });
+        bindTooltip('guild-loot-tooltip-trigger', lootContributors, "Top Treasure Hunters", "Epics");
+        bindTooltip('guild-zenith-tooltip-trigger', zenithContributors, "The Zenith Cohort", "Max Levels");
     };
 
-    route();
     window.addEventListener('hashchange', route);
 });

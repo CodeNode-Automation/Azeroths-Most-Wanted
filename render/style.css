@@ -686,9 +686,9 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn { cu
         margin-left: 25px !important; 
     }
 
-    /* Push the search bar all the way to the right side of the screen */
+    /* Place the search bar next to the dropdown */
     .controls-wrapper .search-container {
-        margin-left: auto !important;
+        margin-left: 20px !important; /* Small gap from the dropdown */
         margin-bottom: 0 !important;
     }
 }

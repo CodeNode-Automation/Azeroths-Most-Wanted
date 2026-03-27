@@ -153,15 +153,22 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
             </button>
             
             <div class="nav-links-container">
-                <a href="javascript:void(0)" onclick="returnToHome()" class="nav-btn nav-btn-home" title="Return to guild stats page">
-                  🛡️<span class="home-text"> Armory Home</span>
-                </a>
-                <a href="#analytics" class="nav-btn nav-btn-home" title="View Guild Analytics">
-                  📊<span class="home-text"> Analytics</span>
-                </a>
-                <a href="#architecture" class="nav-btn nav-btn-home" title="How the Website Works">
-                  ⚙️<span class="home-text"> Architecture</span>
-                </a>
+                <a href="#" class="nav-btn nav-btn-home"><span class="home-text">🏰 Home Dashboard</span></a>
+                
+                <div style="color: #888; font-size: 11px; font-family: 'Cinzel'; font-weight: bold; padding: 15px 15px 5px 15px; border-bottom: 1px solid #333; width: 85%; margin-bottom: 5px;">WAR EFFORT</div>
+                <a href="#war-effort-xp" class="nav-btn">🛡️ Hero's Journey</a>
+                <a href="#war-effort-hk" class="nav-btn">🩸 Blood of the Enemy</a>
+                <a href="#war-effort-loot" class="nav-btn">🐉 Dragon's Hoard</a>
+                <a href="#war-effort-zenith" class="nav-btn">⚡ The Zenith Cohort</a>
+                
+                <div style="color: #888; font-size: 11px; font-family: 'Cinzel'; font-weight: bold; padding: 15px 15px 5px 15px; border-bottom: 1px solid #333; width: 85%; margin-bottom: 5px;">GUILD DATA</div>
+                <a href="#ladder-pve" class="nav-btn">👑 PvE Leaderboard</a>
+                <a href="#ladder-pvp" class="nav-btn">⚔️ PvP Leaderboard</a>
+                <a href="#analytics" class="nav-btn">📊 Advanced Analytics</a>
+                
+                <div style="color: #888; font-size: 11px; font-family: 'Cinzel'; font-weight: bold; padding: 15px 15px 5px 15px; border-bottom: 1px solid #333; width: 85%; margin-bottom: 5px;">COMMUNITY & INFO</div>
+                <a href="#architecture" class="nav-btn">⚙️ Architecture</a>
+                <a href="https://discord.gg/t6mufeWRNK" target="_blank" class="nav-btn" style="color: #5865F2;">💬 Join Discord</a>
             </div>
 
             <div class="custom-select-wrapper" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="customCharOptions">
