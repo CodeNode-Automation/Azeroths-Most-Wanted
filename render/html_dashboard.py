@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from jinja2 import Environment, FileSystemLoader
 
 def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, raw_guild_roster=None, roster_history=None, prev_mvps=None):
@@ -82,13 +83,17 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
     trend_active_html = get_trend_html(global_trends.get('trend_active', 0))
     trend_ready_html = get_trend_html(global_trends.get('trend_ready', 0))
 
+    berlin_tz = ZoneInfo("Europe/Berlin")
+
     activity_counts = {}
     for event in timeline_data:
         ts = event.get("timestamp", "")
         e_type = event.get("type", "item")
         try:
-            dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
-            date_key = dt.strftime("%Y-%m-%d")
+            # Convert UTC timestamp to Berlin timezone
+            dt_utc = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+            dt_berlin = dt_utc.astimezone(berlin_tz)
+            date_key = dt_berlin.strftime("%Y-%m-%d")
             
             if date_key not in activity_counts:
                 activity_counts[date_key] = {"total": 0, "loot": 0, "levels": 0}
@@ -101,10 +106,10 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         except Exception:
             pass
 
-    today = datetime.now(timezone.utc)
+    today_berlin = datetime.now(berlin_tz)
     heatmap_data = []
     for i in range(6, -1, -1):
-        day = today - timedelta(days=i)
+        day = today_berlin - timedelta(days=i)
         d_str = day.strftime("%Y-%m-%d")
         day_name = day.strftime("%a")
         day_data = activity_counts.get(d_str, {"total": 0, "loot": 0, "levels": 0})
@@ -112,12 +117,12 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         # --- Grab historical stats if they exist in the DB for this date ---
         hist_data = roster_history.get(d_str, {})
         
-        # Ensure 'today' always has the live exact count, even if the DB hasn't committed yet
+        # Ensure 'today' always has the live exact count
         if i == 0:
             hist_total = display_total_members
             hist_active = active_14_days
         else:
-            hist_total = hist_data.get('total_roster')  # Will be None if you don't have data for this past day yet
+            hist_total = hist_data.get('total_roster')
             hist_active = hist_data.get('active_roster')
 
         heatmap_data.append({

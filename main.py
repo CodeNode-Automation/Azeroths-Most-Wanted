@@ -11,6 +11,7 @@ import json
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 
 from wow.auth import get_access_token
 from wow.api import fetch_realm_data, fetch_guild_metadata, fetch_static_maps
@@ -132,7 +133,9 @@ async def main_async():
 
         print("📂 Fetching historical state into memory concurrently...")
         
-        today = datetime.now(timezone.utc)
+        berlin_tz = ZoneInfo("Europe/Berlin")
+        
+        today = datetime.now(berlin_tz)
         today_str = today.strftime("%Y-%m-%d")
         
         # Calculate the baseline: the Monday immediately preceding the most recent Tuesday

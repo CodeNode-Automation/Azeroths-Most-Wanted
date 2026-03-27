@@ -378,10 +378,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // --- NEW: Class Distribution Donut Chart ---
-        if (mainDonutChartInstance) mainDonutChartInstance.destroy();
-        mainDonutChartInstance = createDonutChart('classDonutChart', rawGuildRoster, true);
-
         // --- Original Heatmap Grid ---
         let heatmapHtml = '';
         
@@ -404,9 +400,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
             
             heatmapHtml += `
-            <div class="heatmap-col">
+            <div class="heatmap-col" style="flex: 1; display: flex; flex-direction: column; align-items: center;">
                 <span class="heatmap-label">${day.day_name}</span>
-                <div class="heatmap-cell tt-heatmap" data-lvl="${lvl}" data-date="${dateStr}" data-rawdate="${day.date}" data-count="${day.count}"></div>
+                <div class="heatmap-cell tt-heatmap" data-lvl="${lvl}" data-date="${dateStr}" data-rawdate="${day.date}" data-count="${day.count}" style="width: 100%; max-width: 60px;"></div>
             </div>`;
         });
         heatmapGrid.innerHTML = heatmapHtml;
@@ -1260,6 +1256,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        const xpCont = document.getElementById('guild-xp-container');
+        if (xpCont) xpCont.style.display = 'none';
+
         // Reset the Dropdown UI to "All Available"
         const dateSelect = document.getElementById('tl-date-filter');
         if (dateSelect) {
@@ -1458,9 +1457,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         if(window.roleChartInstance) window.roleChartInstance.destroy();
         window.roleChartInstance = drawRoleChart('roleDonutChart', rosterData, false);
 
-        if (mainDonutChartInstance) mainDonutChartInstance.destroy();
-        mainDonutChartInstance = createDonutChart('classDonutChart', rawGuildRoster, true);
-
         // --- LEVEL DISTRIBUTION ---
         const levelLabels = ["1-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70"];
         const levelData = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -1636,11 +1632,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (navbar) navbar.style.background = 'rgba(15, 15, 15, 0.85)';
         if (timeline) { timeline.style.display = 'block'; timelineTitle.innerHTML = "📜 Guild Recent Activity"; window.currentFilteredChars = null; applyTimelineFilters(); }
         
-        const specContainer = document.getElementById('home-spec-container');
-        if (specContainer) specContainer.style.display = 'none';
-        document.querySelectorAll('.clickable-class').forEach(b => b.classList.remove('active-filter'));
-        window.activeClassExpanded = null;
         updateDropdownLabel('all');
+
+        const xpCont = document.getElementById('guild-xp-container');
+        if (xpCont) xpCont.style.display = 'block';
+        if (typeof window.renderGuildXPBar === 'function') window.renderGuildXPBar();
 
         // Populate New KPIs
         let totalIlvl = 0, lvl70Count = 0, totalHks = 0;
@@ -2375,6 +2371,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
             
             applyTimelineFilters(); 
+            if (typeof window.renderGuildXPBar === 'function') window.renderGuildXPBar(); 
+            
         } catch (error) {
             console.error("Failed to load timeline data:", error);
         }
@@ -2681,6 +2679,242 @@ window.addEventListener('DOMContentLoaded', async () => {
 
         mvpPveList.innerHTML = pveGloat + generateMvpHtml(topTrendPve, false);
         mvpPvpList.innerHTML = pvpGloat + generateMvpHtml(topTrendPvp, true);
+
+        // --- NEW: Live Countdown Timer Logic ---
+        let countdownEl = document.getElementById('mvp-countdown');
+        if (!countdownEl) {
+            countdownEl = document.createElement('div');
+            countdownEl.id = 'mvp-countdown';
+            countdownEl.style.textAlign = 'center';
+            countdownEl.style.marginBottom = '25px';
+            
+            // Insert it between the H3 title and the flex container lists
+            mvpContainer.insertBefore(countdownEl, mvpContainer.children[1]);
+
+            function updateCountdown() {
+                const realNow = new Date();
+                
+                // Get current Berlin time as a pseudo-local Date object
+                const berlinString = realNow.toLocaleString("en-US", {timeZone: "Europe/Berlin"});
+                const berlinNow = new Date(berlinString);
+                
+                // Calculate the upcoming Tuesday at 00:00 Berlin time
+                const nextResetBerlin = new Date(berlinNow);
+                nextResetBerlin.setHours(0, 0, 0, 0);
+                
+                let day = nextResetBerlin.getDay();
+                let diff = (2 - day + 7) % 7; 
+                
+                // If it is currently Tuesday but past 00:00, target NEXT Tuesday
+                if (diff === 0 && berlinNow > nextResetBerlin) {
+                    diff = 7;
+                }
+                nextResetBerlin.setDate(nextResetBerlin.getDate() + diff);
+
+                // Calculate difference in milliseconds natively
+                const timeLeft = nextResetBerlin - berlinNow;
+                
+                const d = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const h = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                const el = document.getElementById('mvp-countdown');
+                if (el) {
+                    el.innerHTML = `
+                        <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 209, 0, 0.2); padding: 8px 18px; border-radius: 6px; display: inline-block; box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 0 2px 5px rgba(0,0,0,0.5);">
+                            <span style="color:#c0c0c0; font-family: 'Cinzel', serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px #000;">Next Crowning Ceremony: </span>
+                            <span style="color:#ff8000; font-family: 'Cinzel', serif; font-weight:bold; font-size: 18px; text-shadow: 0 0 8px rgba(255, 128, 0, 0.6), 1px 1px 2px #000; margin-left: 6px;">
+                            ${d}d ${h}h ${m}m ${s}s</span>
+                        </div>`;
+                }
+            }
+
+            // Start the clock
+            setInterval(updateCountdown, 1000);
+            updateCountdown();
+        }
+    };
+
+    // ==========================================
+    // WEEKLY GUILD WAR EFFORT LOGIC
+    // ==========================================
+    window.renderGuildXPBar = function() {
+        const xpContainer = document.getElementById('guild-xp-container');
+        if (!xpContainer || !timelineData || timelineData.length === 0) return;
+
+        // 1. Calculate the Berlin Time Reset Anchor
+        const realNow = new Date();
+        const berlinString = realNow.toLocaleString("en-US", {timeZone: "Europe/Berlin"});
+        const berlinNow = new Date(berlinString);
+        
+        const lastReset = new Date(berlinNow);
+        lastReset.setHours(0, 0, 0, 0);
+        let day = lastReset.getDay();
+        let diff = (day >= 2) ? (day - 2) : (day + 5); 
+        lastReset.setDate(lastReset.getDate() - diff);
+        const lastResetMs = lastReset.getTime();
+
+        // 2. Tally Leveling Effort (From Timeline)
+        let totalLevels = 0;
+        const levelContributors = {};
+        timelineData.forEach(event => {
+            if (event.type === 'level_up') {
+                let cleanTs = event.timestamp.replace('Z', '+00:00');
+                if (!cleanTs.includes('+') && !cleanTs.includes('Z')) cleanTs += 'Z';
+                const eventDate = new Date(cleanTs).getTime();
+                
+                if (eventDate >= lastResetMs) {
+                    totalLevels++;
+                    const charName = event.character_name || 'Unknown';
+                    levelContributors[charName] = (levelContributors[charName] || 0) + 1;
+                }
+            }
+        });
+
+        // 3. Tally PvP Effort (From 7-Day Roster Trends)
+        let totalHks = 0;
+        const hkContributors = {};
+        rosterData.forEach(c => {
+            if (c.profile) {
+                const trend = c.profile.trend_pvp || c.profile.trend_hks || 0;
+                if (trend > 0) {
+                    totalHks += trend;
+                    const charName = c.profile.name || 'Unknown';
+                    hkContributors[charName] = trend;
+                }
+            }
+        });
+
+        // 4. Inject Dynamic Animations for BOTH Bars
+        if (!document.getElementById('war-effort-styles')) {
+            const style = document.createElement('style');
+            style.id = 'war-effort-styles';
+            style.innerHTML = `
+                @keyframes pulseSlowXP { 0% { opacity: 0.8; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.2); } }
+                @keyframes pulseFastXP { 0% { opacity: 0.7; filter: brightness(1.2); } 100% { opacity: 1; filter: brightness(1.5); } }
+                @keyframes pulseMaxXP { 0% { opacity: 0.8; filter: brightness(1.5); box-shadow: 0 0 20px #ff8000; } 100% { opacity: 1; filter: brightness(2); box-shadow: 0 0 40px #ffd100; } }
+                
+                @keyframes pulseSlowHK { 0% { opacity: 0.8; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.2); } }
+                @keyframes pulseFastHK { 0% { opacity: 0.7; filter: brightness(1.2); } 100% { opacity: 1; filter: brightness(1.5); } }
+                @keyframes pulseMaxHK { 0% { opacity: 0.8; filter: brightness(1.5); box-shadow: 0 0 20px #e74c3c; } 100% { opacity: 1; filter: brightness(2); box-shadow: 0 0 40px #ff4400; } }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // 5. Render the Bars
+        function renderBar(fillId, textId, currentVal, maxVal, type) {
+            const pct = Math.min((currentVal / maxVal) * 100, 100);
+            const fillEl = document.getElementById(fillId);
+            const textEl = document.getElementById(textId);
+            const dynamicGlow = 10 + (pct * 0.25);
+            
+            const isXP = (type === 'XP');
+            const colorBase = isXP ? '#8B6508' : '#8B0000';
+            const colorMid = isXP ? '#ffd100' : '#e74c3c';
+            const colorMax = isXP ? '#ff8000' : '#ff4400';
+            const labelName = isXP ? 'Levels' : 'HKs';
+
+            if (fillEl) {
+                setTimeout(() => { 
+                    fillEl.style.width = pct + '%'; 
+                    if (pct >= 100) {
+                        fillEl.style.background = `linear-gradient(90deg, ${colorMid}, ${colorMax}, ${isXP ? '#ffd100' : '#ff0000'})`;
+                        fillEl.style.boxShadow = `0 0 40px ${colorMax}`;
+                        fillEl.style.animation = `pulseMax${type} 0.5s infinite alternate`;
+                    } else if (pct >= 75) {
+                        fillEl.style.background = `linear-gradient(90deg, ${colorBase}, ${colorMax})`;
+                        fillEl.style.boxShadow = `0 0 ${dynamicGlow}px ${colorMax}`;
+                        fillEl.style.animation = `pulseFast${type} 0.8s infinite alternate`;
+                    } else if (pct >= 30) {
+                        fillEl.style.background = `linear-gradient(90deg, ${colorBase}, ${colorMid})`;
+                        fillEl.style.boxShadow = `0 0 ${dynamicGlow}px ${colorMid}`;
+                        fillEl.style.animation = `pulseSlow${type} 1.5s infinite alternate`;
+                    } else {
+                        fillEl.style.background = `linear-gradient(90deg, #333, ${colorBase})`;
+                        fillEl.style.boxShadow = `0 0 ${dynamicGlow}px rgba(255, 255, 255, 0.2)`;
+                        fillEl.style.animation = 'none';
+                    }
+                }, 100);
+            }
+            
+            if (textEl) {
+                if (pct >= 100) {
+                    textEl.innerText = `${currentVal.toLocaleString()} / ${maxVal.toLocaleString()} ➔ GOAL CRUSHED!`;
+                    textEl.style.color = isXP ? '#ffd100' : '#ff4400';
+                    textEl.style.textShadow = `0 0 10px ${colorMax}, 1px 1px 2px #000`;
+                } else {
+                    textEl.innerText = `${currentVal.toLocaleString()} / ${maxVal.toLocaleString()} ${labelName} Gained`;
+                }
+            }
+        }
+
+        renderBar('guild-xp-fill', 'guild-xp-text', totalLevels, 1000, 'XP');
+        renderBar('guild-hk-fill', 'guild-hk-text', totalHks, 500, 'HK');
+
+        // 6. Tooltip Generator Helper
+        function bindTooltip(triggerId, contributorsDict, titleText, labelText) {
+            const tooltipTrigger = document.getElementById(triggerId);
+            if (!tooltipTrigger) return;
+            
+            const sortedContributors = Object.entries(contributorsDict).sort((a, b) => b[1] - a[1]);
+            let tooltipHtml = `<div style="font-family:'Cinzel'; color:#ffd100; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #555; padding-bottom:4px;">${titleText}</div>`;
+            
+            if (sortedContributors.length === 0) {
+                tooltipHtml += `<div style="color:#aaa; font-style:italic;">The war effort just began!</div>`;
+            } else {
+                const topList = sortedContributors.slice(0, 15);
+                topList.forEach(([name, count], index) => {
+                    const charData = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === name.toLowerCase());
+                    const cClass = charData ? getCharClass(charData) : 'Unknown';
+                    const cHex = CLASS_COLORS[cClass] || '#fff';
+                    const formattedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+                    
+                    tooltipHtml += `
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 4px; font-size:13px; gap: 35px;">
+                        <span style="color:${cHex};">${index + 1}. ${formattedName}</span>
+                        <span style="color:#fff; font-weight:bold;">+${count.toLocaleString()}</span>
+                    </div>`;
+                });
+                
+                if (sortedContributors.length > 15) {
+                    const remaining = sortedContributors.slice(15).reduce((sum, [_, count]) => sum + count, 0);
+                    tooltipHtml += `<div style="color:#888; font-style:italic; font-size:11px; text-align:right; margin-top:6px; border-top:1px dashed #444; padding-top:4px;">...and +${remaining.toLocaleString()} more ${labelText}!</div>`;
+                }
+            }
+
+            const newTrigger = tooltipTrigger.cloneNode(true);
+            tooltipTrigger.parentNode.replaceChild(newTrigger, tooltipTrigger);
+            
+            function displayTooltip(clientX, clientY) {
+                tooltip.innerHTML = tooltipHtml;
+                tooltip.style.borderLeftColor = '#ffd100';
+                let x = clientX + 15;
+                let y = clientY + 15;
+                if (x + 250 > window.innerWidth) x = window.innerWidth - 260; 
+                tooltip.style.left = `${x}px`; 
+                tooltip.style.top = `${y}px`;
+                tooltip.classList.add('visible');
+            }
+
+            newTrigger.addEventListener('mousemove', e => displayTooltip(e.clientX, e.clientY));
+            newTrigger.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+            newTrigger.addEventListener('click', e => {
+                e.stopPropagation();
+                if (tooltip.classList.contains('visible')) tooltip.classList.remove('visible');
+                else displayTooltip(e.clientX, e.clientY - 40);
+            });
+        }
+
+        bindTooltip('guild-xp-tooltip-trigger', levelContributors, "Top Leveling Heroes", "levels");
+        bindTooltip('guild-hk-tooltip-trigger', hkContributors, "Top PvP Slayers", "HKs");
+
+        // 7. Global click listener to close tooltips on mobile
+        document.addEventListener('click', e => {
+            if (tooltip.classList.contains('visible') && !e.target.closest('#guild-xp-tooltip-trigger') && !e.target.closest('#guild-hk-tooltip-trigger')) {
+                tooltip.classList.remove('visible');
+            }
+        });
     };
 
     route();

@@ -131,29 +131,51 @@
                 </div>
 
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; max-width: 1100px; margin-bottom: 30px;">
-                    
-                    <div class="heatmap-wrapper" style="flex: 2; min-width: 320px; max-width: 650px; margin: 0;">
+                    <div class="heatmap-wrapper" style="flex: 1; width: 100%; max-width: 100%; margin: 0; overflow: hidden;">
                         <h3 class="heatmap-title">🔥 Guild Activity (Last 7 Days) <span style="color:#aaa; font-size: 11px;">Updates Daily</span></h3>
-                        <div style="position: relative; height: 180px; width: 100%; margin-bottom: 20px;">
-                            <canvas id="activityChart"></canvas>
+                        <div style="position: relative; height: 180px; width: 100%; max-width: 100%; margin-bottom: 20px;">
+                            <canvas id="activityChart" style="width: 100% !important; height: 100% !important;"></canvas>
                         </div>
-                        <div id="heatmap-grid" class="heatmap-grid"></div>
+                        <div id="heatmap-grid" class="heatmap-grid" style="display: flex; width: 100%; max-width: 100%; justify-content: space-between;"></div>
                     </div>
-
-                    <div class="heatmap-wrapper" style="flex: 1.2; min-width: 300px; max-width: 480px; margin: 0; display: flex; flex-direction: column;">
-                        <h3 class="heatmap-title">📊 Class Distribution <span style="color:#aaa; font-size: 11px;">Entire Roster</span></h3>
-                        <div style="position: relative; flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 250px;">
-                            <canvas id="classDonutChart"></canvas>
-                        </div>
-                    </div>
-
-                </div>
-                
-                <div class="class-stat-container">
-                    {{ class_badges_html | safe }}
                 </div>
 
-                <div id="home-spec-container" style="display:none; text-align:center; padding-top: 10px; margin-bottom: 40px; animation: fadeInUp 0.3s forwards;">
+                <div id="guild-xp-container" style="display:none; width: 100%; max-width: 1000px; margin: 0 auto 30px auto; background: rgba(0,0,0,0.5); border: 1px solid #ffd100; border-radius: 8px; padding: 20px; box-shadow: inset 0 0 15px rgba(255,209,0,0.1); animation: fadeInUp 0.5s forwards;">
+                    <h3 style="font-family: 'Cinzel'; color: #ffd100; text-align: center; margin-top: 0; margin-bottom: 25px; text-shadow: 0 2px 4px #000; letter-spacing: 1px;">⚔️ Weekly Guild War Effort ⚔️</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 25px;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px; font-family: 'Cinzel'; font-size: 15px; font-weight: bold; color: #ffd100; text-shadow: 1px 1px 2px #000;">
+                                <span>🛡️ Leveling Effort</span>
+                                <span id="guild-xp-tooltip-trigger" style="color: #aaa; font-family: sans-serif; font-size: 11px; font-weight: normal; border-bottom: 1px dotted #aaa; cursor: help; text-shadow: none;">View Top Levelers</span>
+                            </div>
+                            <div style="position: relative; width: 100%; height: 28px; background: #111; border-radius: 14px; border: 1px solid #444; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);">
+                                <div id="guild-xp-fill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; transition: width 1.5s ease-out;"></div>
+                                
+                                <div style="position:absolute; top:0; left:25%; width:1px; height:100%; background:rgba(255,255,255,0.1);"></div>
+                                <div style="position:absolute; top:0; left:50%; width:1px; height:100%; background:rgba(255,255,255,0.3);"></div>
+                                <div style="position:absolute; top:0; left:75%; width:1px; height:100%; background:rgba(255,255,255,0.1);"></div>
+                                
+                                <div id="guild-xp-text" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Cinzel'; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000, -1px -1px 2px #000; z-index: 2;">0 / 1,000 Levels Gained</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px; font-family: 'Cinzel'; font-size: 15px; font-weight: bold; color: #ff4400; text-shadow: 1px 1px 2px #000;">
+                                <span>🩸 PvP Effort (Honorable Kills)</span>
+                                <span id="guild-hk-tooltip-trigger" style="color: #aaa; font-family: sans-serif; font-size: 11px; font-weight: normal; border-bottom: 1px dotted #aaa; cursor: help; text-shadow: none;">View Top Slayers</span>
+                            </div>
+                            <div style="position: relative; width: 100%; height: 28px; background: #111; border-radius: 14px; border: 1px solid #444; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);">
+                                <div id="guild-hk-fill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; transition: width 1.5s ease-out;"></div>
+                                
+                                <div style="position:absolute; top:0; left:25%; width:1px; height:100%; background:rgba(255,255,255,0.1);"></div>
+                                <div style="position:absolute; top:0; left:50%; width:1px; height:100%; background:rgba(255,255,255,0.3);"></div>
+                                <div style="position:absolute; top:0; left:75%; width:1px; height:100%; background:rgba(255,255,255,0.1);"></div>
+                                
+                                <div id="guild-hk-text" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Cinzel'; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000, -1px -1px 2px #000; z-index: 2;">0 / 500 HKs Gained</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="weekly-mvps-container" style="display:none; width: 100%; max-width: 1000px; margin: 0 auto 30px auto; animation: fadeInUp 0.5s forwards;">
