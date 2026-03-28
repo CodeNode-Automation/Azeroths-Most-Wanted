@@ -134,6 +134,11 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
 #backToTopBtn.show { display: block; opacity: 1; }
 #backToTopBtn:hover { background-color: rgba(255, 209, 0, 0.15); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(255, 209, 0, 0.4); }
 
+.trend-indicator { font-size: 12px; margin-left: 12px; width: 30px; text-align: right; display: inline-block; }
+.trend-positive { color: #2ecc71; }
+.trend-negative { color: #e74c3c; }
+.trend-neutral { color: #555; }
+
 /* ========================================= */
 /* BADGES & BANNERS                          */
 /* ========================================= */
@@ -151,6 +156,8 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
 .milestone-text { flex: 1; font-family: 'Cinzel', serif; font-size: 15px; color: #eee; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .milestone-highlight { color: #ffd100; font-weight: bold; text-shadow: 1px 1px 2px #000; }
 .milestone-epic { color: #a335ee; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+
+.spec-filter-wrapper { margin-bottom: 0; gap: 12px; justify-content: center; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
 
 /* ========================================= */
 /* LISTS & LEADERBOARDS                      */
@@ -173,10 +180,10 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
 #concise-char-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .concise-char-bar { display: flex; align-items: center; background: linear-gradient(90deg, rgba(20, 20, 25, 0.8) 0%, rgba(10, 10, 12, 0.9) 100%); border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 8px 16px; transition: all 0.3s ease; color: white; justify-content: space-between; text-decoration: none; border-left: 4px solid; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
 .concise-char-bar:hover { transform: translateX(6px); background: linear-gradient(90deg, rgba(40, 40, 50, 0.9) 0%, rgba(15, 15, 20, 0.95) 100%); border-color: rgba(255, 255, 255, 0.1); border-left-color: inherit; box-shadow: -4px 8px 20px rgba(0, 0, 0, 0.5); }
-.c-main-info { display: flex; align-items: center; gap: 12px; }
+.c-main-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .c-portrait { width: 36px; height: 36px; border-radius: 50%; border: 2px solid; background: #000; object-fit: cover; object-position: center; flex-shrink: 0; box-shadow: 0 0 5px rgba(0,0,0,0.8); }
-.c-name { font-family: 'Cinzel'; font-size: 16px; font-weight: bold; min-width: 120px; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9); letter-spacing: 0.5px; }
-.c-meta { font-size: 13px; color: #aaa; font-style: italic; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; line-height: 1.2; }
+.c-name { font-family: 'Cinzel'; font-size: 16px; font-weight: bold; min-width: 120px; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9); letter-spacing: 0.5px; display: inline-flex; align-items: center; flex-wrap: wrap; }
+.c-meta { font-size: 13px; color: #aaa; font-style: italic; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; line-height: 1.2; margin-top: 2px; }
 .c-stats-info { display: flex; align-items: center; gap: 15px; font-size: 13px; font-weight: bold; text-align: right; }
 .c-val-lvl { color: #ffd100; font-family: 'Cinzel'; font-size: 15px; text-shadow: 0 1px 2px #000; }
 .c-val-ilvl { color: #ff8000; font-size: 15px; text-shadow: 0 1px 2px #000; }
@@ -187,6 +194,23 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
 .custom-tooltip .tt-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #222; align-items: center; }
 .custom-tooltip .tt-label { color: #aaa; margin-right: 15px; }
 .custom-tooltip .tt-val { color: white; font-weight: bold; display: flex; align-items: center; }
+
+.leaderboard-row { border-left-width: 4px; border-left-style: solid; padding: 8px 12px; }
+.lb-rank { font-family: 'Cinzel'; font-weight: bold; width: 30px; text-shadow: 1px 1px 2px #000; }
+.lb-portrait { width: 28px; height: 28px; border-radius: 50%; border-width: 1px; border-style: solid; object-fit: cover; margin-right: 12px; }
+.lb-info { flex: 1; display: flex; flex-direction: column; }
+.lb-name { font-family: 'Cinzel'; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px #000; }
+.lb-spec { color: #aaa; font-size: 10px; font-style: italic; }
+.lb-score { display: flex; align-items: center; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000; }
+.pve-score { color: #ff8000; }
+.pvp-score { color: #ff4400; }
+.lb-score-label { font-size: 10px; color: #888; margin-left: 3px; }
+.spec-icon-sm { width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 3px; border: 1px solid #222; }
+
+.xp-bar-wrapper { margin-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 16px; position: relative; background: #0a0a0a; border: 1px solid #000; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.1); }
+.xp-bar-rested { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(to bottom, #3498db 0%, #2980b9 50%, #1f618d 100%); opacity: 0.9; }
+.xp-bar-earned { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(to bottom, #9b59b6 0%, #8e44ad 50%, #732d91 100%); }
+.xp-bar-label { position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-align: center; color: white; font-size: 12px; font-weight: bold; line-height: 16px; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; z-index: 2; }
 
 /* ========================================= */
 /* FULL CHARACTER CARDS                      */
@@ -207,6 +231,22 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
 .item-slot a { text-decoration: none; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item-slot a:hover { text-decoration: underline; }
 .gear-grid-container { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.char-badges-container { display: flex; justify-content: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.char-badge { background: rgba(0,0,0,0.7); padding: 5px 14px; border-radius: 20px; font-size: 14px; border-width: 1px; border-style: solid; display: inline-flex; align-items: center; }
+.default-badge { border-color: rgba(255,255,255,0.2); color: #ddd; }
+.stat-divider { border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0; padding-top: 15px; }
+.stat-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+.stat-lbl { color: #bbb; }
+.stat-val { font-weight: bold; }
+.val-wht { color: #fff; }
+.val-org { color: #e67e22; }
+.val-red { color: #e74c3c; }
+.val-blu { color: #3498db; }
+.val-ylw { color: #f1c40f; }
+.val-grn { color: #1abc9c; }
+.empty-slot { border-left-color: #333; opacity: 0.6; }
+.empty-slot-icon { filter: grayscale(100%); border-color: #222; }
+.empty-slot-text { color: #666; font-size: 13px; font-weight: bold; font-style: italic; }
 
 /* ========================================= */
 /* TIMELINE & ACTIVITY                       */
@@ -233,6 +273,9 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
 .event-box { display: flex; align-items: center; gap: 6px; border: 1px solid #333; padding: 4px 8px; border-radius: 4px; background: #1a1a1a; border-left: 3px solid; width: 100%; margin-top: 2px; }
 .event-box img { width: 18px; height: 18px; border-radius: 4px; border: 1px solid #111; }
 .event-box span { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-event-header { display: flex; justify-content: space-between; width: 100%; align-items: center; }
+.tl-event-name { font-family: 'Cinzel'; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000; }
+.tl-event-date { color: #888; font-size: 11px; }
 
 /* ========================================= */
 /* ARCHITECTURE & PIPELINES                  */
@@ -363,13 +406,45 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
 @media (hover: none) and (pointer: coarse), (max-width: 800px) {
     .custom-tooltip { display: none !important; }
 }
+
+/* TYPOGRAPHY */
+.loader-text { font-family: 'Cinzel', serif; color: #ffd100; font-size: 18px; margin-top: 15px; text-shadow: 0 2px 4px #000; }
+
+.tooltip-activity { font-family:'Cinzel'; font-weight:bold; font-size:16px; margin-bottom:4px; }
+.tooltip-date { color:#aaa; font-size:12px; }
+.tooltip-hint { color:#666; font-size:10px; margin-top:6px; font-style:italic; }
+
+/* COMPONENTS */
+.intro-skip-btn { position: absolute; bottom: 30px; right: 30px; color: rgba(255,255,255,0.7); font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 1px; z-index: 10; text-shadow: 1px 1px 3px #000; background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); transition: opacity 0.3s; }
+.intro-skip-btn:hover { opacity: 1; color: #fff; }
+
+.ac-empty-state { padding: 20px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.ac-empty-icon { width: 32px; height: 32px; border-radius: 4px; filter: grayscale(100%); margin-bottom: 8px; }
+.ac-empty-text { color: #aaa; font-style: italic; font-size: 13px; }
+
+.hero-ac-item { border-left-width: 3px; border-left-style: solid; padding: 12px; }
+.hero-ac-icon { border-width: 1px; border-style: solid; }
+.hero-ac-name { font-size: 16px; }
+
+/* ========================================= */
+/* WAR EFFORT INCENTIVES                     */
+/* ========================================= */
+.vanguard-aura { background: rgba(30, 35, 45, 0.95) !important; border-left-color: #00ffcc !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; z-index: 5; position: relative; }
+.vanguard-badge { background: #111; color: #fff; padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); font-size: 10px; font-weight: bold; letter-spacing: 1px; margin-left: 8px; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.8); display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.monuments-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; width: 100%; }
+.monument-card { background: linear-gradient(135deg, rgba(25, 25, 30, 0.95) 0%, rgba(10, 10, 15, 0.98) 100%); border: 1px solid rgba(255, 255, 255, 0.1); border-left: 3px solid #ffd100; padding: 10px; display: flex; flex-direction: column; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+.mon-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.mon-icon { font-size: 16px; filter: drop-shadow(0 0 2px rgba(255,209,0,0.5)); }
+.mon-time { font-size: 9px; color: #888; font-weight: bold; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+.mon-title { font-family: 'Cinzel'; font-size: 12px; color: #ffd100; font-weight: bold; line-height: 1.2; margin-bottom: 4px; }
+.mon-desc { font-size: 10px; color: #ccc; line-height: 1.3; }
     </style>
 </head>
 <body>
     <div id="loading-overlay">
         <div class="loader-content">
             <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_tournaments_symbol_bloodelf.jpg" class="pulse-icon" alt="Loading...">
-            <div style="font-family: 'Cinzel', serif; color: #ffd100; font-size: 18px; margin-top: 15px; text-shadow: 0 2px 4px #000;">Fetching Armory Data...</div>
+            <div class="loader-text">Fetching Armory Data...</div>
         </div>
     </div>
     <div id="intro-container" onclick="killIntro()" style="cursor: pointer;">
@@ -377,7 +452,7 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
             <source src="asset/Amw.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
-        <div style="position: absolute; bottom: 30px; right: 30px; color: rgba(255,255,255,0.7); font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 1px; z-index: 10; text-shadow: 1px 1px 3px #000; background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+        <div class="intro-skip-btn">
             Click anywhere to skip ⏭️
         </div>
     </div>
@@ -851,10 +926,10 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
     </div>
 
     <script id="dashboard-config" type="application/json">
-        {"last_updated": "2026-03-28T18:47:12.277456Z", "active_14_days": 408, "raid_ready_count": 21, "prev_mvps": {"pve": null, "pvp": null}}
+        {"last_updated": "2026-03-28T19:14:07.534618Z", "active_14_days": 408, "raid_ready_count": 21, "prev_mvps": {"pve": null, "pvp": null}}
     </script>
     <script id="heatmap-data" type="application/json">
-        [{"date": "2026-03-22", "day_name": "Sun", "count": 691, "loot": 542, "levels": 149, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 575, "loot": 431, "levels": 144, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 524, "loot": 405, "levels": 119, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 725, "loot": 559, "levels": 166, "total_roster": 624, "active_roster": 388}, {"date": "2026-03-26", "day_name": "Thu", "count": 741, "loot": 579, "levels": 162, "total_roster": 628, "active_roster": 393}, {"date": "2026-03-27", "day_name": "Fri", "count": 586, "loot": 430, "levels": 156, "total_roster": 641, "active_roster": 405}, {"date": "2026-03-28", "day_name": "Sat", "count": 580, "loot": 438, "levels": 142, "total_roster": 642, "active_roster": 408}]
+        [{"date": "2026-03-22", "day_name": "Sun", "count": 691, "loot": 542, "levels": 149, "total_roster": null, "active_roster": null}, {"date": "2026-03-23", "day_name": "Mon", "count": 575, "loot": 431, "levels": 144, "total_roster": 535, "active_roster": 309}, {"date": "2026-03-24", "day_name": "Tue", "count": 524, "loot": 405, "levels": 119, "total_roster": 608, "active_roster": 370}, {"date": "2026-03-25", "day_name": "Wed", "count": 725, "loot": 559, "levels": 166, "total_roster": 624, "active_roster": 388}, {"date": "2026-03-26", "day_name": "Thu", "count": 741, "loot": 579, "levels": 162, "total_roster": 628, "active_roster": 393}, {"date": "2026-03-27", "day_name": "Fri", "count": 586, "loot": 430, "levels": 156, "total_roster": 641, "active_roster": 405}, {"date": "2026-03-28", "day_name": "Sat", "count": 620, "loot": 471, "levels": 149, "total_roster": 642, "active_roster": 408}]
     </script>
 
     <script>
@@ -897,6 +972,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     // NEW: Download the heavy roster files silently in the background with error handling
     let rosterData = [];
     let rawGuildRoster = [];
+    let warEffortLocks = {}; 
+    
+    // 1. Fetch CRITICAL Roster Data First
     try {
         const rosterRes = await fetch('asset/roster.json');
         rosterData = await rosterRes.json();
@@ -911,6 +989,17 @@ window.addEventListener('DOMContentLoaded', async () => {
             loaderText.innerHTML = 'Failed to load data. Please refresh.';
         }
         return; // Stop executing to prevent cascading errors
+    }
+
+    // 2. Fetch NON-CRITICAL War Effort Locks (Ignore if it fails or is missing)
+    try {
+        const weRes = await fetch('asset/war_effort.json');
+        if (weRes.ok) {
+            const weData = await weRes.json();
+            warEffortLocks = weData.locks || {};
+        }
+    } catch (error) {
+        console.warn("War Effort locks not generated yet. Proceeding with dynamic data.");
     }
 
     // Hide the loading overlay once data is ready
@@ -1006,9 +1095,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                     const cClass = getCharClass(c);
                     const cHex = CLASS_COLORS[cClass] || '#fff';
                     return `
-                        <div class="autocomplete-item" onclick="selectCharacter('${c.profile.name.toLowerCase()}')" style="border-left: 3px solid ${cHex}; padding: 12px;">
-                            <img src="${c.render_url || getClassIcon(cClass)}" class="ac-icon" style="border-color: ${cHex};">
-                            <div class="ac-info"><span class="ac-name" style="color: ${cHex}; font-size: 16px;">${c.profile.name}</span><span class="ac-meta">Level ${c.profile.level} ${cClass}</span></div>
+                        <div class="autocomplete-item hero-ac-item" onclick="selectCharacter('${c.profile.name.toLowerCase()}')" style="border-left-color: ${cHex};">
+                            <img src="${c.render_url || getClassIcon(cClass)}" class="ac-icon hero-ac-icon" style="border-color: ${cHex};">
+                            <div class="ac-info"><span class="ac-name hero-ac-name" style="color: ${cHex};">${c.profile.name}</span><span class="ac-meta">Level ${c.profile.level} ${cClass}</span></div>
                         </div>`;
                 }).join('');
                 heroSearchAutoComplete.classList.add('show');
@@ -1082,9 +1171,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                 if (customOptions) customOptions.classList.remove('show');
             } else {
                 searchAutoComplete.innerHTML = `
-                    <div style="padding: 20px 10px; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                        <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_head_murloc_01.jpg" loading="lazy" style="width: 32px; height: 32px; border-radius: 4px; filter: grayscale(100%); margin-bottom: 8px;">
-                        <span style="color: #aaa; font-style: italic; font-size: 13px;">No heroes found... Mrgrlrl!</span>
+                    <div class="ac-empty-state">
+                        <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_head_murloc_01.jpg" loading="lazy" class="ac-empty-icon">
+                        <span class="ac-empty-text">No heroes found... Mrgrlrl!</span>
                     </div>`;
                 searchAutoComplete.classList.add('show');
             }
@@ -1287,9 +1376,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const color = count > 0 ? '#ffd100' : '#888';
                 
                 tooltip.innerHTML = `
-                    <div style="font-family:'Cinzel'; font-weight:bold; color:${color}; font-size:16px; margin-bottom:4px;">${count} Activities</div>
-                    <div style="color:#aaa; font-size:12px;">${dateStr}</div>
-                    <div style="color:#666; font-size:10px; margin-top:6px; font-style:italic;">Click to filter timeline</div>
+                    <div class="tooltip-activity" style="color:${color};">${count} Activities</div>
+                    <div class="tooltip-date">${dateStr}</div>
+                    <div class="tooltip-hint">Click to filter timeline</div>
                 `;
                 tooltip.style.borderLeftColor = color;
                 
@@ -1326,7 +1415,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             const cHex = CLASS_COLORS[cClass] || '#fff';
             const activeSpec = p.active_spec ? p.active_spec : '';
             const specIconUrl = getSpecIcon(cClass, activeSpec);
-            const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" style="width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 3px; border: 1px solid #222;">` : '';
+            const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" class="spec-icon-sm">` : '';
             const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
 
             let podiumClass = index === 0 ? 'podium-1' : index === 1 ? 'podium-2' : index === 2 ? 'podium-3' : '';
@@ -1336,20 +1425,20 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             // --- NEW: Trend Arrow Logic for PvE ---
             const trend = p.trend_pve || p.trend_ilvl || 0; 
-            let trendHTML = '<span style="color: #555; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">-</span>';
-            if (trend > 0) trendHTML = `<span style="color: #2ecc71; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▲ ${trend}</span>`;
-            else if (trend < 0) trendHTML = `<span style="color: #e74c3c; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▼ ${Math.abs(trend)}</span>`;
+            let trendHTML = '<span class="trend-indicator trend-neutral">-</span>';
+            if (trend > 0) trendHTML = `<span class="trend-indicator trend-positive">▲ ${trend}</span>`;
+            else if (trend < 0) trendHTML = `<span class="trend-indicator trend-negative">▼ ${Math.abs(trend)}</span>`;
 
             pveHTML += `
-            <div class="pvp-row tt-char ${podiumClass}" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px;">
-                <div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000;">#${index + 1}</div>
-                <img src="${portraitURL}" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid ${cHex}; object-fit: cover; margin-right: 12px;">
-                <div style="flex: 1; display: flex; flex-direction: column;">
-                    <span style="color: ${cHex}; font-family: 'Cinzel'; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px #000;">${p.name}</span>
-                    <span style="color: #aaa; font-size: 10px; font-style: italic;">${specIconHtml}${displaySpecClass}</span>
+            <div class="pvp-row tt-char ${podiumClass} leaderboard-row" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left-color: ${cHex};">
+                <div class="lb-rank" style="color: ${rankColor}; font-size: ${rankSize};">#${index + 1}</div>
+                <img src="${portraitURL}" class="lb-portrait" style="border-color: ${cHex};">
+                <div class="lb-info">
+                    <span class="lb-name" style="color: ${cHex};">${p.name}</span>
+                    <span class="lb-spec">${specIconHtml}${displaySpecClass}</span>
                 </div>
-                <div style="display: flex; align-items: center; color: #ff8000; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000;">
-                    ${p.equipped_item_level || 0} <span style="font-size:10px; color:#888; margin-left: 3px;">iLvl</span>
+                <div class="lb-score pve-score">
+                    ${p.equipped_item_level || 0} <span class="lb-score-label">iLvl</span>
                     ${trendHTML}
                 </div>
             </div>`;
@@ -1374,7 +1463,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             const cHex = CLASS_COLORS[cClass] || '#fff';
             const activeSpec = p.active_spec ? p.active_spec : '';
             const specIconUrl = getSpecIcon(cClass, activeSpec);
-            const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" style="width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: 3px; border: 1px solid #222;">` : '';
+            const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" class="spec-icon-sm">` : '';
             const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
 
             let podiumClass = index === 0 ? 'podium-1' : index === 1 ? 'podium-2' : index === 2 ? 'podium-3' : '';
@@ -1390,15 +1479,15 @@ window.addEventListener('DOMContentLoaded', async () => {
             else if (trend < 0) trendHTML = `<span style="color: #e74c3c; font-size: 12px; margin-left: 12px; width: 30px; text-align: right;">▼ ${Math.abs(trend)}</span>`;
 
             pvpHTML += `
-            <div class="pvp-row tt-char ${podiumClass}" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px;">
-                <div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000;">#${index + 1}</div>
-                <img src="${portraitURL}" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid ${cHex}; object-fit: cover; margin-right: 12px;">
-                <div style="flex: 1; display: flex; flex-direction: column;">
-                    <span style="color: ${cHex}; font-family: 'Cinzel'; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px #000;">${p.name}</span>
-                    <span style="color: #aaa; font-size: 10px; font-style: italic;">${specIconHtml}${displaySpecClass}</span>
+            <div class="pvp-row tt-char ${podiumClass} leaderboard-row" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left-color: ${cHex};">
+                <div class="lb-rank" style="color: ${rankColor}; font-size: ${rankSize};">#${index + 1}</div>
+                <img src="${portraitURL}" class="lb-portrait" style="border-color: ${cHex};">
+                <div class="lb-info">
+                    <span class="lb-name" style="color: ${cHex};">${p.name}</span>
+                    <span class="lb-spec">${specIconHtml}${displaySpecClass}</span>
                 </div>
-                <div style="display: flex; align-items: center; color: #ff4400; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000;">
-                    ${hkCount} <span style="font-size:10px; color:#888; margin-left: 3px;">HKs</span>
+                <div class="lb-score pvp-score">
+                    ${hkCount} <span class="lb-score-label">HKs</span>
                     ${trendHTML}
                 </div>
             </div>`;
@@ -1430,35 +1519,121 @@ window.addEventListener('DOMContentLoaded', async () => {
 
         const health = st.health || 0;
         const power = st.power || 0;
-        const strVal = (st.strength && st.strength.effective) || 0;
-        const agiVal = (st.agility && st.agility.effective) || 0;
-        const staVal = (st.stamina && st.stamina.effective) || 0;
-        const intVal = (st.intellect && st.intellect.effective) || 0;
-        const spiVal = (st.spirit && st.spirit.effective) || 0;
+        const strVal = st.strength_effective || ((st.strength && st.strength.effective) || 0);
+        const agiVal = st.agility_effective || ((st.agility && st.agility.effective) || 0);
+        const staVal = st.stamina_effective || ((st.stamina && st.stamina.effective) || 0);
+        const intVal = st.intellect_effective || ((st.intellect && st.intellect.effective) || 0);
+        const spiVal = st.spirit_effective || ((st.spirit && st.spirit.effective) || 0);
         const raceName = p.race && p.race.name ? (typeof p.race.name === 'string' ? p.race.name : (p.race.name.en_US || 'Unknown')) : 'Unknown';
         
-        const armor = (st.armor && st.armor.effective) || 0;
-        const defense = (st.defense && st.defense.effective) || 0;
+        // Safely extract stats supporting both the old nested JSON and the new flat Turso schema
+        const armor = st.armor_effective || ((st.armor && st.armor.effective) || 0);
+        const defense = st.defense_effective || ((st.defense && st.defense.effective) || 0);
+        const dodge = st.dodge || ((st.dodge && st.dodge.value) || 0);
+        const parry = st.parry || 0;
+        const block = st.block || 0;
+        
         const ap = st.attack_power || 0;
+        const meleeCrit = st.melee_crit_value || ((st.melee_crit && st.melee_crit.value) || 0);
+        const meleeHaste = st.melee_haste_value || 0;
+        
+        const rangedCrit = st.ranged_crit || 0;
+        const rangedHaste = st.ranged_haste || 0;
+        
         const spellPower = st.spell_power || 0;
-        const meleeCrit = (st.melee_crit && st.melee_crit.value) ? st.melee_crit.value.toFixed(2) + '%' : '0%';
-        const spellCrit = (st.spell_crit && st.spell_crit.value) ? st.spell_crit.value.toFixed(2) + '%' : '0%';
-        const manaRegen = st.mana_regen ? Math.round(st.mana_regen) : 0;
-        const dodge = (st.dodge && st.dodge.value) ? st.dodge.value.toFixed(2) + '%' : '0%';
+        const spellCrit = st.spell_crit_value || ((st.spell_crit && st.spell_crit.value) || 0);
+        const spellHaste = st.spell_haste || 0;
+        const spellPen = st.spell_penetration || 0;
+        
+        const manaRegen = st.mana_regen || 0;
+        const mp5 = st.mana_regen_combat || 0;
 
-        let advancedStatsHtml = `<div style="border-top:1px solid rgba(255,255,255,0.1); margin: 15px 0; padding-top: 15px;"></div>`;
-        advancedStatsHtml += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🛡️ Armor</span><span style="color:#fff; font-weight:bold;">${armor.toLocaleString()}</span></div>`;
-        if (defense > 0) advancedStatsHtml += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🧱 Defense</span><span style="color:#fff; font-weight:bold;">${defense}</span></div>`;
-        if (st.dodge && st.dodge.value > 0) advancedStatsHtml += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🤸 Dodge</span><span style="color:#fff; font-weight:bold;">${dodge}</span></div>`;
-        if (ap > 0) advancedStatsHtml += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">⚔️ Attack Power</span><span style="color:#e67e22; font-weight:bold;">${ap}</span></div>`;
-        if (st.melee_crit && st.melee_crit.value > 0) advancedStatsHtml += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🩸 Melee Crit</span><span style="color:#e74c3c; font-weight:bold;">${meleeCrit}</span></div>`;
-        if (spellPower > 0) advancedStatsHtml += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">✨ Spell Power</span><span style="color:#3498db; font-weight:bold;">${spellPower}</span></div>`;
-        if (st.spell_crit && st.spell_crit.value > 0) advancedStatsHtml += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🔥 Spell Crit</span><span style="color:#f1c40f; font-weight:bold;">${spellCrit}</span></div>`;
-        if (manaRegen > 0) advancedStatsHtml += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">💧 Mana Regen</span><span style="color:#1abc9c; font-weight:bold;">${manaRegen}</span></div>`;
+        // Determine logical roles to prevent stat bloat
+        const isTank = ["Protection", "Blood"].includes(activeSpec) || (cClass === "Druid" && activeSpec === "Feral Combat") || cClass === "Warrior";
+        const isHunter = cClass === "Hunter";
+        const isMelee = ["Rogue", "Warrior", "Death Knight"].includes(cClass) || ["Retribution", "Enhancement", "Feral Combat"].includes(activeSpec);
+        const isCaster = ["Mage", "Warlock", "Priest"].includes(cClass) || ["Balance", "Elemental", "Restoration", "Holy"].includes(activeSpec) || (cClass === "Paladin" && ["Holy", "Protection"].includes(activeSpec)) || (cClass === "Shaman" && activeSpec !== "Enhancement") || (cClass === "Druid" && activeSpec !== "Feral Combat");
+
+        let advancedStatsHtml = `<div class="stat-divider"></div>`;
+        advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">🛡️ Armor</span><span class="stat-val val-wht">${armor.toLocaleString()}</span></div>`;
+        
+        // 1. Defenses (Gated to Tanks or High-Defense Off-Tanks)
+        if (isTank || defense > 350) {
+            if (defense > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">🧱 Defense</span><span class="stat-val val-wht">${defense}</span></div>`;
+            if (dodge > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">🤸 Dodge</span><span class="stat-val val-wht">${dodge.toFixed(2)}%</span></div>`;
+            if (parry > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">⚔️ Parry</span><span class="stat-val val-wht">${parry.toFixed(2)}%</span></div>`;
+            if (block > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">🛡️ Block</span><span class="stat-val val-wht">${block.toFixed(2)}%</span></div>`;
+        }
+
+        // 2. Physical Offense (Melee & Ranged)
+        if (isMelee || isHunter) {
+            if (ap > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">⚔️ Attack Power</span><span class="stat-val val-org">${ap}</span></div>`;
+        }
+        if (isMelee) {
+            if (meleeCrit > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">🩸 Melee Crit</span><span class="stat-val val-red">${meleeCrit.toFixed(2)}%</span></div>`;
+            if (meleeHaste > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">⚡ Melee Haste</span><span class="stat-val val-red">${meleeHaste.toFixed(2)}%</span></div>`;
+        }
+        if (isHunter) {
+            if (rangedCrit > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">🏹 Ranged Crit</span><span class="stat-val val-grn">${rangedCrit.toFixed(2)}%</span></div>`;
+            if (rangedHaste > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">⚡ Ranged Haste</span><span class="stat-val val-grn">${rangedHaste.toFixed(2)}%</span></div>`;
+        }
+
+        // 3. Spellcasting & Healing
+        if (isCaster) {
+            if (spellPower > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">✨ Spell Power</span><span class="stat-val val-blu">${spellPower}</span></div>`;
+            if (spellCrit > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">🔥 Spell Crit</span><span class="stat-val val-ylw">${spellCrit.toFixed(2)}%</span></div>`;
+            if (spellHaste > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">⚡ Spell Haste</span><span class="stat-val val-ylw">${spellHaste.toFixed(2)}%</span></div>`;
+            if (spellPen > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">🌀 Spell Pen</span><span class="stat-val val-blu">${spellPen}</span></div>`;
+            if (mp5 > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">💧 Mana/5 (Combat)</span><span class="stat-val val-grn">${Math.round(mp5)}</span></div>`;
+            else if (manaRegen > 0) advancedStatsHtml += `<div class="stat-row"><span class="stat-lbl">💧 Mana Regen</span><span class="stat-val val-grn">${Math.round(manaRegen)}</span></div>`;
+        }
 
         const hks = p.honorable_kills || 0;
         const hkBadge = hks > 0 ? `<span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid #ff4400; padding:5px 14px; border-radius:20px; font-size:14px; color:#ff4400; box-shadow:0 0 5px rgba(255,68,0,0.5);">⚔️ ${hks.toLocaleString()} HKs</span>` : '';
         
+        // --- NEW: Page 2 Weapon & Gear Breakdown ---
+        const mhMin = st.main_hand_min || ((st.main_hand_weapon_damage && st.main_hand_weapon_damage.min) || 0);
+        const mhMax = st.main_hand_max || ((st.main_hand_weapon_damage && st.main_hand_weapon_damage.max) || 0);
+        const mhSpeed = st.main_hand_speed || ((st.main_hand_weapon_damage && st.main_hand_weapon_damage.speed) || 0);
+        const mhDps = st.main_hand_dps || ((st.main_hand_weapon_damage && st.main_hand_weapon_damage.dps) || 0);
+
+        const ohMin = st.off_hand_min || ((st.off_hand_weapon_damage && st.off_hand_weapon_damage.min) || 0);
+        const ohMax = st.off_hand_max || ((st.off_hand_weapon_damage && st.off_hand_weapon_damage.max) || 0);
+        const ohSpeed = st.off_hand_speed || ((st.off_hand_weapon_damage && st.off_hand_weapon_damage.speed) || 0);
+        const ohDps = st.off_hand_dps || ((st.off_hand_weapon_damage && st.off_hand_weapon_damage.dps) || 0);
+
+        const strBase = st.strength_base || ((st.strength && st.strength.base) || 0);
+        const agiBase = st.agility_base || ((st.agility && st.agility.base) || 0);
+        const staBase = st.stamina_base || ((st.stamina && st.stamina.base) || 0);
+        const intBase = st.intellect_base || ((st.intellect && st.intellect.base) || 0);
+        const spiBase = st.spirit_base || ((st.spirit && st.spirit.base) || 0);
+
+        let weaponStatsHtml = '';
+        
+        if (mhDps > 0) {
+            weaponStatsHtml += `<div style="color:#aaa; font-size:11px; text-transform:uppercase; margin-bottom:4px; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">Main Hand Weapon</div>`;
+            weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">🗡️ Damage</span><span class="stat-val val-wht">${Math.round(mhMin)} - ${Math.round(mhMax)}</span></div>`;
+            weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">⏱️ Speed</span><span class="stat-val val-wht">${mhSpeed.toFixed(2)}</span></div>`;
+            weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">💥 DPS</span><span class="stat-val val-org">${mhDps.toFixed(1)}</span></div>`;
+        }
+
+        if (ohDps > 0) {
+            weaponStatsHtml += `<div style="margin-top:12px; color:#aaa; font-size:11px; text-transform:uppercase; margin-bottom:4px; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">Off Hand Weapon</div>`;
+            weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">🗡️ Damage</span><span class="stat-val val-wht">${Math.round(ohMin)} - ${Math.round(ohMax)}</span></div>`;
+            weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">⏱️ Speed</span><span class="stat-val val-wht">${ohSpeed.toFixed(2)}</span></div>`;
+            weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">💥 DPS</span><span class="stat-val val-org">${ohDps.toFixed(1)}</span></div>`;
+        }
+
+        // Show Gear Contribution for Casters or characters lacking weapon API data
+        if (mhDps === 0 || isCaster || isTank) {
+            weaponStatsHtml += `<div style="margin-top:${mhDps > 0 ? '16px' : '0'}; color:#aaa; font-size:11px; text-transform:uppercase; margin-bottom:4px; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">Gear Contribution</div>`;
+            weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">🛡️ Stamina</span><span class="stat-val"><span style="color:#888; font-size:11px; margin-right:6px;">${staBase} Base</span> <span style="color:#2ecc71; font-weight:bold;">+${staVal - staBase}</span></span></div>`;
+            if (intVal > 0) weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">🧠 Intellect</span><span class="stat-val"><span style="color:#888; font-size:11px; margin-right:6px;">${intBase} Base</span> <span style="color:#2ecc71; font-weight:bold;">+${intVal - intBase}</span></span></div>`;
+            if (spiVal > 0) weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">✨ Spirit</span><span class="stat-val"><span style="color:#888; font-size:11px; margin-right:6px;">${spiBase} Base</span> <span style="color:#2ecc71; font-weight:bold;">+${spiVal - spiBase}</span></span></div>`;
+            if (strVal > 0 && !isCaster) weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">⚔️ Strength</span><span class="stat-val"><span style="color:#888; font-size:11px; margin-right:6px;">${strBase} Base</span> <span style="color:#2ecc71; font-weight:bold;">+${strVal - strBase}</span></span></div>`;
+            if (agiVal > 0 && (!isCaster || isHunter)) weaponStatsHtml += `<div class="stat-row"><span class="stat-lbl">🏹 Agility</span><span class="stat-val"><span style="color:#888; font-size:11px; margin-right:6px;">${agiBase} Base</span> <span style="color:#2ecc71; font-weight:bold;">+${agiVal - agiBase}</span></span></div>`;
+        }
+
         const xp = p.experience || 0;
         const restedXp = p.rested_experience || 0;
         let maxXp = p.next_level_experience || p.experience_max || 0;
@@ -1519,9 +1694,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             } else {
                 const emptyIcon = EMPTY_ICONS[slot] || 'inv_misc_questionmark';
                 gearHtml += `
-                <div class="item-slot empty-slot" style="border-left-color:#333; opacity:0.6;">
-                    <img src="https://wow.zamimg.com/images/wow/icons/large/${emptyIcon}.jpg" style="filter:grayscale(100%); border-color:#222;">
-                    <span style="color:#666; font-size:13px; font-weight:bold; font-style:italic;">Empty Slot</span>
+                <div class="item-slot empty-slot">
+                    <img src="https://wow.zamimg.com/images/wow/icons/large/${emptyIcon}.jpg" class="empty-slot-icon">
+                    <span class="empty-slot-text">Empty Slot</span>
                 </div>`;
             }
         });
@@ -1533,21 +1708,19 @@ window.addEventListener('DOMContentLoaded', async () => {
 <div class="char-card ${factionCls}" style="border-top-color:${cHex};">
     <div style="text-align:center; margin-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:20px;">
         <h2 style="color:${cHex}; font-family:Cinzel; font-size:38px; margin:0; text-shadow:0 2px 4px #000;">${p.name || 'Unknown'}</h2>
-        <div style="display:flex; justify-content:center; gap:10px; margin-top:12px; flex-wrap:wrap;">
-            <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid #ffd100; padding:5px 14px; border-radius:20px; font-size:14px; color:#ffd100; text-shadow: 1px 1px 2px #000;">🛡️ ${guildRank}</span>
-            <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.2); padding:5px 14px; border-radius:20px; font-size:14px; color:#ddd;">Level ${p.level || 0}</span>
-            <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid #ff8000; padding:5px 14px; border-radius:20px; font-size:14px; color:#ff8000;">iLvl ${p.equipped_item_level || 0}</span>
-            <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.2); padding:5px 14px; border-radius:20px; font-size:14px; color:#ddd;">${raceName}</span>
-            <span class="badge" style="background:rgba(0,0,0,0.7); border:1px solid ${cHex}; padding:5px 14px; border-radius:20px; font-size:14px; color:${cHex}; display:flex; align-items:center;">${specIconHtml}${displaySpecClass}</span>
+        <div class="char-badges-container">
+            <span class="badge char-badge" style="border-color: #ffd100; color: #ffd100; text-shadow: 1px 1px 2px #000;">🛡️ ${guildRank}</span>
+            <span class="badge char-badge default-badge">Level ${p.level || 0}</span>
+            <span class="badge char-badge" style="border-color: #ff8000; color: #ff8000;">iLvl ${p.equipped_item_level || 0}</span>
+            <span class="badge char-badge default-badge">${raceName}</span>
+            <span class="badge char-badge" style="border-color: ${cHex}; color: ${cHex};">${specIconHtml}${displaySpecClass}</span>
             ${hkBadge}
         </div>
         
-        <div style="margin-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 16px; position: relative; background: #0a0a0a; border: 1px solid #000; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.1);">
-            <div style="position: absolute; top: 0; left: 0; width: ${restedPercent}%; height: 100%; background: linear-gradient(to bottom, #3498db 0%, #2980b9 50%, #1f618d 100%); opacity: 0.9;"></div>
-            <div style="position: absolute; top: 0; left: 0; width: ${xpPercent}%; height: 100%; background: linear-gradient(to bottom, #9b59b6 0%, #8e44ad 50%, #732d91 100%);"></div>
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; text-align: center; color: white; font-size: 12px; font-weight: bold; line-height: 16px; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; z-index: 2;">
-                ${xpLabel}
-            </div>
+        <div class="xp-bar-wrapper">
+            <div class="xp-bar-rested" style="width: ${restedPercent}%;"></div>
+            <div class="xp-bar-earned" style="width: ${xpPercent}%;"></div>
+            <div class="xp-bar-label">${xpLabel}</div>
         </div>
     </div>
     
@@ -1557,16 +1730,34 @@ window.addEventListener('DOMContentLoaded', async () => {
                 <img src="${char.render_url || getClassIcon(cClass)}" style="max-width:180px; width:100%; border-radius:8px; border:2px solid ${cHex}; background:#000; box-shadow:0 6px 12px rgba(0,0,0,0.8); display:block; margin: 0 auto;">
             </div>
             <div class="info-box" style="background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:18px;">
-                <h3 style="color:${cHex}; font-family:Cinzel; font-size:18px; margin-top:0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; text-shadow:1px 1px 2px #000;">Combat Stats</h3>
-                <div class="resource-bar"><div class="bar-fill" style="background:linear-gradient(to right, #1d8348, #2ecc71);"></div><span class="bar-text">Health: ${health}</span></div>
-                <div class="resource-bar"><div class="bar-fill" style="background:linear-gradient(to right, ${powerCol}, #0a0a0a);"></div><span class="bar-text">${powerName}: ${power}</span></div>
-                <div style="height:15px;"></div>
-                <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">⚔️ Strength</span><span style="color:#ff4d4d; font-weight:bold;">${strVal}</span></div>
-                <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🏹 Agility</span><span style="color:#2ecc71; font-weight:bold;">${agiVal}</span></div>
-                <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🛡️ Stamina</span><span style="color:#f1c40f; font-weight:bold;">${staVal}</span></div>
-                <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🧠 Intellect</span><span style="color:#3498db; font-weight:bold;">${intVal}</span></div>
-                <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">✨ Spirit</span><span style="color:#9b59b6; font-weight:bold;">${spiVal}</span></div>
-                ${advancedStatsHtml}
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; margin-bottom:12px;">
+                    <h3 class="stat-card-title" style="color:${cHex}; font-family:Cinzel; font-size:18px; margin:0; text-shadow:1px 1px 2px #000;">Combat Stats</h3>
+                    <button onclick="
+                        const p = this.parentElement.parentElement;
+                        const p1 = p.querySelector('.stat-page-1');
+                        const p2 = p.querySelector('.stat-page-2');
+                        const title = p.querySelector('.stat-card-title');
+                        if(p1.style.display === 'none') {
+                            p1.style.display = 'block'; p2.style.display = 'none'; title.innerText = 'Combat Stats'; this.innerText = '▶';
+                        } else {
+                            p1.style.display = 'none'; p2.style.display = 'block'; title.innerText = 'Weapon & Gear'; this.innerText = '◀';
+                        }
+                    " style="background:none; border:none; color:#bbb; cursor:pointer; font-size:14px; outline:none; transition:0.2s; padding:0;" onmouseover="this.style.color='#ffd100'" onmouseout="this.style.color='#bbb'">▶</button>
+                </div>
+                <div class="stat-page-1">
+                    <div class="resource-bar"><div class="bar-fill" style="background:linear-gradient(to right, #1d8348, #2ecc71);"></div><span class="bar-text">Health: ${health}</span></div>
+                    <div class="resource-bar"><div class="bar-fill" style="background:linear-gradient(to right, ${powerCol}, #0a0a0a);"></div><span class="bar-text">${powerName}: ${power}</span></div>
+                    <div style="height:15px;"></div>
+                    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">⚔️ Strength</span><span style="color:#ff4d4d; font-weight:bold;">${strVal}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🏹 Agility</span><span style="color:#2ecc71; font-weight:bold;">${agiVal}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🛡️ Stamina</span><span style="color:#f1c40f; font-weight:bold;">${staVal}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">🧠 Intellect</span><span style="color:#3498db; font-weight:bold;">${intVal}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;"><span style="color:#bbb;">✨ Spirit</span><span style="color:#9b59b6; font-weight:bold;">${spiVal}</span></div>
+                    ${advancedStatsHtml}
+                </div>
+                <div class="stat-page-2" style="display:none; animation: fadeIn 0.3s;">
+                    ${weaponStatsHtml}
+                </div>
             </div>
         </div>
         <div class="gear-grid-container">
@@ -1698,7 +1889,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                         }
                     });
 
-                    let specHtml = `<div class="class-stat-container" style="margin-bottom: 0; gap: 12px; justify-content: center; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">`;
+                    let specHtml = `<div class="class-stat-container spec-filter-wrapper">`;
 
                     specHtml += `
                         <div class="stat-badge spec-btn concise-spec-btn" data-spec="all" style="border-color: ${cHex}; cursor: pointer; transform: scale(0.95); background: rgba(255,255,255,0.05);" title="View all ${formattedClass}s">
@@ -1911,6 +2102,27 @@ window.addEventListener('DOMContentLoaded', async () => {
                 rankHtml = `<div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: ${rankSize}; width: 30px; text-shadow: 1px 1px 2px #000; margin-right: 10px; display: flex; align-items: center; justify-content: center;">#${index + 1}</div>`;
             }
 
+            // --- NEW: Vanguard Aura Logic ---
+            let vanguardClass = '';
+            let vanguardBadgeHtml = '';
+            if (hashUrl.startsWith('war-effort-') && window.warEffortVanguards) {
+                const type = hashUrl.replace('war-effort-', '');
+                if (window.warEffortVanguards[type] && window.warEffortVanguards[type].includes(displayName.toLowerCase())) {
+                    vanguardClass = 'vanguard-aura';
+                    let timeText = '';
+                    
+                    // Grab the locked timestamp and format it nicely
+                    if (window.warEffortLockTimes && window.warEffortLockTimes[type]) {
+                        const dt = new Date(window.warEffortLockTimes[type]);
+                        if (!isNaN(dt)) {
+                            timeText = ` <span style="color:#aaa; font-size:9px; font-weight:normal; margin-left:4px; text-transform:none;">(${dt.toLocaleDateString(undefined, {month:'short', day:'numeric'})} ${dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})})</span>`;
+                        }
+                    }
+                    
+                    vanguardBadgeHtml = `<span class="vanguard-badge">🌟 VANGUARD${timeText}</span>`;
+                }
+            }
+
             // --- NEW: Custom War Effort Stats Overrides ---
             let statsHtml = `
                 <span>Level <span class="c-val-lvl">${level}</span></span>
@@ -1962,13 +2174,13 @@ window.addEventListener('DOMContentLoaded', async () => {
             // 4. Render the HTML
             if (!isClickable) {
                 return `
-                <div class="concise-char-bar ${podiumClass}" data-class="${cClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default; ${barStyleOverride}">
+                <div class="concise-char-bar ${podiumClass} ${vanguardClass}" data-class="${cClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default; ${barStyleOverride}">
                     <div style="${innerWrapperStyle}">
                         <div style="display: flex; align-items: center;">
                             ${rankHtml}
                             <div class="c-main-info">
                                 <img src="${portraitURL}" class="c-portrait" loading="lazy" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
-                                <span class="c-name" style="color:${cHex};">${displayName}</span>
+                                <span class="c-name" style="color:${cHex};">${displayName}${vanguardBadgeHtml}</span>
                                 <span class="c-meta">${raceName} ${displaySpecClass}</span>
                             </div>
                         </div>
@@ -1979,13 +2191,13 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
 
             return `
-            <div onclick="selectCharacter('${displayName.toLowerCase()}')" class="concise-char-bar tt-char ${podiumClass}" data-char="${displayName.toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex}; ${barStyleOverride}">
+            <div onclick="selectCharacter('${displayName.toLowerCase()}')" class="concise-char-bar tt-char ${podiumClass} ${vanguardClass}" data-char="${displayName.toLowerCase()}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex}; ${barStyleOverride}">
                 <div style="${innerWrapperStyle}">
                     <div style="display: flex; align-items: center;">
                         ${rankHtml}
                         <div class="c-main-info">
                             <img src="${portraitURL}" class="c-portrait" loading="lazy" style="border-color:${cHex};" onerror="this.src='https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'">
-                            <span class="c-name" style="color:${cHex};">${displayName}</span>
+                            <span class="c-name" style="color:${cHex};">${displayName}${vanguardBadgeHtml}</span>
                             <span class="c-meta">${raceName} &bull; ${specIconHtml}${displaySpecClass}</span>
                         </div>
                     </div>
@@ -2570,13 +2782,21 @@ window.addEventListener('DOMContentLoaded', async () => {
         hideAllViews();
         emptyState.style.display = 'block';
         if (navbar) navbar.style.background = 'rgba(15, 15, 15, 0.85)';
-        if (timeline) { timeline.style.display = 'block'; timelineTitle.innerHTML = "📜 Guild Recent Activity"; window.currentFilteredChars = null; applyTimelineFilters(); }
-        
         updateDropdownLabel('all');
 
         const xpCont = document.getElementById('guild-xp-container');
         if (xpCont) xpCont.style.display = 'block';
+        
+        // Calculate the War Effort data AND monuments first
         if (typeof window.renderGuildXPBar === 'function') window.renderGuildXPBar();
+
+        // Now that monuments exist, apply timeline filters to render them at the top
+        if (timeline) { 
+            timeline.style.display = 'block'; 
+            timelineTitle.innerHTML = "📜 Guild Recent Activity"; 
+            window.currentFilteredChars = null; 
+            applyTimelineFilters(); 
+        }
 
         // Populate New KPIs
         let totalIlvl = 0, lvl70Count = 0, totalHks = 0;
@@ -3069,7 +3289,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
 
             const specContainer = document.getElementById('home-spec-container');
-            let specHtml = `<div class="class-stat-container" style="margin-bottom: 0; gap: 12px; justify-content: center; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #333; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">`;
+            let specHtml = `<div class="class-stat-container spec-filter-wrapper">`;
 
             specHtml += `
                 <div class="stat-badge spec-btn" data-hash="class-${className}" style="border-color: ${cHex}; cursor: pointer; transform: scale(0.95); background: rgba(255,255,255,0.05);" title="View all ${formattedClass}s">
@@ -3399,8 +3619,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                 kpiEpic.innerText = epicCount;
             }
             
-            applyTimelineFilters(); 
+            // Generate War Effort data first, then render the timeline feed
             if (typeof window.renderGuildXPBar === 'function') window.renderGuildXPBar(); 
+            applyTimelineFilters();
             
             route();
             
@@ -3452,6 +3673,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             return true;
         });
 
+        // Monument injection moved to a dedicated feed above.
+
         // 2. Clear the old feed and reset the counter
         const container = document.getElementById('timeline-feed-container');
         if (container) container.innerHTML = '';
@@ -3493,9 +3716,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         for (let i = currentTimelineIndex; i < endIndex; i++) {
             const event = filteredTimelineData[i];
             
-            // Restored the proper concise-item class from your production site!
             const eventEl = document.createElement('div');
-            eventEl.className = 'concise-item tt-char'; 
+            
+            // Monument rendering moved to dedicated feed.
+            
+            // Restored the proper concise-item class from your production site!
+            eventEl.className = 'concise-item tt-char';
             eventEl.style.cursor = 'pointer';
             eventEl.onclick = () => selectCharacter((event.character_name || '').toLowerCase());
             
@@ -3524,9 +3750,9 @@ window.addEventListener('DOMContentLoaded', async () => {
                 eventEl.style.borderLeftColor = c_hex;
                 eventEl.innerHTML = `
                     <div class="timeline-node" style="background: #ffd100; box-shadow: 0 0 8px #ffd100;"></div>
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <span style="color: ${c_hex}; font-family:'Cinzel'; font-weight:bold; font-size:15px; text-shadow:1px 1px 2px #000;">${c_name}</span>
-                        <span style="color:#888; font-size:11px;">${date_str}</span>
+                    <div class="tl-event-header">
+                        <span class="tl-event-name" style="color: ${c_hex};">${c_name}</span>
+                        <span class="tl-event-date">${date_str}</span>
                     </div>
                     <div class="event-box" style="border-left-color: #ffd100;">
                         <span style="font-size: 14px;">⭐</span>
@@ -3859,9 +4085,10 @@ window.addEventListener('DOMContentLoaded', async () => {
                 setTimeout(() => { 
                     fillEl.style.width = pct + '%'; 
                     if (pct >= 100) {
-                        fillEl.style.background = `linear-gradient(90deg, ${colorMid}, ${colorMax}, ${glowColor})`;
-                        fillEl.style.boxShadow = `0 0 40px ${colorMax}`;
-                        fillEl.style.animation = `pulseMax${type} 0.5s infinite alternate`;
+                        // Toned down 100% state: Natural colors, softer shadow, and a slower pulse
+                        fillEl.style.background = `linear-gradient(90deg, ${colorBase}, ${colorMax})`;
+                        fillEl.style.boxShadow = `0 0 20px ${colorMax}`;
+                        fillEl.style.animation = `pulseMax${type} 1.5s infinite alternate`;
                     } else if (pct >= 75) {
                         fillEl.style.background = `linear-gradient(90deg, ${colorBase}, ${colorMax})`;
                         fillEl.style.boxShadow = `0 0 ${dynamicGlow}px ${colorMax}`;
@@ -3893,6 +4120,90 @@ window.addEventListener('DOMContentLoaded', async () => {
         renderBar('guild-hk-fill', 'guild-hk-text', totalHks, 500, 'HK');
         renderBar('guild-loot-fill', 'guild-loot-text', totalLoot, 100, 'LOOT');
         renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, 10, 'ZENITH');
+
+        // --- NEW: VANGUARD AURA & TIMELINE MONUMENT CALCULATION ---
+        window.warEffortVanguards = { xp: [], hk: [], loot: [], zenith: [] };
+        window.warEffortMonuments = [];
+        window.warEffortLockTimes = {}; // <-- NEW: Store the exact time it locked
+
+        function applyLockFallback(type, fallbackMon, dynVanguards) {
+            if (warEffortLocks[type]) {
+                window.warEffortVanguards[type] = warEffortLocks[type].vanguards;
+                window.warEffortMonuments.push(warEffortLocks[type].monument);
+                window.warEffortLockTimes[type] = warEffortLocks[type].monument.timestamp;
+            } else if (fallbackMon) {
+                window.warEffortVanguards[type] = dynVanguards;
+                window.warEffortMonuments.push(fallbackMon);
+                window.warEffortLockTimes[type] = fallbackMon.timestamp;
+            }
+        }
+
+        if (totalLevels >= 750) {
+            const topDyn = Object.entries(levelContributors).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0].toLowerCase());
+            let fallback = null;
+            const sortedXP = timelineData.filter(e => e.type === 'level_up' && new Date((e.timestamp || '').replace('Z', '+00:00')).getTime() >= lastResetMs).sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+            if (sortedXP[749]) fallback = { title: "🛡️ Hero's Journey", desc: `<span style="color:#ffd100; font-weight:bold;">${sortedXP[749].character_name}</span> hit the 750th level!`, timestamp: sortedXP[749].timestamp };
+            applyLockFallback('xp', fallback, topDyn);
+        }
+
+        if (totalHks >= 500) {
+            const topPvpers = Object.entries(hkContributors).sort((a,b)=>b[1]-a[1]);
+            const topDyn = topPvpers.slice(0,3).map(x=>x[0].toLowerCase());
+            let fallback = null;
+            if (topPvpers.length > 0) fallback = { title: "🩸 Blood of the Enemy", desc: `<span style="color:#ff4400; font-weight:bold;">${topPvpers[0][0].charAt(0).toUpperCase() + topPvpers[0][0].slice(1)}</span> led the 500 HK charge!`, timestamp: new Date().toISOString() };
+            applyLockFallback('hk', fallback, topDyn);
+        }
+
+        if (totalLoot >= 100) {
+            const topDyn = Object.entries(lootContributors).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0].toLowerCase());
+            let fallback = null;
+            const sortedLoot = timelineData.filter(e => e.type === 'item' && (e.item_quality === 'EPIC' || e.item_quality === 'LEGENDARY') && new Date((e.timestamp || '').replace('Z', '+00:00')).getTime() >= lastResetMs).sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+            if (sortedLoot[99]) fallback = { title: "🐉 Dragon's Hoard", desc: `<span style="color:#a335ee; font-weight:bold;">${sortedLoot[99].character_name}</span> looted the 100th Epic!`, timestamp: sortedLoot[99].timestamp };
+            applyLockFallback('loot', fallback, topDyn);
+        }
+
+        if (totalZenith >= 10) {
+            const topDyn = Object.entries(zenithContributors).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0].toLowerCase());
+            let fallback = null;
+            const sortedZenith = timelineData.filter(e => e.type === 'level_up' && e.level === 70 && new Date((e.timestamp || '').replace('Z', '+00:00')).getTime() >= lastResetMs).sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+            if (sortedZenith[9]) fallback = { title: "⚡ The Zenith Cohort", desc: `<span style="color:#3FC7EB; font-weight:bold;">${sortedZenith[9].character_name}</span> was the 10th Level 70!`, timestamp: sortedZenith[9].timestamp };
+            applyLockFallback('zenith', fallback, topDyn);
+        }
+
+        // --- NEW: COMPACT MONUMENTS GRID FEED ---
+        const timelineEl = document.getElementById('timeline');
+        if (timelineEl) {
+            let monContainer = document.getElementById('monuments-container');
+            if (!monContainer) {
+                monContainer = document.createElement('div');
+                monContainer.id = 'monuments-container';
+                monContainer.className = 'monuments-grid';
+                const filtersEl = timelineEl.querySelector('.timeline-filters');
+                if (filtersEl) timelineEl.insertBefore(monContainer, filtersEl);
+                else timelineEl.prepend(monContainer);
+            }
+            
+            monContainer.innerHTML = '';
+            if (window.warEffortMonuments.length > 0) {
+                window.warEffortMonuments.forEach(mon => {
+                    const eventEl = document.createElement('div');
+                    eventEl.className = 'monument-card';
+                    const dt = new Date(mon.timestamp);
+                    const timeOptions = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
+                    const timeStr = isNaN(dt) ? '' : dt.toLocaleDateString(undefined, timeOptions);
+                    
+                    eventEl.innerHTML = `
+                        <div class="mon-header">
+                            <span class="mon-icon">🏆</span>
+                            <span class="mon-time">${timeStr}</span>
+                        </div>
+                        <div class="mon-title">${mon.title}</div>
+                        <div class="mon-desc">${mon.desc}</div>
+                    `;
+                    monContainer.appendChild(eventEl);
+                });
+            }
+        }
 
         // 6. Tooltip Generator Helper (Updated to Route on Click)
         function bindTooltip(triggerId, contributorsDict, titleText, labelText) {
