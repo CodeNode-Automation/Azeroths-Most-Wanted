@@ -789,8 +789,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         </div>
     </div>
     
-    <div style="display:flex; gap:30px; align-items:flex-start; flex-wrap:wrap;">
-        <div style="flex:0 0 260px; display:flex; flex-direction:column; gap:20px;">
+    <div class="card-content-split">
+        <div class="card-left-col">
             <div style="text-align:center;">
                 <img src="${char.render_url || getClassIcon(cClass)}" style="max-width:180px; width:100%; border-radius:8px; border:2px solid ${cHex}; background:#000; box-shadow:0 6px 12px rgba(0,0,0,0.8); display:block; margin: 0 auto;">
             </div>
@@ -1915,23 +1915,64 @@ window.addEventListener('DOMContentLoaded', async () => {
             drawSpark('spark-active', 'active_roster', 'rgba(46, 204, 113, 0.5)');
         }
 
-        // Recent Milestones logic
+        // Recent Milestones logic (Fading Rotator)
         if (timelineData && timelineData.length > 0) {
             const milestoneCont = document.getElementById('recent-milestones-container');
             const milestoneText = document.getElementById('milestone-text');
-            // Find the most recent Epic/Legendary loot OR Level 70
-            const recent = timelineData.find(e => 
-                (e.type === 'item' && (e.item_quality === 'EPIC' || e.item_quality === 'LEGENDARY')) || 
-                (e.type === 'level_up' && e.level === 70)
-            );
-            if (recent) {
-                milestoneCont.style.display = 'block';
-                const charName = `<span class="milestone-highlight">${recent.character_name}</span>`;
-                if (recent.type === 'level_up') {
-                    milestoneText.innerHTML = `Congratulations to ${charName} for reaching <span class="milestone-highlight">Level 70!</span> 🎉`;
+
+            if (milestoneCont && milestoneText) {
+                // 1. Grab the top 5 most recent milestones
+                const recentEvents = timelineData.filter(e => 
+                    (e.type === 'item' && (e.item_quality === 'EPIC' || e.item_quality === 'LEGENDARY')) || 
+                    (e.type === 'level_up' && e.level === 70)
+                ).slice(0, 5);
+
+                if (recentEvents.length > 0) {
+                    milestoneCont.style.display = 'flex';
+                    milestoneText.classList.add('milestone-text-rotator');
+
+                    // 2. Pre-build the HTML strings for all 5 events
+                    const slideHtml = recentEvents.map(recent => {
+                        const charName = `<span class="milestone-highlight">${recent.character_name}</span>`;
+                        let timeStr = '';
+                        try {
+                            let cleanTs = (recent.timestamp || '').replace('Z', '+00:00');
+                            if (!cleanTs.includes('+') && !cleanTs.includes('Z')) cleanTs += 'Z';
+                            const dt = new Date(cleanTs);
+                            if (!isNaN(dt.getTime())) timeStr = ` <span style="color:#888; font-size:11px; white-space:nowrap; margin-left:4px;">(${dt.toLocaleDateString(undefined, {month:'short', day:'numeric'})})</span>`;
+                        } catch(e) {}
+
+                        if (recent.type === 'level_up') {
+                            return `Congratulations to ${charName} for reaching <span class="milestone-highlight">Level 70!</span> 🎉${timeStr}`;
+                        } else {
+                            const qClass = recent.item_quality === 'LEGENDARY' ? 'color:#ff8000;' : 'color:#a335ee;';
+                            return `${charName} just looted <a href="https://www.wowhead.com/wotlk/item=${recent.item_id}" target="_blank" style="${qClass} font-weight:bold; text-decoration:none;">[${recent.item_name}]</a>!${timeStr}`;
+                        }
+                    });
+
+                    // 3. Initialize the first slide
+                    milestoneText.innerHTML = slideHtml[0];
+
+                    // 4. Start the rotating carousel if there is more than 1 event
+                    if (slideHtml.length > 1) {
+                        let currentSlide = 0;
+
+                        // Clear existing interval if route() is called multiple times
+                        if (window.milestoneInterval) clearInterval(window.milestoneInterval);
+
+                        window.milestoneInterval = setInterval(() => {
+                            milestoneText.style.opacity = '0'; // Fade out
+
+                            setTimeout(() => {
+                                currentSlide = (currentSlide + 1) % slideHtml.length;
+                                milestoneText.innerHTML = slideHtml[currentSlide];
+                                milestoneText.style.opacity = '1'; // Fade in
+                            }, 500); // Wait for fade out to finish before swapping text
+
+                        }, 4500); // Swap every 4.5 seconds
+                    }
                 } else {
-                    const qClass = recent.item_quality === 'LEGENDARY' ? 'color:#ff8000;' : 'color:#a335ee;';
-                    milestoneText.innerHTML = `${charName} just looted <a href="https://www.wowhead.com/wotlk/item=${recent.item_id}" target="_blank" style="${qClass} font-weight:bold; text-decoration:none;">[${recent.item_name}]</a>!`;
+                    milestoneCont.style.display = 'none';
                 }
             }
         }
