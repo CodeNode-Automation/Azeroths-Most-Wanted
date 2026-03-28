@@ -56,35 +56,4 @@ Heavy payloads, like the thousands of lines of timeline activity, are pre-compil
 
 ---
 
-## 🛠️ Configuration & Setup
-
-If you want to fork this project for your own guild, the application logic is driven by `config.py`. 
-
-### 1. Configure Target
-Adjust the variables in `config.py` to target your realm and guild:
-
-```python
-REALM = "thunderstrike"
-GUILD_NAME = "Azeroths Most Wanted"
-PROFILE_NAMESPACE = "profile-classicann-eu"
-```
-
-### 2. Set Up Environment Variables (Secrets)
-To run the extraction script (`main.py`) or trigger the GitHub Actions workflow, you must provide the following secrets:
-
-* `BLIZZARD_CLIENT_ID`: Your Blizzard Developer API Client ID.
-* `BLIZZARD_CLIENT_SECRET`: Your Blizzard Developer API Secret.
-* `TURSO_DATABASE_URL`: Your Turso Edge Database HTTP endpoint.
-* `TURSO_AUTH_TOKEN`: Your Turso access token.
-
-*In GitHub, add these under **Settings > Secrets and variables > Actions**.*
-
-### 3. Database Schema
-You do not need to manually initialize the database. The `setup_database()` function in `main.py` automatically asserts `CREATE TABLE IF NOT EXISTS` via HTTP queries on every run.
-
-### 4. Deployment
-The workflow in `.github/workflows/update_data.yml` automatically executes the data pipeline, commits the resulting `.html` and `.json` files directly to the `main` branch, and utilizes the official `actions/deploy-pages@v4` action to push the static site to GitHub Pages.
-
----
-
 *Disclaimer: World of Warcraft, Warcraft and Blizzard Entertainment are trademarks or registered trademarks of Blizzard Entertainment, Inc. in the U.S. and/or other countries. This is a portfolio/community project and is not affiliated with, endorsed, or sponsored by Blizzard Entertainment.*
