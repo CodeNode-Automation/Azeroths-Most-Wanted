@@ -3463,7 +3463,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 </div>`;
             }
             
-            return chars.map((char, index) => {
+            const podiumBlocks = chars.map((char, index) => {
                 const p = char.profile;
                 const cClass = getCharClass(char);
                 const cHex = CLASS_COLORS[cClass] || '#fff';
@@ -3471,21 +3471,23 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const trend = isPvp ? (p.trend_pvp || p.trend_hks || 0) : (p.trend_pve || p.trend_ilvl || 0);
                 const label = isPvp ? 'HKs' : 'iLvl';
                 
-                const podiumClass = index === 0 ? 'podium-1' : index === 1 ? 'podium-2' : 'podium-3';
-                const rankColor = index === 0 ? '#ffd100' : index === 1 ? '#c0c0c0' : '#cd7f32';
+                const rank = index + 1;
+                // Assign unique step heights & flex-orders based on rank
+                const stepClass = rank === 1 ? 'podium-step-1' : (rank === 2 ? 'podium-step-2' : 'podium-step-3');
+                const rankColor = rank === 1 ? '#ffd100' : (rank === 2 ? '#c0c0c0' : '#cd7f32');
                 
                 return `
-                <div class="pvp-row tt-char ${podiumClass}" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-left: 4px solid ${cHex}; padding: 8px 12px; margin-bottom: 0;">
-                    <div style="color: ${rankColor}; font-family: 'Cinzel'; font-weight: bold; font-size: 18px; width: 30px; text-shadow: 1px 1px 2px #000;">#${index + 1}</div>
-                    <img src="${portraitURL}" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid ${cHex}; object-fit: cover; margin-right: 12px;">
-                    <div style="flex: 1; display: flex; flex-direction: column;">
-                        <span style="color: ${cHex}; font-family: 'Cinzel'; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px #000;">${p.name}</span>
-                    </div>
-                    <div style="display: flex; align-items: center; color: #2ecc71; font-weight: bold; font-size: 15px; text-shadow: 1px 1px 2px #000;">
-                        ▲ ${trend.toLocaleString()} <span style="font-size:10px; color:#888; margin-left: 3px; text-transform:uppercase;">${label}</span>
+                <div class="podium-block ${stepClass} tt-char" data-char="${(p.name || '').toLowerCase()}" onclick="selectCharacter('${(p.name || '').toLowerCase()}')" style="border-top: 3px solid ${cHex};">
+                    <img src="${portraitURL}" class="podium-avatar" style="border-color: ${cHex};">
+                    <div class="podium-rank" style="color: ${rankColor};">#${rank}</div>
+                    <div style="color: ${cHex}; font-family: 'Cinzel'; font-weight: bold; font-size: 13px; text-shadow: 1px 1px 2px #000; z-index: 2; margin-bottom: 4px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
+                    <div style="color: #2ecc71; font-weight: bold; font-size: 12px; text-shadow: 1px 1px 2px #000; z-index: 2;">
+                        ▲ ${trend.toLocaleString()} <span style="font-size:9px; color:#888; text-transform:uppercase;">${label}</span>
                     </div>
                 </div>`;
             }).join('');
+
+            return `<div class="mvp-podium-container">${podiumBlocks}</div>`;
         }
 
         function generateGloatingHtml(mvpData, isPvp) {
@@ -3714,11 +3716,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             
             if (textEl) {
                 if (pct >= 100) {
-                    textEl.innerText = `${currentVal.toLocaleString()} / ${maxVal.toLocaleString()} ➔ GOAL CRUSHED!`;
+                    textEl.innerHTML = `<span style="color:#ddd; margin-right:8px;">${labelName}:</span> ${currentVal.toLocaleString()} / ${maxVal.toLocaleString()} <span style="color:#fff; margin-left:8px; text-shadow: 0 0 10px ${colorMax};">🔥 CRUSHED!</span>`;
                     textEl.style.color = colorMid;
-                    textEl.style.textShadow = `0 0 10px ${colorMax}, 1px 1px 2px #000`;
+                    textEl.style.textShadow = `0 0 8px rgba(0,0,0,0.8), 1px 1px 2px #000`;
                 } else {
-                    textEl.innerText = `${currentVal.toLocaleString()} / ${maxVal.toLocaleString()} ${labelName} Gained`;
+                    textEl.innerHTML = `<span style="color:#ccc; font-size:11px; margin-right:8px; text-transform:uppercase;">${labelName}:</span> <span style="font-size:15px;">${currentVal.toLocaleString()} / ${maxVal.toLocaleString()}</span>`;
                 }
             }
         }

@@ -195,18 +195,14 @@ def update_character_state(char_data, history_data, timeline_data):
             history_data[char_data["char"]]["spell_power"] = stats.get("spell_power")
             history_data[char_data["char"]]["spell_penetration"] = stats.get("spell_penetration")
             
-            mh = stats.get("main_hand_weapon_damage", {})
-            if isinstance(mh, dict):
-                history_data[char_data["char"]]["main_hand_min"] = mh.get("min")
-                history_data[char_data["char"]]["main_hand_max"] = mh.get("max")
-                history_data[char_data["char"]]["main_hand_speed"] = mh.get("speed")
-                history_data[char_data["char"]]["main_hand_dps"] = mh.get("dps")
+            history_data[char_data["char"]]["main_hand_min"] = stats.get("main_hand_damage_min")
+            history_data[char_data["char"]]["main_hand_max"] = stats.get("main_hand_damage_max")
+            history_data[char_data["char"]]["main_hand_speed"] = stats.get("main_hand_speed")
+            history_data[char_data["char"]]["main_hand_dps"] = stats.get("main_hand_dps")
                 
-            oh = stats.get("off_hand_weapon_damage", {})
-            if isinstance(oh, dict):
-                history_data[char_data["char"]]["off_hand_min"] = oh.get("min")
-                history_data[char_data["char"]]["off_hand_max"] = oh.get("max")
-                history_data[char_data["char"]]["off_hand_speed"] = oh.get("speed")
-                history_data[char_data["char"]]["off_hand_dps"] = oh.get("dps")
+            history_data[char_data["char"]]["off_hand_min"] = stats.get("off_hand_damage_min")
+            history_data[char_data["char"]]["off_hand_max"] = stats.get("off_hand_damage_max")
+            history_data[char_data["char"]]["off_hand_speed"] = stats.get("off_hand_speed")
+            history_data[char_data["char"]]["off_hand_dps"] = stats.get("off_hand_dps")
 
     return history_data, timeline_data
