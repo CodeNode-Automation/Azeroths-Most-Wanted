@@ -297,9 +297,9 @@ a, .item-slot, .nav-btn, .clickable-class, .tt-char, .concise-item, .tl-btn, #ba
 /* ANIMATIONS & KEYFRAMES                    */
 /* ========================================= */
 .war-effort-link:hover { color: #fff !important; }
-.progress-bar-glow { position: relative; border-radius: 20px; }
+.progress-bar-glow { position: relative; border-radius: 10px; }
 .progress-bar-glow::after { content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%); background-size: 200% 100%; animation: shimmerWave 2.5s infinite linear; z-index: 1; pointer-events: none; border-radius: inherit; }
-.progress-bar-glow::before { content: ''; position: absolute; top: 0; right: 0; width: 12px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9)); box-shadow: 4px 0 12px rgba(255,255,255,0.9); z-index: 2; pointer-events: none; border-radius: 0 20px 20px 0; }
+.progress-bar-glow::before { content: ''; position: absolute; top: 0; right: 0; width: 12px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9)); box-shadow: 4px 0 12px rgba(255,255,255,0.9); z-index: 2; pointer-events: none; border-radius: 0 10px 10px 0; }
 .animate-list-update { animation: smoothFadeIn 0.3s ease-out forwards; }
 
 @keyframes fillBar { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }

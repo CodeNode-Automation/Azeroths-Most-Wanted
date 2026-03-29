@@ -94,7 +94,8 @@ async def setup_database(session):
         "CREATE INDEX IF NOT EXISTS idx_timeline_timestamp ON timeline (timestamp DESC)",
         "CREATE TABLE IF NOT EXISTS global_trends (id TEXT PRIMARY KEY, last_total INTEGER, trend_total INTEGER, last_active INTEGER, trend_active INTEGER, last_ready INTEGER, trend_ready INTEGER)",
         "CREATE TABLE IF NOT EXISTS daily_roster_stats (date TEXT PRIMARY KEY, total_roster INTEGER DEFAULT 0, active_roster INTEGER DEFAULT 0, avg_ilvl_70 INTEGER DEFAULT 0, total_hks INTEGER DEFAULT 0)",
-        "CREATE TABLE IF NOT EXISTS char_history (char_name TEXT, record_date TEXT, ilvl INTEGER, hks INTEGER, PRIMARY KEY (char_name, record_date))"
+        "CREATE TABLE IF NOT EXISTS char_history (char_name TEXT, record_date TEXT, ilvl INTEGER, hks INTEGER, PRIMARY KEY (char_name, record_date))",
+        "CREATE TABLE IF NOT EXISTS ladder_history (week_anchor TEXT, category TEXT, rank INTEGER, champion TEXT, score INTEGER, PRIMARY KEY (week_anchor, category, rank))"
     ]
     await push_turso_batch(session, [{"q": q} for q in schema_queries])
 
@@ -539,6 +540,35 @@ async def main_async():
             
         if pvp_winner: 
             await smart_update_prev_mvp('pvp', pvp_winner["name"], pvp_winner["score"])
+        
+        # 6. LADDER CHAMPS LOGIC (Gold, Silver, Bronze snapshots from previous week)
+        try:
+            await fetch_turso(session, f"DELETE FROM ladder_history WHERE week_anchor = '{week_anchor}'")
+        except Exception: pass
+
+        async def smart_update_ladder_history(category, rank, champ, score):
+            try:
+                await fetch_turso(session, f"INSERT OR REPLACE INTO ladder_history (week_anchor, category, rank, champion, score) VALUES ('{prev_week_anchor}', '{category}', {rank}, '{champ}', {score})")
+            except Exception: pass
+
+        ladder_snapshot_query = f"""
+            SELECT char_name, ilvl, hks 
+            FROM (
+                SELECT char_name, ilvl, hks, 
+                       ROW_NUMBER() OVER(PARTITION BY char_name ORDER BY record_date DESC) as rn
+                FROM char_history
+                WHERE record_date <= '{anchor_monday_str}'
+            ) WHERE rn = 1
+        """
+        snapshot_rows = await fetch_turso(session, ladder_snapshot_query)
+        if snapshot_rows:
+            pve_sorted = sorted(snapshot_rows, key=lambda x: x.get('ilvl', 0), reverse=True)
+            for i, row in enumerate(pve_sorted[:3]):
+                await smart_update_ladder_history('pve', i+1, row['char_name'], row['ilvl'])
+                
+            pvp_sorted = sorted(snapshot_rows, key=lambda x: x.get('hks', 0), reverse=True)
+            for i, row in enumerate(pvp_sorted[:3]):
+                await smart_update_ladder_history('pvp', i+1, row['char_name'], row['hks'])
 
         # Save JSON Lockfile
         with open(we_file, "w", encoding="utf-8") as f:
@@ -546,70 +576,122 @@ async def main_async():
 
 
         # --- AGGREGATE HISTORICAL BADGES FROM TURSO ---
-        print("🏅 Calculating Cumulative War Effort & MVP Badges...")
+        print("🏅 Calculating Cumulative War Effort, MVP, and Ladder Badges...")
         try:
-            historical_data = await fetch_turso(session, "SELECT category, vanguards, participants FROM war_effort_history")
+            historical_data = await fetch_turso(session, "SELECT week_anchor, category, vanguards, participants FROM war_effort_history")
             vanguard_tallies, campaign_tallies = {}, {}
+            badge_events = [] 
             cat_map = {"xp": "XP", "hk": "HKs", "loot": "Loot", "zenith": "Zenith"}
 
             if historical_data:
                 for row in historical_data:
-                    cat = row.get('category', '') if isinstance(row, dict) else row[0]
-                    v_json = row.get('vanguards', '[]') if isinstance(row, dict) else row[1]
-                    p_json = row.get('participants', '[]') if isinstance(row, dict) else row[2]
+                    # Safely extract and cast to prevent NoneType crashes
+                    week_anchor = str(row.get('week_anchor', '') if isinstance(row, dict) else row[0] or '')
+                    cat = str(row.get('category', '') if isinstance(row, dict) else row[1] or '')
+                    v_json = row.get('vanguards', '[]') if isinstance(row, dict) else row[2]
+                    p_json = row.get('participants', '[]') if isinstance(row, dict) else row[3]
                     
+                    if not week_anchor: continue
                     label = cat_map.get(cat.lower(), cat.title())
+                    timestamp = f"{week_anchor}T12:00:00Z"
 
                     try:
-                        for v in json.loads(v_json):
-                            v_lower = v.lower()
+                        for v in json.loads(v_json or '[]'):
+                            v_lower = str(v).lower()
                             if v_lower not in vanguard_tallies: vanguard_tallies[v_lower] = []
                             vanguard_tallies[v_lower].append(label)
+                            badge_events.append({"timestamp": timestamp, "character_name": str(v).title(), "type": "badge", "badge_type": "vanguard", "category": label})
                     except: pass
                     try:
-                        for p in json.loads(p_json):
-                            p_lower = p.lower()
+                        for p in json.loads(p_json or '[]'):
+                            p_lower = str(p).lower()
                             if p_lower not in campaign_tallies: campaign_tallies[p_lower] = []
                             campaign_tallies[p_lower].append(label)
+                            badge_events.append({"timestamp": timestamp, "character_name": str(p).title(), "type": "badge", "badge_type": "campaign", "category": label})
                     except: pass
 
-            mvp_data = await fetch_turso(session, "SELECT champion, category FROM reigning_champs_history")
+            mvp_data = await fetch_turso(session, "SELECT week_anchor, champion, category FROM reigning_champs_history")
             pve_champs, pvp_champs = {}, {}
             if mvp_data:
                 for row in mvp_data:
-                    champ = row.get('champion', '').lower() if isinstance(row, dict) else row[0].lower()
-                    cat = row.get('category', '').lower() if isinstance(row, dict) else row[1].lower()
-                    if cat == 'pve': pve_champs[champ] = pve_champs.get(champ, 0) + 1
-                    if cat == 'pvp': pvp_champs[champ] = pvp_champs.get(champ, 0) + 1
+                    week_anchor = str(row.get('week_anchor', '') if isinstance(row, dict) else row[0] or '')
+                    champ = str(row.get('champion', '') if isinstance(row, dict) else row[1] or '').lower()
+                    cat = str(row.get('category', '') if isinstance(row, dict) else row[2] or '').lower()
+                    
+                    if not champ or not week_anchor: continue
+                    timestamp = f"{week_anchor}T12:00:00Z"
 
+                    if cat == 'pve': 
+                        pve_champs[champ] = pve_champs.get(champ, 0) + 1
+                        badge_events.append({"timestamp": timestamp, "character_name": champ.title(), "type": "badge", "badge_type": "mvp_pve", "category": "PvE Weekly Trend"})
+                    if cat == 'pvp': 
+                        pvp_champs[champ] = pvp_champs.get(champ, 0) + 1
+                        badge_events.append({"timestamp": timestamp, "character_name": champ.title(), "type": "badge", "badge_type": "mvp_pvp", "category": "PvP Weekly Trend"})
+
+            # --- NEW: LADDER MEDALS ---
+            ladder_data = await fetch_turso(session, "SELECT week_anchor, category, rank, champion FROM ladder_history")
+            ladder_medals = {} 
+            if ladder_data:
+                for row in ladder_data:
+                    w_anchor = str(row.get('week_anchor', '') if isinstance(row, dict) else row[0] or '')
+                    cat = str(row.get('category', '') if isinstance(row, dict) else row[1] or '').lower()
+                    
+                    # Safely convert rank to integer
+                    raw_rank = row.get('rank', 0) if isinstance(row, dict) else row[2]
+                    try: rank = int(raw_rank)
+                    except: rank = 0
+                        
+                    champ = str(row.get('champion', '') if isinstance(row, dict) else row[3] or '').lower()
+                    
+                    if not champ or not w_anchor: continue
+                    timestamp = f"{w_anchor}T12:00:00Z"
+                    
+                    if champ not in ladder_medals:
+                        ladder_medals[champ] = {'pve_gold': 0, 'pve_silver': 0, 'pve_bronze': 0, 'pvp_gold': 0, 'pvp_silver': 0, 'pvp_bronze': 0}
+                    
+                    medal_type = 'gold' if rank == 1 else 'silver' if rank == 2 else 'bronze'
+                    if rank > 3 or rank < 1: continue
+                        
+                    medal_key = f"{cat}_{medal_type}"
+                    if medal_key in ladder_medals[champ]:
+                        ladder_medals[champ][medal_key] += 1
+                    
+                    cat_name = "PvE Leaderboard" if cat == 'pve' else "PvP Leaderboard"
+                    badge_events.append({
+                        "timestamp": timestamp, "character_name": champ.title(), "type": "badge", "badge_type": medal_key, "category": cat_name
+                    })
+
+            # ASSIGN EVERYTHING TO ROSTER
             for r in roster_data:
                 if not r or not r.get("profile"): continue
                 c_name = r["profile"].get("name", "").lower()
                 
-                # Fetch tallies safely
                 v_badges = vanguard_tallies.get(c_name, [])
                 c_badges = campaign_tallies.get(c_name, [])
                 pve_count = pve_champs.get(c_name, 0)
                 pvp_count = pvp_champs.get(c_name, 0)
+                medals = ladder_medals.get(c_name, {'pve_gold': 0, 'pve_silver': 0, 'pve_bronze': 0, 'pvp_gold': 0, 'pvp_silver': 0, 'pvp_bronze': 0})
 
-                # Inject into profile
                 r["profile"]["vanguard_badges"] = v_badges
                 r["profile"]["campaign_badges"] = c_badges
                 r["profile"]["pve_champ_count"] = pve_count
                 r["profile"]["pvp_champ_count"] = pvp_count
+                for k, v in medals.items():
+                    r["profile"][k] = v
+                    r[k] = v # Failsafe
                 
-                # FAILSAFE: Inject at the top level so it survives strict JSON serializers
                 r["vanguard_badges"] = v_badges
                 r["campaign_badges"] = c_badges
                 r["pve_champ_count"] = pve_count
                 r["pvp_champ_count"] = pvp_count
                 
-                # Critical Fix: Save to history_data so it makes it to the database!
                 if c_name in history_data:
                     history_data[c_name]["vanguard_badges"] = v_badges
                     history_data[c_name]["campaign_badges"] = c_badges
                     history_data[c_name]["pve_champ_count"] = pve_count
                     history_data[c_name]["pvp_champ_count"] = pvp_count
+                    for k, v in medals.items():
+                        history_data[c_name][k] = v
                 
         except Exception as e:
             print(f"⚠️ Failed to aggregate badges from Turso: {e}")
@@ -694,7 +776,26 @@ async def main_async():
             await push_turso_batch(session, batch_stmts_chars)
         print("✅ Final push to Turso complete!")
 
-        # Dump the heavy timeline payload to an external JSON file
+        # --- NEW: INJECT BADGES INTO TIMELINE ---
+        orig_chars = {r['name'].lower(): r for r in char_rows}
+        for ev in badge_events:
+            c_name_lower = ev["character_name"].lower()
+            ev["class"] = orig_chars.get(c_name_lower, {}).get("class", "Unknown")
+        
+        dashboard_feed.extend(badge_events)
+        dashboard_feed.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+
+        # --- INJECT BADGES INTO TIMELINE ---
+        if 'badge_events' in locals():
+            orig_chars = {r['name'].lower(): r for r in char_rows}
+            for ev in badge_events:
+                c_name_lower = ev["character_name"].lower()
+                ev["class"] = orig_chars.get(c_name_lower, {}).get("class", "Unknown")
+            
+            dashboard_feed.extend(badge_events)
+            # Guarantee timeline sorting by timestamp
+            dashboard_feed.sort(key=lambda x: str(x.get('timestamp', '')), reverse=True)
+
         with open("asset/timeline.json", "w", encoding="utf-8") as f:
             json.dump(dashboard_feed, f, ensure_ascii=False)
             

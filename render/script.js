@@ -43,11 +43,39 @@ function safeParseArray(val) {
     return [];
 }
 
+// --- Helper: Map Raw Badge Names to Thematic Names ---
+function getThematicName(rawName) {
+    if (!rawName) return 'Awarded';
+    const clean = rawName.toLowerCase().trim();
+    const map = {
+        'xp': "Hero's Journey",
+        'hks': "Blood of the Enemy", // Fixed to match main.py output
+        'hk': "Blood of the Enemy",
+        'loot': "Dragon's Hoard",
+        'zenith': "The Zenith Cohort",
+        'pve_gold': "PvE Ladder (Gold)",
+        'pve_silver': "PvE Ladder (Silver)",
+        'pve_bronze': "PvE Ladder (Bronze)",
+        'pvp_gold': "PvP Ladder (Gold)",
+        'pvp_silver': "PvP Ladder (Silver)",
+        'pvp_bronze': "PvP Ladder (Bronze)",
+        'mvp_pve': "PvE MVP Champion",
+        'mvp_pvp': "PvP MVP Champion",
+        'vanguard': "Vanguard Status",
+        'campaign': "Campaign Participant"
+    };
+    return map[clean] || (rawName.charAt(0).toUpperCase() + rawName.slice(1));
+}
+
 // --- Helper: Summarize Badges for Tooltips ---
 function summarizeBadges(badgeArray) {
     const arr = safeParseArray(badgeArray);
     if (arr.length === 0) return "";
-    const counts = arr.reduce((acc, val) => { acc[val] = (acc[val] || 0) + 1; return acc; }, {});
+    const counts = arr.reduce((acc, val) => { 
+        const niceName = getThematicName(val);
+        acc[niceName] = (acc[niceName] || 0) + 1; 
+        return acc; 
+    }, {});
     return Object.entries(counts).map(([k, v]) => `${v}x ${k}`).join(', ');
 }
 
@@ -304,6 +332,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             selectValueText.innerHTML = "📊 Analytics";
         } else if (hash === 'architecture') {
             selectValueText.innerHTML = "⚙️ Architecture";
+        } else if (hash === 'badges') {
+            selectValueText.innerHTML = "🌟 Hall of Heroes";
         } else if (hash.startsWith('class-') || hash.startsWith('spec-') || hash.startsWith('filter-')) {
             selectValueText.innerHTML = "⚡ Filter Active";
         } else {
@@ -587,6 +617,67 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     setupTooltips();
 
+    // --- Helper: Get Detailed Badge History from Timeline ---
+    function getDetailedBadgeTooltip(charName, badgeTypes, baseTitle, actualCount) {
+        let tooltip = baseTitle;
+        if (!timelineData || timelineData.length === 0 || !charName) return tooltip.replace(/"/g, '&quot;');
+        
+        let events = timelineData.filter(e => 
+            e.type === 'badge' && 
+            (e.character_name || '').toLowerCase() === charName.toLowerCase() &&
+            badgeTypes.includes(e.badge_type)
+        );
+        
+        if (events.length > 0) {
+            events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // Deduplicate identical events from the backend (same badge, same day)
+            const uniqueEvents = [];
+            const seenKeys = new Set();
+            
+            events.forEach(e => {
+                let dStr = e.timestamp.substring(0, 10);
+                // Include the specific category so different campaigns aren't squashed
+                const key = `${e.badge_type}_${e.category || ''}_${dStr}`;
+                if (!seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    uniqueEvents.push(e);
+                }
+            });
+            
+            events = uniqueEvents;
+            
+            // Failsafe: Never show more events than the character actually has badges
+            if (actualCount !== undefined && actualCount > 0) {
+                events = events.slice(0, actualCount);
+            }
+            
+            if (events.length > 0) {
+                tooltip += ' \n-------------------\n';
+                
+                const lineCounts = {};
+                events.forEach(e => {
+                    let dStr = e.timestamp.substring(0, 10);
+                    try {
+                        let cleanTs = e.timestamp.replace('Z', '+00:00');
+                        if (!cleanTs.includes('+') && !cleanTs.includes('Z')) cleanTs += 'Z';
+                        const dt = new Date(cleanTs);
+                        if (!isNaN(dt.getTime())) dStr = dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                    } catch(err) {}
+                    
+                    const catName = getThematicName(e.category);
+                    const lineStr = `• ${dStr}: ${catName}`;
+                    lineCounts[lineStr] = (lineCounts[lineStr] || 0) + 1;
+                });
+
+                tooltip += Object.entries(lineCounts).map(([line, count]) => {
+                    return count > 1 ? `${line} (x${count})` : line;
+                }).join('\n');
+            }
+        }
+        return tooltip.replace(/"/g, '&quot;');
+    }
+
     function renderFullCard(charName) {
         const char = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === charName);
         if (!char) return "";
@@ -791,24 +882,51 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // --- NEW: Grab the Guild Rank & Badges (With Failsafe Fallbacks) ---
+        // --- NEW: Grab the Guild Rank & Badges (Scope-Safe) ---
         const guildRank = p.guild_rank || 'Member';
         const vBadges = safeParseArray(p.vanguard_badges || char.vanguard_badges);
         const cBadges = safeParseArray(p.campaign_badges || char.campaign_badges);
+        const prevMvps = config.prev_mvps || {};
+        const isPveReigning = prevMvps.pve && prevMvps.pve.name && prevMvps.pve.name.toLowerCase() === charName.toLowerCase();
+        const isPvpReigning = prevMvps.pvp && prevMvps.pvp.name && prevMvps.pvp.name.toLowerCase() === charName.toLowerCase();
+
         const vCount = vBadges.length;
         const cCount = cBadges.length;
         const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count) || 0;
         const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count) || 0;
+        const pveGold = parseInt(p.pve_gold || char.pve_gold) || 0;
+        const pveSilver = parseInt(p.pve_silver || char.pve_silver) || 0;
+        const pveBronze = parseInt(p.pve_bronze || char.pve_bronze) || 0;
+        const pvpGold = parseInt(p.pvp_gold || char.pvp_gold) || 0;
+        const pvpSilver = parseInt(p.pvp_silver || char.pvp_silver) || 0;
+        const pvpBronze = parseInt(p.pvp_bronze || char.pvp_bronze) || 0;
 
-        const vTooltip = summarizeBadges(vBadges);
-        const cTooltip = summarizeBadges(cBadges);
+        const tPveGold = getDetailedBadgeTooltip(p.name, ['pve_gold'], `${pveGold}x PvE Gold Medal`, pveGold);
+        const tPveSilver = getDetailedBadgeTooltip(p.name, ['pve_silver'], `${pveSilver}x PvE Silver Medal`, pveSilver);
+        const tPveBronze = getDetailedBadgeTooltip(p.name, ['pve_bronze'], `${pveBronze}x PvE Bronze Medal`, pveBronze);
+        const tPvpGold = getDetailedBadgeTooltip(p.name, ['pvp_gold'], `${pvpGold}x PvP Gold Medal`, pvpGold);
+        const tPvpSilver = getDetailedBadgeTooltip(p.name, ['pvp_silver'], `${pvpSilver}x PvP Silver Medal`, pvpSilver);
+        const tPvpBronze = getDetailedBadgeTooltip(p.name, ['pvp_bronze'], `${pvpBronze}x PvP Bronze Medal`, pvpBronze);
+        const tPveChamp = getDetailedBadgeTooltip(p.name, ['mvp_pve'], `${pveChamp}x PvE Champion`, pveChamp);
+        const tPvpChamp = getDetailedBadgeTooltip(p.name, ['mvp_pvp'], `${pvpChamp}x PvP Champion`, pvpChamp);
+        const tVanguard = getDetailedBadgeTooltip(p.name, ['vanguard'], summarizeBadges(vBadges), vCount);
+        const tCampaign = getDetailedBadgeTooltip(p.name, ['campaign'], summarizeBadges(cBadges), cCount);
         
         let extraBadges = '';
-        if (pveChamp > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 128, 0, 0.15); border-color: #ff8000; color: #ffad33; font-weight: bold; box-shadow: 0 0 10px rgba(255,128,0,0.5);" title="${pveChamp}x PvE Champion">👑 PvE Champ x${pveChamp}</span>`;
-        if (pvpChamp > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 68, 0, 0.15); border-color: #ff4400; color: #ff7733; font-weight: bold; box-shadow: 0 0 10px rgba(255,68,0,0.5);" title="${pvpChamp}x PvP Champion">⚔️ PvP Champ x${pvpChamp}</span>`;
-        if (vCount > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(0, 255, 204, 0.15); border-color: #00ffcc; color: #66ffeb; font-weight: bold; box-shadow: 0 0 10px rgba(0,255,204,0.5);" title="Vanguard: ${vTooltip}">🌟 Vanguard x${vCount}</span>`;
-        if (cCount > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(170, 170, 170, 0.15); border-color: #aaa; color: #ddd; font-weight: bold; box-shadow: 0 0 8px rgba(255,255,255,0.2);" title="Campaigns: ${cTooltip}">🎖️ Campaigns x${cCount}</span>`;
+        if (isPveReigning) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 209, 0, 0.2); border-color: #ffd100; color: #ffd100; font-weight: bold; box-shadow: 0 0 15px rgba(255, 209, 0, 0.8); animation: pulseGlow 2s infinite alternate;" title="Current Reigning PvE Champion!">👑 Reigning PvE MVP</span>`;
+        if (isPvpReigning) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 68, 0, 0.2); border-color: #ff4400; color: #ff4400; font-weight: bold; box-shadow: 0 0 15px rgba(255, 68, 0, 0.8); animation: pulseGlow 2s infinite alternate;" title="Current Reigning PvP Champion!">⚔️ Reigning PvP MVP</span>`;
         
+        if (pveGold > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 215, 0, 0.15); border-color: #ffd700; color: #ffd700; font-weight: bold; box-shadow: 0 0 10px rgba(255,215,0,0.5);" title="${tPveGold}">🛡️🥇 PvE Gold x${pveGold}</span>`;
+        if (pveSilver > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(192, 192, 192, 0.15); border-color: #c0c0c0; color: #c0c0c0; font-weight: bold; box-shadow: 0 0 10px rgba(192,192,192,0.5);" title="${tPveSilver}">🛡️🥈 PvE Silver x${pveSilver}</span>`;
+        if (pveBronze > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(205, 127, 50, 0.15); border-color: #cd7f32; color: #cd7f32; font-weight: bold; box-shadow: 0 0 10px rgba(205,127,50,0.5);" title="${tPveBronze}">🛡️🥉 PvE Bronze x${pveBronze}</span>`;
+        if (pvpGold > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 215, 0, 0.15); border-color: #ffd700; color: #ffd700; font-weight: bold; box-shadow: 0 0 10px rgba(255,215,0,0.5);" title="${tPvpGold}">⚔️🥇 PvP Gold x${pvpGold}</span>`;
+        if (pvpSilver > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(192, 192, 192, 0.15); border-color: #c0c0c0; color: #c0c0c0; font-weight: bold; box-shadow: 0 0 10px rgba(192,192,192,0.5);" title="${tPvpSilver}">⚔️🥈 PvP Silver x${pvpSilver}</span>`;
+        if (pvpBronze > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(205, 127, 50, 0.15); border-color: #cd7f32; color: #cd7f32; font-weight: bold; box-shadow: 0 0 10px rgba(205,127,50,0.5);" title="${tPvpBronze}">⚔️🥉 PvP Bronze x${pvpBronze}</span>`;
+        if (pveChamp > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 128, 0, 0.15); border-color: #ff8000; color: #ffad33; font-weight: bold; box-shadow: 0 0 10px rgba(255,128,0,0.5);" title="${tPveChamp}">👑 PvE Champ x${pveChamp}</span>`;
+        if (pvpChamp > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 68, 0, 0.15); border-color: #ff4400; color: #ff7733; font-weight: bold; box-shadow: 0 0 10px rgba(255,68,0,0.5);" title="${tPvpChamp}">⚔️ PvP Champ x${pvpChamp}</span>`;
+        if (vCount > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(0, 255, 204, 0.15); border-color: #00ffcc; color: #66ffeb; font-weight: bold; box-shadow: 0 0 10px rgba(0,255,204,0.5);" title="${tVanguard}">🌟 Vanguard x${vCount}</span>`;
+        if (cCount > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(170, 170, 170, 0.15); border-color: #aaa; color: #ddd; font-weight: bold; box-shadow: 0 0 8px rgba(255,255,255,0.2);" title="${tCampaign}">🎖️ Campaigns x${cCount}</span>`;
+
         return `
 <div class="char-card ${factionCls}" style="border-top-color:${cHex};">
     <div style="text-align:center; margin-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:20px;">
@@ -1068,6 +1186,106 @@ window.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    function renderAwardFilterBadges(characters, isRawMode) {
+        const container = document.getElementById('concise-class-badges');
+        const specContainer = document.getElementById('concise-spec-container');
+        if (specContainer) specContainer.style.display = 'none';
+
+        if (!characters || characters.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        const counts = { 'mvp_pve': 0, 'mvp_pvp': 0, 'vanguard': 0, 'campaign': 0, 'pve_gold': 0, 'pve_silver': 0, 'pve_bronze': 0, 'pvp_gold': 0, 'pvp_silver': 0, 'pvp_bronze': 0 };
+        characters.forEach(char => {
+            const p = isRawMode ? (rosterData.find(deep => deep.profile && deep.profile.name && deep.profile.name.toLowerCase() === char.name.toLowerCase())?.profile) : char.profile;
+            const c = isRawMode ? (rosterData.find(deep => deep.profile && deep.profile.name && deep.profile.name.toLowerCase() === char.name.toLowerCase()) || char) : char;
+            if (!p && !c) return;
+
+            if (parseInt(p?.pve_champ_count || c?.pve_champ_count) > 0) counts['mvp_pve']++;
+            if (parseInt(p?.pvp_champ_count || c?.pvp_champ_count) > 0) counts['mvp_pvp']++;
+            if (safeParseArray(p?.vanguard_badges || c?.vanguard_badges).length > 0) counts['vanguard']++;
+            if (safeParseArray(p?.campaign_badges || c?.campaign_badges).length > 0) counts['campaign']++;
+            if (parseInt(p?.pve_gold || c?.pve_gold) > 0) counts['pve_gold']++;
+            if (parseInt(p?.pve_silver || c?.pve_silver) > 0) counts['pve_silver']++;
+            if (parseInt(p?.pve_bronze || c?.pve_bronze) > 0) counts['pve_bronze']++;
+            if (parseInt(p?.pvp_gold || c?.pvp_gold) > 0) counts['pvp_gold']++;
+            if (parseInt(p?.pvp_silver || c?.pvp_silver) > 0) counts['pvp_silver']++;
+            if (parseInt(p?.pvp_bronze || c?.pvp_bronze) > 0) counts['pvp_bronze']++;
+        });
+
+        const AWARD_DEFS = {
+            'mvp_pve': { label: 'PvE MVP', icon: '👑', color: '#ff8000' },
+            'mvp_pvp': { label: 'PvP MVP', icon: '⚔️', color: '#ff4400' },
+            'pve_gold': { label: 'PvE Gold', icon: '🥇', color: '#ffd700' },
+            'pvp_gold': { label: 'PvP Gold', icon: '🥇', color: '#ffd700' },
+            'pve_silver': { label: 'PvE Silver', icon: '🥈', color: '#c0c0c0' },
+            'pvp_silver': { label: 'PvP Silver', icon: '🥈', color: '#c0c0c0' },
+            'vanguard': { label: 'Vanguards', icon: '🌟', color: '#00ffcc' },
+            'campaign': { label: 'Campaigns', icon: '🎖️', color: '#aaa' }
+        };
+
+        let html = '';
+        Object.keys(AWARD_DEFS).forEach(key => {
+            if (counts[key] > 0) {
+                const def = AWARD_DEFS[key];
+                html += `
+                <div class="stat-badge dynamic-award-badge" data-award="${key}" style="border-color: ${def.color}; cursor: pointer; padding: 8px 12px; min-width: 100px;" title="Filter ${def.label}">
+                  <span class="stat-badge-cls" style="color: ${def.color}; font-size: 11px;">${def.icon} ${def.label}</span>
+                  <span class="stat-badge-count" style="font-size: 16px;">${counts[key]}</span>
+                </div>`;
+            }
+        });
+
+        container.innerHTML = html;
+        container.style.display = 'flex';
+
+        document.querySelectorAll('.dynamic-award-badge').forEach(badge => {
+            badge.addEventListener('click', function() {
+                const targetAward = this.getAttribute('data-award');
+                const isActive = this.classList.contains('active-filter');
+                
+                document.querySelectorAll('.dynamic-award-badge').forEach(b => {
+                    b.classList.remove('active-filter');
+                    b.style.opacity = '0.4';
+                    b.style.transform = 'scale(1)';
+                });
+                
+                const charList = document.getElementById('concise-char-list');
+                if (charList) {
+                    charList.classList.remove('animate-list-update');
+                    void charList.offsetWidth; 
+                    charList.classList.add('animate-list-update');
+                }
+
+                if (isActive) {
+                    document.querySelectorAll('.concise-char-bar').forEach(el => el.style.display = 'flex');
+                    document.querySelectorAll('.dynamic-award-badge').forEach(b => b.style.opacity = '1');
+                    window.currentFilteredChars = null; 
+                    applyTimelineFilters();
+                } else {
+                    this.classList.add('active-filter');
+                    this.style.opacity = '1';
+                    this.style.transform = 'scale(1.05)';
+                    
+                    const visibleChars = [];
+                    document.querySelectorAll('.concise-char-bar').forEach(el => {
+                        const awards = el.getAttribute('data-awards') || '';
+                        if (awards.includes(targetAward)) {
+                            el.style.display = 'flex';
+                            const charName = el.getAttribute('data-char');
+                            if(charName) visibleChars.push(charName);
+                        } else {
+                            el.style.display = 'none';
+                        }
+                    });
+                    window.currentFilteredChars = visibleChars;
+                    applyTimelineFilters();
+                }
+            });
+        });
+    }
+
     // Variable to track current sort method
     let currentSortMethod = 'level';
 
@@ -1138,13 +1356,33 @@ window.addEventListener('DOMContentLoaded', async () => {
                 return valB - valA; // High to Low
             } else if (currentSortMethod === 'name') {
                 return nameA.localeCompare(nameB); // A to Z
+            } else if (currentSortMethod === 'badges') {
+                // --- NEW: Sort by Total Badge Count ---
+                const getScore = (prof) => {
+                    const vCount = safeParseArray(prof.vanguard_badges).length;
+                    const cCount = safeParseArray(prof.campaign_badges).length;
+                    const pve = parseInt(prof.pve_champ_count) || 0;
+                    const pvp = parseInt(prof.pvp_champ_count) || 0;
+                    return vCount + cCount + pve + pvp;
+                };
+                return getScore(profB) - getScore(profA); // High to Low
             }
             return 0;
         });
 
-        // Add Sorting Dropdown UI to the top of the list (Hide for ALL specific War Effort pages)
+        // Add Sorting Dropdown UI to the top of the list
         let sortUI = '';
-        if (!hashUrl.startsWith('war-effort-')) {
+        if (hashUrl === 'badges' || currentSortMethod === 'badges') {
+            sortUI = `
+                <div class="sort-controls" style="animation: fadeIn 0.3s forwards;">
+                    <span style="color: #888; font-size: 14px;">Sort By:</span>
+                    <select id="concise-sort-dropdown" class="sort-select">
+                        <option value="badges" ${currentSortMethod === 'badges' ? 'selected' : ''}>Total Badges</option>
+                        <option value="name" ${currentSortMethod === 'name' ? 'selected' : ''}>Name (A-Z)</option>
+                    </select>
+                </div>
+            `;
+        } else if (!hashUrl.startsWith('war-effort-')) {
             sortUI = `
                 <div class="sort-controls" style="animation: fadeIn 0.3s forwards;">
                     <span style="color: #888; font-size: 14px;">Sort By:</span>
@@ -1175,28 +1413,71 @@ window.addEventListener('DOMContentLoaded', async () => {
             let statValue = '???';
             let statColor = 'color:#666;';
             let trendHTML = '';
+            let awardsAttr = [];
 
             // 3. Populate Variables
             if (deepChar && deepChar.profile) {
                 const p = deepChar.profile;
                 isClickable = true;
                 
-                // Add tiny MVP and Vanguard stars (With Failsafe Fallbacks)
-                const vBadges = safeParseArray(p.vanguard_badges || deepChar.vanguard_badges);
-                const cBadges = safeParseArray(p.campaign_badges || deepChar.campaign_badges);
+                const guildRank = p.guild_rank || 'Member';
+                const vBadges = safeParseArray(p.vanguard_badges || char.vanguard_badges || deepChar.vanguard_badges);
+                const cBadges = safeParseArray(p.campaign_badges || char.campaign_badges || deepChar.campaign_badges);
                 const vCount = vBadges.length;
                 const cCount = cBadges.length;
-                const pveChamp = parseInt(p.pve_champ_count || deepChar.pve_champ_count) || 0;
-                const pvpChamp = parseInt(p.pvp_champ_count || deepChar.pvp_champ_count) || 0;
-                
-                const vTooltip = summarizeBadges(vBadges);
-                const cTooltip = summarizeBadges(cBadges);
+                const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count || deepChar.pve_champ_count) || 0;
+                const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count || deepChar.pvp_champ_count) || 0;
+                const pveGold = parseInt(p.pve_gold || char.pve_gold || deepChar.pve_gold) || 0;
+                const pveSilver = parseInt(p.pve_silver || char.pve_silver || deepChar.pve_silver) || 0;
+                const pveBronze = parseInt(p.pve_bronze || char.pve_bronze || deepChar.pve_bronze) || 0;
+                const pvpGold = parseInt(p.pvp_gold || char.pvp_gold || deepChar.pvp_gold) || 0;
+                const pvpSilver = parseInt(p.pvp_silver || char.pvp_silver || deepChar.pvp_silver) || 0;
+                const pvpBronze = parseInt(p.pvp_bronze || char.pvp_bronze || deepChar.pvp_bronze) || 0;
 
+                const prevMvps = config.prev_mvps || {};
+                const isPveReigning = prevMvps.pve && prevMvps.pve.name && prevMvps.pve.name.toLowerCase() === cleanName;
+                const isPvpReigning = prevMvps.pvp && prevMvps.pvp.name && prevMvps.pvp.name.toLowerCase() === cleanName;
+
+                // 1. Build the data-awards attribute for the Bubbles
+                if (pveGold > 0) awardsAttr.push('pve_gold');
+                if (pveSilver > 0) awardsAttr.push('pve_silver');
+                if (pveBronze > 0) awardsAttr.push('pve_bronze');
+                if (pvpGold > 0) awardsAttr.push('pvp_gold');
+                if (pvpSilver > 0) awardsAttr.push('pvp_silver');
+                if (pvpBronze > 0) awardsAttr.push('pvp_bronze');
+                if (pveChamp > 0) awardsAttr.push('mvp_pve');
+                if (pvpChamp > 0) awardsAttr.push('mvp_pvp');
+                if (vCount > 0) awardsAttr.push('vanguard');
+                if (cCount > 0) awardsAttr.push('campaign');
+
+                // 2. Generate the dynamic date tooltips
+                const tPveGold = getDetailedBadgeTooltip(p.name, ['pve_gold'], `${pveGold}x PvE Gold Medal`, pveGold);
+                const tPveSilver = getDetailedBadgeTooltip(p.name, ['pve_silver'], `${pveSilver}x PvE Silver Medal`, pveSilver);
+                const tPveBronze = getDetailedBadgeTooltip(p.name, ['pve_bronze'], `${pveBronze}x PvE Bronze Medal`, pveBronze);
+                const tPvpGold = getDetailedBadgeTooltip(p.name, ['pvp_gold'], `${pvpGold}x PvP Gold Medal`, pvpGold);
+                const tPvpSilver = getDetailedBadgeTooltip(p.name, ['pvp_silver'], `${pvpSilver}x PvP Silver Medal`, pvpSilver);
+                const tPvpBronze = getDetailedBadgeTooltip(p.name, ['pvp_bronze'], `${pvpBronze}x PvP Bronze Medal`, pvpBronze);
+                const tPveChamp = getDetailedBadgeTooltip(p.name, ['mvp_pve'], `${pveChamp}x PvE Champion`, pveChamp);
+                const tPvpChamp = getDetailedBadgeTooltip(p.name, ['mvp_pvp'], `${pvpChamp}x PvP Champion`, pvpChamp);
+                const tVanguard = getDetailedBadgeTooltip(p.name, ['vanguard'], summarizeBadges(vBadges), vCount);
+                const tCampaign = getDetailedBadgeTooltip(p.name, ['campaign'], summarizeBadges(cBadges), cCount);
+
+                // 3. Inject them into the HTML
                 let cBadgesHtml = '<div style="display:inline-flex; gap:4px; margin-left:8px; vertical-align:middle;">';
-                if (pveChamp > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 128, 0, 0.15); border:1px solid rgba(255, 128, 0, 0.4); color:#ffad33; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px; box-shadow:0 0 5px rgba(255,128,0,0.3);" title="${pveChamp}x PvE Champion">👑 ${pveChamp}</span>`;
-                if (pvpChamp > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 68, 0, 0.15); border:1px solid rgba(255, 68, 0, 0.4); color:#ff7733; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px; box-shadow:0 0 5px rgba(255,68,0,0.3);" title="${pvpChamp}x PvP Champion">⚔️ ${pvpChamp}</span>`;
-                if (vCount > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(0, 255, 204, 0.15); border:1px solid rgba(0, 255, 204, 0.4); color:#66ffeb; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px; box-shadow:0 0 5px rgba(0,255,204,0.3);" title="Vanguard: ${vTooltip}">🌟 ${vCount}</span>`;
-                if (cCount > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(170, 170, 170, 0.15); border:1px solid rgba(170, 170, 170, 0.4); color:#ddd; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px; box-shadow:0 0 5px rgba(255,255,255,0.1);" title="Campaigns: ${cTooltip}">🎖️ ${cCount}</span>`;
+                
+                if (isPveReigning) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 209, 0, 0.25); border:1px solid #ffd100; color:#ffd100; font-size:10px; font-weight:bold; padding:1px 6px; border-radius:4px; box-shadow: 0 0 8px rgba(255,209,0,0.6);" title="Current Reigning PvE Champion!">👑 Reigning MVP</span>`;
+                if (isPvpReigning) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 68, 0, 0.25); border:1px solid #ff4400; color:#ff4400; font-size:10px; font-weight:bold; padding:1px 6px; border-radius:4px; box-shadow: 0 0 8px rgba(255,68,0,0.6);" title="Current Reigning PvP Champion!">⚔️ Reigning MVP</span>`;
+                
+                if (pveGold > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 215, 0, 0.15); border:1px solid rgba(255, 215, 0, 0.4); color:#ffd700; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tPveGold}">🛡️🥇 ${pveGold}</span>`;
+                if (pveSilver > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(192, 192, 192, 0.15); border:1px solid rgba(192, 192, 192, 0.4); color:#c0c0c0; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tPveSilver}">🛡️🥈 ${pveSilver}</span>`;
+                if (pveBronze > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(205, 127, 50, 0.15); border:1px solid rgba(205, 127, 50, 0.4); color:#cd7f32; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tPveBronze}">🛡️🥉 ${pveBronze}</span>`;
+                if (pvpGold > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 215, 0, 0.15); border:1px solid rgba(255, 215, 0, 0.4); color:#ffd700; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tPvpGold}">⚔️🥇 ${pvpGold}</span>`;
+                if (pvpSilver > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(192, 192, 192, 0.15); border:1px solid rgba(192, 192, 192, 0.4); color:#c0c0c0; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tPvpSilver}">⚔️🥈 ${pvpSilver}</span>`;
+                if (pvpBronze > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(205, 127, 50, 0.15); border:1px solid rgba(205, 127, 50, 0.4); color:#cd7f32; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tPvpBronze}">⚔️🥉 ${pvpBronze}</span>`;
+                if (pveChamp > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 128, 0, 0.15); border:1px solid rgba(255, 128, 0, 0.4); color:#ffad33; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tPveChamp}">👑 ${pveChamp}</span>`;
+                if (pvpChamp > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 68, 0, 0.15); border:1px solid rgba(255, 68, 0, 0.4); color:#ff7733; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tPvpChamp}">⚔️ ${pvpChamp}</span>`;
+                if (vCount > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(0, 255, 204, 0.15); border:1px solid rgba(0, 255, 204, 0.4); color:#66ffeb; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tVanguard}">🌟 ${vCount}</span>`;
+                if (cCount > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(170, 170, 170, 0.15); border:1px solid rgba(170, 170, 170, 0.4); color:#ddd; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px;" title="${tCampaign}">🎖️ ${cCount}</span>`;
                 cBadgesHtml += '</div>';
 
                 cleanName = (p.name || 'Unknown').toLowerCase();
@@ -1318,7 +1599,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             // 4. Render the HTML
             if (!isClickable) {
                 return `
-                <div class="concise-char-bar ${podiumClass} ${vanguardClass}" data-class="${cClass}" data-spec="unspecced" style="border-left-color:${cHex}; cursor: default; ${barStyleOverride}">
+                <div class="concise-char-bar ${podiumClass} ${vanguardClass}" data-class="${cClass}" data-spec="unspecced" data-awards="${awardsAttr.join(',')}" style="border-left-color:${cHex}; cursor: default; ${barStyleOverride}">
                     <div style="${innerWrapperStyle}">
                         <div style="display: flex; align-items: center;">
                             ${rankHtml}
@@ -1335,7 +1616,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
 
             return `
-            <div onclick="selectCharacter('${cleanName}')" class="concise-char-bar tt-char ${podiumClass} ${vanguardClass}" data-char="${cleanName}" data-class="${cClass}" data-spec="${activeSpecAttr}" style="border-left-color:${cHex}; ${barStyleOverride}">
+            <div onclick="selectCharacter('${cleanName}')" class="concise-char-bar tt-char ${podiumClass} ${vanguardClass}" data-char="${cleanName}" data-class="${cClass}" data-spec="${activeSpecAttr}" data-awards="${awardsAttr.join(',')}" style="border-left-color:${cHex}; ${barStyleOverride}">
                 <div style="${innerWrapperStyle}">
                     <div style="display: flex; align-items: center;">
                         ${rankHtml}
@@ -1400,7 +1681,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" style="width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 4px; border: 1px solid #222;">` : '';
                 const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
                 
-                // --- NEW: Grab the Guild Rank & MVP Badges (With Failsafe Fallbacks) ---
+                // --- NEW: Grab the Guild Rank & MVP Badges (Scope-Safe) ---
                 const guildRank = p.guild_rank || 'Member';
                 const vBadges = safeParseArray(p.vanguard_badges || char.vanguard_badges);
                 const cBadges = safeParseArray(p.campaign_badges || char.campaign_badges);
@@ -1408,15 +1689,35 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const cCount = cBadges.length;
                 const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count) || 0;
                 const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count) || 0;
+                const pveGold = parseInt(p.pve_gold || char.pve_gold) || 0;
+                const pveSilver = parseInt(p.pve_silver || char.pve_silver) || 0;
+                const pveBronze = parseInt(p.pve_bronze || char.pve_bronze) || 0;
+                const pvpGold = parseInt(p.pvp_gold || char.pvp_gold) || 0;
+                const pvpSilver = parseInt(p.pvp_silver || char.pvp_silver) || 0;
+                const pvpBronze = parseInt(p.pvp_bronze || char.pvp_bronze) || 0;
 
-                const vTooltip = summarizeBadges(vBadges);
-                const cTooltip = summarizeBadges(cBadges);
-                
+                const tPveGold = getDetailedBadgeTooltip(p.name, ['pve_gold'], `${pveGold}x PvE Gold Medal`, pveGold);
+                const tPveSilver = getDetailedBadgeTooltip(p.name, ['pve_silver'], `${pveSilver}x PvE Silver Medal`, pveSilver);
+                const tPveBronze = getDetailedBadgeTooltip(p.name, ['pve_bronze'], `${pveBronze}x PvE Bronze Medal`, pveBronze);
+                const tPvpGold = getDetailedBadgeTooltip(p.name, ['pvp_gold'], `${pvpGold}x PvP Gold Medal`, pvpGold);
+                const tPvpSilver = getDetailedBadgeTooltip(p.name, ['pvp_silver'], `${pvpSilver}x PvP Silver Medal`, pvpSilver);
+                const tPvpBronze = getDetailedBadgeTooltip(p.name, ['pvp_bronze'], `${pvpBronze}x PvP Bronze Medal`, pvpBronze);
+                const tPveChamp = getDetailedBadgeTooltip(p.name, ['mvp_pve'], `${pveChamp}x PvE Champion`, pveChamp);
+                const tPvpChamp = getDetailedBadgeTooltip(p.name, ['mvp_pvp'], `${pvpChamp}x PvP Champion`, pvpChamp);
+                const tVanguard = getDetailedBadgeTooltip(p.name, ['vanguard'], summarizeBadges(vBadges), vCount);
+                const tCampaign = getDetailedBadgeTooltip(p.name, ['campaign'], summarizeBadges(cBadges), cCount);
+
                 let cBadgesHtml = '<div style="display:inline-flex; gap:4px; margin-left:10px; vertical-align:middle;">';
-                if (pveChamp > 0) cBadgesHtml += `<span style="background:rgba(255, 128, 0, 0.2); border:1px solid rgba(255, 128, 0, 0.5); color:#ffad33; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;">👑 ${pveChamp}</span>`;
-                if (pvpChamp > 0) cBadgesHtml += `<span style="background:rgba(255, 68, 0, 0.2); border:1px solid rgba(255, 68, 0, 0.5); color:#ff7733; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;">⚔️ ${pvpChamp}</span>`;
-                if (vCount > 0) cBadgesHtml += `<span style="background:rgba(0, 255, 204, 0.2); border:1px solid rgba(0, 255, 204, 0.5); color:#66ffeb; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;">🌟 ${vCount}</span>`;
-                if (cCount > 0) cBadgesHtml += `<span style="background:rgba(170, 170, 170, 0.2); border:1px solid rgba(170, 170, 170, 0.5); color:#ddd; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;">🎖️ ${cCount}</span>`;
+                if (pveGold > 0) cBadgesHtml += `<span style="background:rgba(255, 215, 0, 0.2); border:1px solid rgba(255, 215, 0, 0.5); color:#ffd700; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tPveGold}">🥇 ${pveGold}</span>`;
+                if (pveSilver > 0) cBadgesHtml += `<span style="background:rgba(192, 192, 192, 0.2); border:1px solid rgba(192, 192, 192, 0.5); color:#c0c0c0; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tPveSilver}">🥈 ${pveSilver}</span>`;
+                if (pveBronze > 0) cBadgesHtml += `<span style="background:rgba(205, 127, 50, 0.2); border:1px solid rgba(205, 127, 50, 0.5); color:#cd7f32; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tPveBronze}">🥉 ${pveBronze}</span>`;
+                if (pvpGold > 0) cBadgesHtml += `<span style="background:rgba(255, 215, 0, 0.2); border:1px solid rgba(255, 215, 0, 0.5); color:#ffd700; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tPvpGold}">🥇 ${pvpGold}</span>`;
+                if (pvpSilver > 0) cBadgesHtml += `<span style="background:rgba(192, 192, 192, 0.2); border:1px solid rgba(192, 192, 192, 0.5); color:#c0c0c0; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tPvpSilver}">🥈 ${pvpSilver}</span>`;
+                if (pvpBronze > 0) cBadgesHtml += `<span style="background:rgba(205, 127, 50, 0.2); border:1px solid rgba(205, 127, 50, 0.5); color:#cd7f32; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tPvpBronze}">🥉 ${pvpBronze}</span>`;
+                if (pveChamp > 0) cBadgesHtml += `<span style="background:rgba(255, 128, 0, 0.2); border:1px solid rgba(255, 128, 0, 0.5); color:#ffad33; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tPveChamp}">👑 ${pveChamp}</span>`;
+                if (pvpChamp > 0) cBadgesHtml += `<span style="background:rgba(255, 68, 0, 0.2); border:1px solid rgba(255, 68, 0, 0.5); color:#ff7733; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tPvpChamp}">⚔️ ${pvpChamp}</span>`;
+                if (vCount > 0) cBadgesHtml += `<span style="background:rgba(0, 255, 204, 0.2); border:1px solid rgba(0, 255, 204, 0.5); color:#66ffeb; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tVanguard}">🌟 ${vCount}</span>`;
+                if (cCount > 0) cBadgesHtml += `<span style="background:rgba(170, 170, 170, 0.2); border:1px solid rgba(170, 170, 170, 0.5); color:#ddd; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;" title="${tCampaign}">🎖️ ${cCount}</span>`;
                 cBadgesHtml += '</div>';
 
                 tooltip.innerHTML = `
@@ -1445,61 +1746,90 @@ window.addEventListener('DOMContentLoaded', async () => {
     function applyTimelineFilters() {
         if (!timeline) return;
 
-        let visibleCount = 0;
         const now = Date.now();
-        const feedContainer = document.querySelector('.timeline-feed');
+        
+        // 1. Filter the raw data array directly instead of the DOM elements
+        let tempFilteredData = timelineData.filter(event => {
+            const charName = (event.character_name || '').toLowerCase();
+            const eventType = event.type;
+            const timestampStr = event.timestamp || '';
+            const itemQuality = event.item_quality || 'COMMON';
 
-        document.querySelectorAll('#timeline .concise-item').forEach(el => {
-            const charName = el.getAttribute('data-char');
-            const eventType = el.getAttribute('data-event-type');
-            const timestampStr = el.getAttribute('data-timestamp');
-            const itemQuality = el.getAttribute('data-quality'); // NEW: Grab the quality tag!
-            
-            let show = true;
-            
-            if (window.currentFilteredChars && !window.currentFilteredChars.includes(charName)) show = false;
-            
-            // --- NEW: Rarity Filtering Logic ---
-            if (tlTypeFilter === 'rare_plus') {
-                // Only show items
-                if (eventType !== 'item') show = false; 
+            // Filter by Character
+            if (window.currentFilteredChars && !window.currentFilteredChars.includes(charName)) return false;
+
+            // --- NEW: Badge Filter Logic ---
+            if (tlTypeFilter.startsWith('badge_')) {
+                if (eventType !== 'badge') return false; // Show ONLY badges
+                if (tlTypeFilter === 'badge_mvp' && event.badge_type !== 'mvp_pve' && event.badge_type !== 'mvp_pvp') return false;
+                if (tlTypeFilter === 'badge_vanguard' && event.badge_type !== 'vanguard') return false;
+                if (tlTypeFilter === 'badge_campaign' && event.badge_type !== 'campaign') return false;
                 
-                // Hide low quality items
-                if (eventType === 'item' && (itemQuality === 'POOR' || itemQuality === 'COMMON' || itemQuality === 'UNCOMMON')) show = false;
-            } else if (tlTypeFilter === 'epic') {
-                // If they click Epics+, show ONLY Epic OR Legendary items
-                if (eventType !== 'item' || (itemQuality !== 'EPIC' && itemQuality !== 'LEGENDARY')) show = false;
-            } else if (tlTypeFilter === 'legendary') {
-                // If they click Legendaries, show ONLY Orange items
-                if (eventType !== 'item' || itemQuality !== 'LEGENDARY') show = false;
-            } else if (tlTypeFilter !== 'all' && eventType !== tlTypeFilter) {
-                // Normal "Loot" or "Levels" logic
-                show = false;
+                // FIX: Add the missing logic to evaluate the Medals button
+                if (tlTypeFilter === 'badge_ladder' && !['pve_gold','pve_silver','pve_bronze','pvp_gold','pvp_silver','pvp_bronze'].includes(event.badge_type)) return false;
+            } else {
+                if (eventType === 'badge') return false; // NEVER show badges in normal feeds
+                
+                // Normal Rarity/Type filters
+                if (tlTypeFilter === 'rare_plus') {
+                    if (eventType !== 'item') return false;
+                    if (itemQuality === 'POOR' || itemQuality === 'COMMON' || itemQuality === 'UNCOMMON') return false;
+                } else if (tlTypeFilter === 'epic') {
+                    if (eventType !== 'item' || (itemQuality !== 'EPIC' && itemQuality !== 'LEGENDARY')) return false;
+                } else if (tlTypeFilter === 'legendary') {
+                    if (eventType !== 'item' || itemQuality !== 'LEGENDARY') return false;
+                } else if (tlTypeFilter !== 'all' && eventType !== tlTypeFilter) {
+                    return false;
+                }
             }
 
+            // Filter by Date (Hours)
             if (tlSpecificDate && timestampStr) {
-                if (!timestampStr.startsWith(tlSpecificDate)) {
-                    show = false;
-                }
+                if (!timestampStr.startsWith(tlSpecificDate)) return false;
             } else if (tlDateFilter !== 'all' && timestampStr) {
                 let cleanTs = timestampStr.replace('Z', '+00:00');
                 if (!cleanTs.includes('+') && !cleanTs.includes('Z')) cleanTs += 'Z';
-                
                 const eventDate = new Date(cleanTs).getTime();
                 if (!isNaN(eventDate)) {
-                    // Calculate based on Hours instead of Days
                     const hoursMs = parseInt(tlDateFilter) * 60 * 60 * 1000;
-                    if ((now - eventDate) > hoursMs) show = false;
+                    if ((now - eventDate) > hoursMs) return false;
                 }
             }
 
-            el.style.display = show ? 'flex' : 'none';
-            if (show) visibleCount++;
+            return true;
+        });
+
+        // --- NEW: Deduplicate identical badge events in the feed ---
+        const uniqueEvents = [];
+        const seenKeys = new Set();
+        
+        tempFilteredData.forEach(e => {
+            if (e.type === 'badge') {
+                // Ensure a character only gets one timeline row per specific badge category per day
+                let dStr = (e.timestamp || '').substring(0, 10);
+                const charName = (e.character_name || '').toLowerCase();
+                const key = `badge_${charName}_${e.badge_type}_${e.category || ''}_${dStr}`;
+                if (!seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    uniqueEvents.push(e);
+                }
+            } else {
+                // Let items and level-ups pass through normally
+                uniqueEvents.push(e);
+            }
         });
         
+        filteredTimelineData = uniqueEvents;
+
+        // 2. Clear the old feed and reset the counter
+        const container = document.getElementById('timeline-feed-container');
+        if (container) container.innerHTML = '';
+        currentTimelineIndex = 0;
+
+        // 3. Handle empty states or render the first batch
         let noResultsMsg = document.getElementById('tl-no-results');
-        if (visibleCount === 0) {
-            feedContainer.style.display = 'none';
+        if (filteredTimelineData.length === 0) {
+            if (container) container.style.display = 'none';
             if (!noResultsMsg) {
                 noResultsMsg = document.createElement('div');
                 noResultsMsg.id = 'tl-no-results';
@@ -1507,14 +1837,17 @@ window.addEventListener('DOMContentLoaded', async () => {
                 noResultsMsg.style.textAlign = 'center';
                 noResultsMsg.style.padding = '20px';
                 noResultsMsg.style.fontStyle = 'italic';
-                noResultsMsg.innerText = 'No high-end loot found for these filters yet... keep raiding!';
-                timeline.appendChild(noResultsMsg);
+                noResultsMsg.innerText = 'No activity found for these filters yet... keep raiding!';
+                document.getElementById('timeline').appendChild(noResultsMsg);
             } else {
                 noResultsMsg.style.display = 'block';
             }
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            if (loadMoreBtn) loadMoreBtn.style.display = 'none';
         } else {
-            feedContainer.style.display = 'flex';
+            if (container) container.style.display = 'flex';
             if (noResultsMsg) noResultsMsg.style.display = 'none';
+            renderTimelineBatch();
         }
     }
 
@@ -1548,36 +1881,57 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (searchInput) searchInput.value = '';
         if (searchAutoComplete) searchAutoComplete.classList.remove('show');
         
-        // BUG FIX: Ensure the timeline is unhidden by default when switching views!
-        // (Analytics and Architecture will immediately hide it again if needed)
         if (timeline) timeline.style.display = 'block';
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // --- NEW: Reset Timeline Filters on Page Change ---
-        // This ensures the feed reliably appears when clicking a new character
+        // --- RESTORE DEFAULT TIMELINE HTML ---
+        const filtersContainer = document.querySelector('.timeline-filters');
+        if (filtersContainer) {
+            filtersContainer.innerHTML = `
+                <div class="filter-group">
+                    <button class="tl-btn" data-type="all">All</button>
+                    <button class="tl-btn active" style="color: #0070dd; border-color: rgba(0, 112, 221, 0.5);" data-type="rare_plus">Rare+</button>
+                    <button class="tl-btn" style="color: #a335ee; border-color: rgba(163, 53, 238, 0.5);" data-type="epic">Epics+</button>
+                    <button class="tl-btn" data-type="level_up">Levels</button>
+                </div>
+                <div class="filter-group">
+                    <select id="tl-date-filter" class="tl-select">
+                        <option value="12">Last 12 Hours</option>
+                        <option value="24">Last 24 Hours</option>
+                        <option value="48">Last 48 Hours</option>
+                        <option value="all" selected>All Available</option>
+                    </select>
+                </div>
+            `;
+            // Re-bind standard events
+            document.querySelectorAll('.timeline-filters .tl-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.timeline-filters .tl-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    tlTypeFilter = e.target.getAttribute('data-type');
+                    applyTimelineFilters();
+                });
+            });
+            const dateSelect = document.getElementById('tl-date-filter');
+            if (dateSelect) {
+                dateSelect.addEventListener('change', (e) => {
+                    tlDateFilter = e.target.value;
+                    if (tlSpecificDate) {
+                        tlSpecificDate = null;
+                        document.querySelectorAll('.tt-heatmap').forEach(c => c.classList.remove('selected-date'));
+                    }
+                    applyTimelineFilters();
+                });
+            }
+        }
+
         tlTypeFilter = 'rare_plus';
         tlDateFilter = 'all';
         tlSpecificDate = null;
 
-        // Reset the Button UI to highlight "Rare+"
-        document.querySelectorAll('button.tl-btn').forEach(b => {
-            b.classList.remove('active');
-            if (b.getAttribute('data-type') === 'rare_plus') {
-                b.classList.add('active');
-            }
-        });
-
         const xpCont = document.getElementById('guild-xp-container');
         if (xpCont) xpCont.style.display = 'none';
 
-        // Reset the Dropdown UI to "All Available"
-        const dateSelect = document.getElementById('tl-date-filter');
-        if (dateSelect) {
-            dateSelect.value = 'all';
-        }
-
-        // Clear any specific Heatmap day selections
         document.querySelectorAll('.tt-heatmap').forEach(c => {
             c.classList.remove('selected-date');
         });
@@ -2097,19 +2451,55 @@ window.addEventListener('DOMContentLoaded', async () => {
         const hash = window.location.hash.substring(1);
         const chartViews = ['total', 'active', 'raidready', 'ladder-pve', 'ladder-pvp'];
 
-        if (showBadges) {
+        const wrapper = document.getElementById('concise-content-wrapper');
+        const leftCol = document.getElementById('concise-left-col');
+        const badgesContainer = document.getElementById('concise-class-badges');
+
+        if (showBadges === true) {
             renderDynamicBadges(characters, isRawRoster);
-            document.getElementById('concise-left-col').style.display = 'flex';
+            leftCol.style.display = 'flex';
+            
+            // Restore default column layout
+            wrapper.style.flexDirection = 'row';
+            leftCol.style.maxWidth = '350px';
+            leftCol.style.width = 'auto';
+            badgesContainer.style.flexWrap = 'wrap';
+            badgesContainer.style.justifyContent = 'center';
+            badgesContainer.style.maxWidth = '900px';
+            if (timeline) timeline.style.width = ''; // Reset timeline width
+            
+        } else if (showBadges === 'awards') {
+            renderAwardFilterBadges(characters, isRawRoster);
+            leftCol.style.display = 'flex';
+            
+            // Stack layout: Bubbles single-file on top, character list stretched wide below
+            wrapper.style.flexDirection = 'column';
+            leftCol.style.maxWidth = '100%';
+            leftCol.style.width = '100%';
+            badgesContainer.style.flexWrap = 'nowrap';
+            badgesContainer.style.justifyContent = 'flex-start';
+            badgesContainer.style.maxWidth = '100%';
+            badgesContainer.style.overflowX = 'auto'; // Allows horizontal scroll if screen is too small
+            badgesContainer.style.paddingBottom = '10px';
+            
+            // Stretch the activity feed slightly since we have the extra real estate
+            if (timeline) timeline.style.width = '440px'; 
+            
         } else {
-            document.getElementById('concise-class-badges').style.display = 'none';
+            badgesContainer.style.display = 'none';
             const specContainer = document.getElementById('concise-spec-container');
             if (specContainer) specContainer.style.display = 'none';
             
-            // Fix: Completely collapse the left column if no charts and no badges are needed
+            // Restore default column layout
+            wrapper.style.flexDirection = 'row';
+            leftCol.style.maxWidth = '350px';
+            leftCol.style.width = 'auto';
+            if (timeline) timeline.style.width = ''; // Reset timeline width
+            
             if (!chartViews.includes(hash)) {
-                document.getElementById('concise-left-col').style.display = 'none';
+                leftCol.style.display = 'none';
             } else {
-                document.getElementById('concise-left-col').style.display = 'flex';
+                leftCol.style.display = 'flex';
             }
         }
 
@@ -2228,6 +2618,55 @@ window.addEventListener('DOMContentLoaded', async () => {
         } else if (hash === 'total') {
             showConciseView(`Total Guild Roster (${rawGuildRoster.length})`, rawGuildRoster.sort((a,b) => b.level - a.level), true, true);
             updateDropdownLabel('all');
+        } else if (hash === 'badges') {
+            const badgeRoster = rosterData.filter(c => {
+                const p = c.profile;
+                if (!p) return false;
+                const vCount = safeParseArray(p.vanguard_badges || c.vanguard_badges).length;
+                const cCount = safeParseArray(p.campaign_badges || c.campaign_badges).length;
+                const pveMvp = parseInt(p.pve_champ_count || c.pve_champ_count) || 0;
+                const pvpMvp = parseInt(p.pvp_champ_count || c.pvp_champ_count) || 0;
+                const pveG = parseInt(p.pve_gold || c.pve_gold) || 0;
+                const pvpG = parseInt(p.pvp_gold || c.pvp_gold) || 0;
+                const pveS = parseInt(p.pve_silver || c.pve_silver) || 0;
+                const pvpS = parseInt(p.pvp_silver || c.pvp_silver) || 0;
+                const pveB = parseInt(p.pve_bronze || c.pve_bronze) || 0;
+                const pvpB = parseInt(p.pvp_bronze || c.pvp_bronze) || 0;
+                return (vCount + cCount + pveMvp + pvpMvp + pveG + pvpG + pveS + pvpS + pveB + pvpB) > 0;
+            });
+            
+            showConciseView(`🌟 Hall of Heroes (${badgeRoster.length})`, badgeRoster, false, 'awards', 'badges');
+            updateDropdownLabel('badges');
+            
+            // --- OVERRIDE TIMELINE FILTERS FOR BADGE LOG ---
+            if (timeline) {
+                timelineTitle.innerHTML = `📜 Hall of Heroes Award History`;
+                const filtersContainer = document.querySelector('.timeline-filters');
+                if (filtersContainer) {
+                    filtersContainer.innerHTML = `
+                        <div class="filter-group" style="flex-wrap: wrap;">
+                            <button class="tl-btn active" style="color: #ffd100; border-color: rgba(255, 209, 0, 0.5);" data-type="badge_all">All Awards</button>
+                            <button class="tl-btn" style="color: #ffd700; border-color: rgba(255, 215, 0, 0.5);" data-type="badge_ladder">Medals</button>
+                            <button class="tl-btn" style="color: #ff8000; border-color: rgba(255, 128, 0, 0.5);" data-type="badge_mvp">MVP</button>
+                            <button class="tl-btn" style="color: #00ffcc; border-color: rgba(0, 255, 204, 0.5);" data-type="badge_vanguard">Vanguards</button>
+                            <button class="tl-btn" style="color: #aaa; border-color: rgba(170, 170, 170, 0.5);" data-type="badge_campaign">Campaigns</button>
+                        </div>
+                    `;
+                    document.querySelectorAll('.timeline-filters .tl-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            document.querySelectorAll('.timeline-filters .tl-btn').forEach(b => b.classList.remove('active'));
+                            e.target.classList.add('active');
+                            tlTypeFilter = e.target.getAttribute('data-type');
+                            applyTimelineFilters();
+                        });
+                    });
+                }
+                tlTypeFilter = 'badge_all';
+                tlDateFilter = 'all'; // Ignore time limits for history
+                window.currentFilteredChars = null; 
+                applyTimelineFilters();
+            }
+
         } else if (hash === 'active') {
             const activeRoster = rosterData.filter(c => {
                 const lastLogin = c.profile && c.profile.last_login_timestamp ? c.profile.last_login_timestamp : 0;
@@ -2832,81 +3271,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function applyTimelineFilters() {
-        if (!timeline) return;
-
-        const now = Date.now();
-        
-        // 1. Filter the raw data array directly instead of the DOM elements
-        filteredTimelineData = timelineData.filter(event => {
-            const charName = (event.character_name || '').toLowerCase();
-            const eventType = event.type;
-            const timestampStr = event.timestamp || '';
-            const itemQuality = event.item_quality || 'COMMON';
-
-            // Filter by Character
-            if (window.currentFilteredChars && !window.currentFilteredChars.includes(charName)) return false;
-
-            // Filter by Rarity/Type
-            if (tlTypeFilter === 'rare_plus') {
-                if (eventType !== 'item') return false;
-                if (itemQuality === 'POOR' || itemQuality === 'COMMON' || itemQuality === 'UNCOMMON') return false;
-            } else if (tlTypeFilter === 'epic') {
-                if (eventType !== 'item' || (itemQuality !== 'EPIC' && itemQuality !== 'LEGENDARY')) return false;
-            } else if (tlTypeFilter === 'legendary') {
-                if (eventType !== 'item' || itemQuality !== 'LEGENDARY') return false;
-            } else if (tlTypeFilter !== 'all' && eventType !== tlTypeFilter) {
-                return false;
-            }
-
-            // Filter by Date (Hours)
-            if (tlSpecificDate && timestampStr) {
-                if (!timestampStr.startsWith(tlSpecificDate)) return false;
-            } else if (tlDateFilter !== 'all' && timestampStr) {
-                let cleanTs = timestampStr.replace('Z', '+00:00');
-                if (!cleanTs.includes('+') && !cleanTs.includes('Z')) cleanTs += 'Z';
-                const eventDate = new Date(cleanTs).getTime();
-                if (!isNaN(eventDate)) {
-                    const hoursMs = parseInt(tlDateFilter) * 60 * 60 * 1000;
-                    if ((now - eventDate) > hoursMs) return false;
-                }
-            }
-
-            return true;
-        });
-
-        // Monument injection moved to a dedicated feed above.
-
-        // 2. Clear the old feed and reset the counter
-        const container = document.getElementById('timeline-feed-container');
-        if (container) container.innerHTML = '';
-        currentTimelineIndex = 0;
-
-        // 3. Handle empty states or render the first batch
-        let noResultsMsg = document.getElementById('tl-no-results');
-        if (filteredTimelineData.length === 0) {
-            if (container) container.style.display = 'none';
-            if (!noResultsMsg) {
-                noResultsMsg = document.createElement('div');
-                noResultsMsg.id = 'tl-no-results';
-                noResultsMsg.style.color = '#888';
-                noResultsMsg.style.textAlign = 'center';
-                noResultsMsg.style.padding = '20px';
-                noResultsMsg.style.fontStyle = 'italic';
-                noResultsMsg.innerText = 'No activity found for these filters yet... keep raiding!';
-                document.getElementById('timeline').appendChild(noResultsMsg);
-            } else {
-                noResultsMsg.style.display = 'block';
-            }
-            const loadMoreBtn = document.getElementById('load-more-btn');
-            if (loadMoreBtn) loadMoreBtn.style.display = 'none';
-        } else {
-            if (container) container.style.display = 'flex';
-            if (noResultsMsg) noResultsMsg.style.display = 'none';
-            renderTimelineBatch();
-        }
-    }
-
     function renderTimelineBatch() {
         const container = document.getElementById('timeline-feed-container');
         const loadMoreBtn = document.getElementById('load-more-btn');
@@ -2948,7 +3312,33 @@ window.addEventListener('DOMContentLoaded', async () => {
             const c_hex = CLASS_COLORS[event.class] || '#ffd100';
             const c_name = (event.character_name || 'Unknown').charAt(0).toUpperCase() + (event.character_name || '').slice(1).toLowerCase();
             
-            if (event.type === 'level_up') {
+            if (event.type === 'badge') {
+                eventEl.style.borderLeftColor = c_hex;
+                let badgeIcon = '🎖️', badgeColor = '#aaa', badgeText = '';
+                
+                if (event.badge_type === 'mvp_pve') { badgeIcon = '👑'; badgeColor = '#ff8000'; badgeText = 'PvE MVP Champion'; }
+                else if (event.badge_type === 'mvp_pvp') { badgeIcon = '⚔️'; badgeColor = '#ff4400'; badgeText = 'PvP MVP Champion'; }
+                else if (event.badge_type === 'vanguard') { badgeIcon = '🌟'; badgeColor = '#00ffcc'; badgeText = 'Vanguard Status'; }
+                else if (event.badge_type === 'campaign') { badgeIcon = '🎖️'; badgeColor = '#aaa'; badgeText = 'Campaign Participant'; }
+                else if (event.badge_type === 'pve_gold') { badgeIcon = '🥇'; badgeColor = '#ffd700'; badgeText = 'PvE Ladder 1st Place'; }
+                else if (event.badge_type === 'pve_silver') { badgeIcon = '🥈'; badgeColor = '#c0c0c0'; badgeText = 'PvE Ladder 2nd Place'; }
+                else if (event.badge_type === 'pve_bronze') { badgeIcon = '🥉'; badgeColor = '#cd7f32'; badgeText = 'PvE Ladder 3rd Place'; }
+                else if (event.badge_type === 'pvp_gold') { badgeIcon = '🥇'; badgeColor = '#ffd700'; badgeText = 'PvP Ladder 1st Place'; }
+                else if (event.badge_type === 'pvp_silver') { badgeIcon = '🥈'; badgeColor = '#c0c0c0'; badgeText = 'PvP Ladder 2nd Place'; }
+                else if (event.badge_type === 'pvp_bronze') { badgeIcon = '🥉'; badgeColor = '#cd7f32'; badgeText = 'PvP Ladder 3rd Place'; }
+                
+                eventEl.innerHTML = `
+                    <div class="timeline-node" style="background: ${badgeColor}; box-shadow: 0 0 8px ${badgeColor};"></div>
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <span style="color: ${c_hex}; font-family:'Cinzel'; font-weight:bold; font-size:15px; text-shadow:1px 1px 2px #000;">${c_name}</span>
+                        <span style="color:#888; font-size:11px;">${date_str}</span>
+                    </div>
+                    <div class="event-box" style="border-left-color: ${badgeColor}; background: rgba(0,0,0,0.4);">
+                        <span style="font-size: 16px; margin-right: 8px; filter: drop-shadow(0 0 3px ${badgeColor});">${badgeIcon}</span>
+                        <span style="color: ${badgeColor}; font-weight: bold; text-shadow: 1px 1px 2px #000;">Awarded: ${badgeText} - ${event.category}</span>
+                    </div>
+                `;
+            } else if (event.type === 'level_up') {
                 eventEl.style.borderLeftColor = c_hex;
                 eventEl.innerHTML = `
                     <div class="timeline-node" style="background: #ffd100; box-shadow: 0 0 8px #ffd100;"></div>
@@ -3139,6 +3529,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         mvpPveList.innerHTML = pveGloat + generateMvpHtml(topTrendPve, false);
         mvpPvpList.innerHTML = pvpGloat + generateMvpHtml(topTrendPvp, true);
 
+        // Re-bind tooltips to the newly injected MVP elements
+        if (typeof setupTooltips === 'function') {
+            setupTooltips();
+        }
     };
 
     // ==========================================
