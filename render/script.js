@@ -28,6 +28,29 @@ const TBC_XP = {
     60: 494000, 61: 517000, 62: 550000, 63: 587000, 64: 632000, 65: 684000, 66: 745000, 67: 815000, 68: 895000, 69: 985000
 };
 
+// --- Helper: Safely Parse Arrays ---
+function safeParseArray(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') {
+        try {
+            const parsed = JSON.parse(val);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    }
+    return [];
+}
+
+// --- Helper: Summarize Badges for Tooltips ---
+function summarizeBadges(badgeArray) {
+    const arr = safeParseArray(badgeArray);
+    if (arr.length === 0) return "";
+    const counts = arr.reduce((acc, val) => { acc[val] = (acc[val] || 0) + 1; return acc; }, {});
+    return Object.entries(counts).map(([k, v]) => `${v}x ${k}`).join(', ');
+}
+
 // NEW: Added 'async' so we can fetch the external files
 window.addEventListener('DOMContentLoaded', async () => {
 
@@ -39,12 +62,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     let rawGuildRoster = [];
     let warEffortLocks = {}; 
     
-    // 1. Fetch CRITICAL Roster Data First
+    // 1. Fetch CRITICAL Roster Data Firstt
     try {
-        const rosterRes = await fetch('asset/roster.json');
+        const cb = new Date().getTime(); // Cache Buster
+        const rosterRes = await fetch(`asset/roster.json?t=${cb}`);
         rosterData = await rosterRes.json();
         
-        const rawRes = await fetch('asset/raw_roster.json');
+        const rawRes = await fetch(`asset/raw_roster.json?t=${cb}`);
         rawGuildRoster = await rawRes.json();
     } catch (error) {
         console.error("Failed to load armory data:", error);
@@ -58,7 +82,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // 2. Fetch NON-CRITICAL War Effort Locks (Ignore if it fails or is missing)
     try {
-        const weRes = await fetch('asset/war_effort.json');
+        const cb = new Date().getTime();
+        const weRes = await fetch(`asset/war_effort.json?t=${cb}`);
         if (weRes.ok) {
             const weData = await weRes.json();
             warEffortLocks = weData.locks || {};
@@ -766,15 +791,24 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // --- NEW: Grab the Guild Rank & Badges ---
+        // --- NEW: Grab the Guild Rank & Badges (With Failsafe Fallbacks) ---
         const guildRank = p.guild_rank || 'Member';
-        const vCount = p.vanguard_count || 0;
-        const cCount = p.campaigns_count || 0;
+        const vBadges = safeParseArray(p.vanguard_badges || char.vanguard_badges);
+        const cBadges = safeParseArray(p.campaign_badges || char.campaign_badges);
+        const vCount = vBadges.length;
+        const cCount = cBadges.length;
+        const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count) || 0;
+        const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count) || 0;
+
+        const vTooltip = summarizeBadges(vBadges);
+        const cTooltip = summarizeBadges(cBadges);
         
         let extraBadges = '';
-        if (vCount > 0) extraBadges += `<span class="badge char-badge" style="border-color: #00ffcc; color: #00ffcc; box-shadow: 0 0 8px rgba(0,255,204,0.4);">🌟 Vanguard x${vCount}</span>`;
-        if (cCount > 0) extraBadges += `<span class="badge char-badge" style="border-color: #aaa; color: #fff;">🎖️ ${cCount} Campaigns</span>`;
-
+        if (pveChamp > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 128, 0, 0.15); border-color: #ff8000; color: #ffad33; font-weight: bold; box-shadow: 0 0 10px rgba(255,128,0,0.5);" title="${pveChamp}x PvE Champion">👑 PvE Champ x${pveChamp}</span>`;
+        if (pvpChamp > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(255, 68, 0, 0.15); border-color: #ff4400; color: #ff7733; font-weight: bold; box-shadow: 0 0 10px rgba(255,68,0,0.5);" title="${pvpChamp}x PvP Champion">⚔️ PvP Champ x${pvpChamp}</span>`;
+        if (vCount > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(0, 255, 204, 0.15); border-color: #00ffcc; color: #66ffeb; font-weight: bold; box-shadow: 0 0 10px rgba(0,255,204,0.5);" title="Vanguard: ${vTooltip}">🌟 Vanguard x${vCount}</span>`;
+        if (cCount > 0) extraBadges += `<span class="badge char-badge" style="background: rgba(170, 170, 170, 0.15); border-color: #aaa; color: #ddd; font-weight: bold; box-shadow: 0 0 8px rgba(255,255,255,0.2);" title="Campaigns: ${cTooltip}">🎖️ Campaigns x${cCount}</span>`;
+        
         return `
 <div class="char-card ${factionCls}" style="border-top-color:${cHex};">
     <div style="text-align:center; margin-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:20px;">
@@ -1147,18 +1181,26 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const p = deepChar.profile;
                 isClickable = true;
                 
-                // Add tiny MVP and Vanguard stars
-                const vCount = p.vanguard_count || 0;
-                const pveChamp = p.pve_champ_count || 0;
-                const pvpChamp = p.pvp_champ_count || 0;
+                // Add tiny MVP and Vanguard stars (With Failsafe Fallbacks)
+                const vBadges = safeParseArray(p.vanguard_badges || deepChar.vanguard_badges);
+                const cBadges = safeParseArray(p.campaign_badges || deepChar.campaign_badges);
+                const vCount = vBadges.length;
+                const cCount = cBadges.length;
+                const pveChamp = parseInt(p.pve_champ_count || deepChar.pve_champ_count) || 0;
+                const pvpChamp = parseInt(p.pvp_champ_count || deepChar.pvp_champ_count) || 0;
                 
-                let cBadges = '';
-                if (pveChamp > 0) cBadges += `<span style="color:#ff8000; font-size:12px; margin-left:6px; filter:drop-shadow(0 0 2px #ff8000);" title="${pveChamp}x PvE Champ">👑</span>`;
-                if (pvpChamp > 0) cBadges += `<span style="color:#ff4400; font-size:12px; margin-left:2px; filter:drop-shadow(0 0 2px #ff4400);" title="${pvpChamp}x PvP Champ">⚔️</span>`;
-                if (vCount > 0) cBadges += `<span style="color:#00ffcc; font-size:12px; margin-left:2px; filter:drop-shadow(0 0 2px #00ffcc);" title="${vCount}x Vanguard">🌟</span>`;
-                
+                const vTooltip = summarizeBadges(vBadges);
+                const cTooltip = summarizeBadges(cBadges);
+
+                let cBadgesHtml = '<div style="display:inline-flex; gap:4px; margin-left:8px; vertical-align:middle;">';
+                if (pveChamp > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 128, 0, 0.15); border:1px solid rgba(255, 128, 0, 0.4); color:#ffad33; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px; box-shadow:0 0 5px rgba(255,128,0,0.3);" title="${pveChamp}x PvE Champion">👑 ${pveChamp}</span>`;
+                if (pvpChamp > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(255, 68, 0, 0.15); border:1px solid rgba(255, 68, 0, 0.4); color:#ff7733; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px; box-shadow:0 0 5px rgba(255,68,0,0.3);" title="${pvpChamp}x PvP Champion">⚔️ ${pvpChamp}</span>`;
+                if (vCount > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(0, 255, 204, 0.15); border:1px solid rgba(0, 255, 204, 0.4); color:#66ffeb; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px; box-shadow:0 0 5px rgba(0,255,204,0.3);" title="Vanguard: ${vTooltip}">🌟 ${vCount}</span>`;
+                if (cCount > 0) cBadgesHtml += `<span style="display:inline-flex; align-items:center; background:rgba(170, 170, 170, 0.15); border:1px solid rgba(170, 170, 170, 0.4); color:#ddd; font-size:10px; font-weight:bold; padding:1px 4px; border-radius:4px; box-shadow:0 0 5px rgba(255,255,255,0.1);" title="Campaigns: ${cTooltip}">🎖️ ${cCount}</span>`;
+                cBadgesHtml += '</div>';
+
                 cleanName = (p.name || 'Unknown').toLowerCase();
-                displayName = (p.name || 'Unknown') + cBadges;
+                displayName = (p.name || 'Unknown') + cBadgesHtml;
                 cClass = getCharClass(deepChar);
                 raceName = p.race && p.race.name ? (typeof p.race.name === 'string' ? p.race.name : (p.race.name.en_US || 'Unknown')) : 'Unknown';
                 cHex = CLASS_COLORS[cClass] || "#fff";
@@ -1358,13 +1400,27 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const specIconHtml = specIconUrl ? `<img src="${specIconUrl}" style="width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 4px; border: 1px solid #222;">` : '';
                 const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
                 
-                // --- NEW: Grab the Guild Rank & Vanguard Status ---
+                // --- NEW: Grab the Guild Rank & MVP Badges (With Failsafe Fallbacks) ---
                 const guildRank = p.guild_rank || 'Member';
-                const vCount = p.vanguard_count || 0;
-                const vBadgeHtml = vCount > 0 ? `<span style="color:#00ffcc; font-size:12px; margin-left:8px; text-shadow: 0 0 4px rgba(0,255,204,0.8);">🌟x${vCount}</span>` : '';
+                const vBadges = safeParseArray(p.vanguard_badges || char.vanguard_badges);
+                const cBadges = safeParseArray(p.campaign_badges || char.campaign_badges);
+                const vCount = vBadges.length;
+                const cCount = cBadges.length;
+                const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count) || 0;
+                const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count) || 0;
+
+                const vTooltip = summarizeBadges(vBadges);
+                const cTooltip = summarizeBadges(cBadges);
                 
+                let cBadgesHtml = '<div style="display:inline-flex; gap:4px; margin-left:10px; vertical-align:middle;">';
+                if (pveChamp > 0) cBadgesHtml += `<span style="background:rgba(255, 128, 0, 0.2); border:1px solid rgba(255, 128, 0, 0.5); color:#ffad33; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;">👑 ${pveChamp}</span>`;
+                if (pvpChamp > 0) cBadgesHtml += `<span style="background:rgba(255, 68, 0, 0.2); border:1px solid rgba(255, 68, 0, 0.5); color:#ff7733; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;">⚔️ ${pvpChamp}</span>`;
+                if (vCount > 0) cBadgesHtml += `<span style="background:rgba(0, 255, 204, 0.2); border:1px solid rgba(0, 255, 204, 0.5); color:#66ffeb; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;">🌟 ${vCount}</span>`;
+                if (cCount > 0) cBadgesHtml += `<span style="background:rgba(170, 170, 170, 0.2); border:1px solid rgba(170, 170, 170, 0.5); color:#ddd; padding:1px 4px; border-radius:4px; font-size:10px; font-weight:bold;">🎖️ ${cCount}</span>`;
+                cBadgesHtml += '</div>';
+
                 tooltip.innerHTML = `
-                    <div class="tt-name" style="color:${cHex}; display:flex; align-items:center;">${p.name || 'Unknown'}${vBadgeHtml}</div>
+                    <div class="tt-name" style="color:${cHex}; display:flex; align-items:center;">${p.name || 'Unknown'}${cBadgesHtml}</div>
                     <div class="tt-row"><span class="tt-label">Guild Rank</span><span class="tt-val" style="color:#ffd100;">${guildRank}</span></div>
                     <div class="tt-row"><span class="tt-label">Level / Race</span><span class="tt-val">${p.level || 0} / ${raceName}</span></div>
                     <div class="tt-row"><span class="tt-label">Class</span><span class="tt-val" style="color:${cHex}; display:flex; align-items:center;">${specIconHtml}${displaySpecClass}</span></div>
@@ -2751,7 +2807,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchTimeline() {
         try {
-            const response = await fetch('asset/timeline.json');
+            const cb = new Date().getTime();
+            const response = await fetch(`asset/timeline.json?t=${cb}`);
             timelineData = await response.json();
             
             // --- FIX: Update Epic Loot KPI dynamically after fetch ---
