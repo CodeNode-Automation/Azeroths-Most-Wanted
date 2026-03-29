@@ -224,8 +224,9 @@ async def main_async():
         
         known_timeline = set()
         for row in timeline_rows:
-            if row['type'] == 'level_up': known_timeline.add(f"{row['character_name']}_level_{row['level']}")
-            else: known_timeline.add(f"{row['character_name']}_item_{row['item_id']}")
+            char_key = str(row.get('character_name', '')).lower()
+            if row['type'] == 'level_up': known_timeline.add(f"{char_key}_level_{row['level']}")
+            else: known_timeline.add(f"{char_key}_item_{row['item_id']}")
 
         timeline_data_new = []
         roster_data = []
@@ -305,23 +306,24 @@ async def main_async():
 
         for ev in timeline_data_new:
             char_name = ev.get('character')
+            char_key = str(char_name).lower()
             if ev.get('type') == 'level_up':
                 level = ev.get('level')
-                if f"{char_name}_level_{level}" not in known_timeline:
+                if f"{char_key}_level_{level}" not in known_timeline:
                     batch_stmts_initial.append({
                         "q": "INSERT INTO timeline (timestamp, character_name, class, type, level) VALUES (?, ?, ?, ?, ?)",
                         "params": [ev.get('timestamp'), char_name, ev.get('class'), 'level_up', level]
                     })
-                    known_timeline.add(f"{char_name}_level_{level}")
+                    known_timeline.add(f"{char_key}_level_{level}")
             else:
                 it = ev.get('item', {})
                 item_id = it.get('item_id')
-                if f"{char_name}_item_{item_id}" not in known_timeline:
+                if f"{char_key}_item_{item_id}" not in known_timeline:
                     batch_stmts_initial.append({
                         "q": "INSERT INTO timeline (timestamp, character_name, class, type, item_id, item_name, item_quality, item_icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                         "params": [ev.get('timestamp'), char_name, ev.get('class'), 'item', item_id, it.get('name'), it.get('quality'), it.get('icon_data')]
                     })
-                    known_timeline.add(f"{char_name}_item_{item_id}")
+                    known_timeline.add(f"{char_key}_item_{item_id}")
 
         for row in char_history_inserts:
             batch_stmts_initial.append({
@@ -784,17 +786,6 @@ async def main_async():
         
         dashboard_feed.extend(badge_events)
         dashboard_feed.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-
-        # --- INJECT BADGES INTO TIMELINE ---
-        if 'badge_events' in locals():
-            orig_chars = {r['name'].lower(): r for r in char_rows}
-            for ev in badge_events:
-                c_name_lower = ev["character_name"].lower()
-                ev["class"] = orig_chars.get(c_name_lower, {}).get("class", "Unknown")
-            
-            dashboard_feed.extend(badge_events)
-            # Guarantee timeline sorting by timestamp
-            dashboard_feed.sort(key=lambda x: str(x.get('timestamp', '')), reverse=True)
 
         with open("asset/timeline.json", "w", encoding="utf-8") as f:
             json.dump(dashboard_feed, f, ensure_ascii=False)

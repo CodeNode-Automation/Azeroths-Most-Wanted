@@ -86,10 +86,13 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
             if date_key not in activity_counts:
                 activity_counts[date_key] = {"total": 0, "loot": 0, "levels": 0}
                 
+            if e_type == "badge":
+                continue # Skip meta-achievements from the activity graph
+                
             activity_counts[date_key]["total"] += 1
             if e_type == "level_up":
                 activity_counts[date_key]["levels"] += 1
-            else:
+            elif e_type == "item":
                 activity_counts[date_key]["loot"] += 1
         except Exception:
             pass

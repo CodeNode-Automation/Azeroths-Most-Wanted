@@ -1221,6 +1221,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             'pvp_gold': { label: 'PvP Gold', icon: '🥇', color: '#ffd700' },
             'pve_silver': { label: 'PvE Silver', icon: '🥈', color: '#c0c0c0' },
             'pvp_silver': { label: 'PvP Silver', icon: '🥈', color: '#c0c0c0' },
+            'pve_bronze': { label: 'PvE Bronze', icon: '🥉', color: '#cd7f32' },
+            'pvp_bronze': { label: 'PvP Bronze', icon: '🥉', color: '#cd7f32' },
             'vanguard': { label: 'Vanguards', icon: '🌟', color: '#00ffcc' },
             'campaign': { label: 'Campaigns', icon: '🎖️', color: '#aaa' }
         };
@@ -2466,7 +2468,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             badgesContainer.style.flexWrap = 'wrap';
             badgesContainer.style.justifyContent = 'center';
             badgesContainer.style.maxWidth = '900px';
-            if (timeline) timeline.style.width = ''; // Reset timeline width
+            if (timeline) {
+                timeline.style.width = ''; 
+                timeline.style.maxWidth = ''; // Reset timeline width
+            }
             
         } else if (showBadges === 'awards') {
             renderAwardFilterBadges(characters, isRawRoster);
@@ -2482,8 +2487,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             badgesContainer.style.overflowX = 'auto'; // Allows horizontal scroll if screen is too small
             badgesContainer.style.paddingBottom = '10px';
             
-            // Stretch the activity feed slightly since we have the extra real estate
-            if (timeline) timeline.style.width = '440px'; 
+            // Stretch the activity feed slightly, but keep it responsive for mobile!
+            if (timeline) {
+                timeline.style.width = '100%'; 
+                timeline.style.maxWidth = '440px'; 
+            }
             
         } else {
             badgesContainer.style.display = 'none';
@@ -2494,7 +2502,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             wrapper.style.flexDirection = 'row';
             leftCol.style.maxWidth = '350px';
             leftCol.style.width = 'auto';
-            if (timeline) timeline.style.width = ''; // Reset timeline width
+            if (timeline) {
+                timeline.style.width = ''; 
+                timeline.style.maxWidth = ''; // Reset timeline width
+            }
             
             if (!chartViews.includes(hash)) {
                 leftCol.style.display = 'none';
