@@ -529,7 +529,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (topPve.length > 0 && pveContainer) {
         pveWrapper.style.display = 'block';
         let pveHTML = '<div class="lb-podium-wrap">';
-        let pveListHTML = '<div class="lb-list-wrap">';
+        let pveListHTML = '<div class="lb-list-wrap collapsed-list">';
         topPve.forEach((char, index) => {
             const p = char.profile;
             const cClass = getCharClass(char);
@@ -576,7 +576,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                 </div>`;
             }
         });
-        pveContainer.innerHTML = pveHTML + '</div>' + pveListHTML + '</div>';
+        const toggleBtn = topPve.length > 5 ? `<button class="expand-lb-btn" onclick="this.previousElementSibling.classList.toggle('collapsed-list'); this.innerText = this.innerText.includes('▼') ? 'Collapse Leaderboard ▲' : 'Show Top 25 ▼';">Show Top 25 ▼</button>` : '';
+        pveContainer.innerHTML = pveHTML + '</div>' + pveListHTML + '</div>' + toggleBtn;
     }
 
     const pvpContainer = document.getElementById('pvp-leaderboard');
@@ -590,7 +591,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (topPvp.length > 0 && pvpContainer) {
         pvpWrapper.style.display = 'block';
         let pvpHTML = '<div class="lb-podium-wrap">';
-        let pvpListHTML = '<div class="lb-list-wrap">';
+        let pvpListHTML = '<div class="lb-list-wrap collapsed-list">';
         topPvp.forEach((char, index) => {
             const p = char.profile;
             const cClass = getCharClass(char);
@@ -638,7 +639,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                 </div>`;
             }
         });
-        pvpContainer.innerHTML = pvpHTML + '</div>' + pvpListHTML + '</div>';
+        const togglePvpBtn = topPvp.length > 5 ? `<button class="expand-lb-btn" onclick="this.previousElementSibling.classList.toggle('collapsed-list'); this.innerText = this.innerText.includes('▼') ? 'Collapse Leaderboard ▲' : 'Show Top 25 ▼';">Show Top 25 ▼</button>` : '';
+        pvpContainer.innerHTML = pvpHTML + '</div>' + pvpListHTML + '</div>' + togglePvpBtn;
     }
     
     setupTooltips();

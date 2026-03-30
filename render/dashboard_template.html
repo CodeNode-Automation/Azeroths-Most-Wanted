@@ -151,12 +151,15 @@
                     <div id="hero-search-autocomplete" class="search-autocomplete" style="width: 100%; top: calc(100% + 8px);"></div>
                 </div>
 
+
                 <div id="recent-milestones-container" style="display:none; width: 100%; max-width: 1050px; margin: 0 auto 30px auto; animation: fadeInUp 0.5s forwards;">
                     <div class="milestone-banner">
                         <span class="milestone-icon">🌟</span>
                         <div id="milestone-text" class="milestone-text"></div>
                     </div>
                 </div>
+
+                <div class="home-dashboard-grid">
 
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; max-width: 1100px; margin-bottom: 30px;">
                     <div class="heatmap-wrapper" style="flex: 1; width: 100%; max-width: 100%; margin: 0; overflow: hidden;">
@@ -234,7 +237,7 @@
                         </div>
                     </div>
                     
-                    <button onclick="window.location.hash='badges'" style="margin-top: 35px; width: 100%; padding: 12px; background: linear-gradient(90deg, rgba(255,209,0,0.1), rgba(255,128,0,0.2)); border: 1px solid #ffd100; color: #ffd100; font-family: 'Cinzel'; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 6px; box-shadow: 0 0 10px rgba(255,209,0,0.3); transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 0 20px rgba(255,209,0,0.6)'; this.style.background='linear-gradient(90deg, rgba(255,209,0,0.2), rgba(255,128,0,0.4))';" onmouseout="this.style.boxShadow='0 0 10px rgba(255,209,0,0.3)'; this.style.background='linear-gradient(90deg, rgba(255,209,0,0.1), rgba(255,128,0,0.2))';">
+                    <button onclick="window.location.hash='badges'" class="view-heroes-btn">
                         🌟 View Hall of Heroes
                     </button>
                     
@@ -269,7 +272,8 @@
                         <button onclick="window.location.hash='ladder-pvp'" class="view-all-btn" style="border-color: #ff4400; color: #ff4400;">View Full PvP Ladder ➔</button>
                     </div>
                 </div>
-            </div> 
+                
+                </div> </div> 
             <div id="analytics-view" style="display: none; animation: fadeInUp 0.5s forwards;">
                 <h2 style="color: #ffd100; font-family: 'Cinzel', serif; text-align: center; text-shadow: 0 2px 4px #000; margin-bottom: 20px; font-size: 32px;">Guild Analytics</h2>
                 
