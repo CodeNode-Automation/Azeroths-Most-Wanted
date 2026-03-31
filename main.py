@@ -426,15 +426,26 @@ async def main_async():
         except Exception: pass
 
         async def smart_update_we(category, vanguards_list, participants_list):
-            v_json, p_json = json.dumps(vanguards_list), json.dumps(participants_list)
             old = db_we_state.get(category, {})
             
-            # FIX: Never destructively overwrite existing DB vanguards OR participants with an empty array
-            if old.get('vanguards') and old.get('vanguards') != '[]' and v_json == '[]':
-                v_json = old.get('vanguards')
+            # ULTIMATE SHIELD: Merge arrays so Turso never forgets a player
+            final_vanguards = list(vanguards_list)
+            final_participants = list(participants_list)
+            
+            # Safely parse old database values
+            try: old_v = json.loads(old.get('vanguards') or '[]')
+            except: old_v = []
+            try: old_p = json.loads(old.get('participants') or '[]')
+            except: old_p = []
+            
+            # Add existing database players into the new lists (Deduplicated)
+            for v in old_v:
+                if v not in final_vanguards: final_vanguards.append(v)
+            for p in old_p:
+                if p not in final_participants: final_participants.append(p)
                 
-            if old.get('participants') and old.get('participants') != '[]' and p_json == '[]':
-                p_json = old.get('participants')
+            v_json = json.dumps(final_vanguards)
+            p_json = json.dumps(final_participants)
 
             if old.get('vanguards') != v_json or old.get('participants') != p_json:
                 safe_v, safe_p = v_json.replace("'", "''"), p_json.replace("'", "''")
