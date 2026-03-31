@@ -369,7 +369,7 @@ async def main_async():
 
 
         print("🌐 Fetching updated timeline for War Efforts...")
-        dashboard_feed = await fetch_turso(session, "SELECT * FROM timeline ORDER BY timestamp DESC LIMIT 5000")
+        dashboard_feed = await fetch_turso(session, "SELECT * FROM timeline ORDER BY timestamp DESC LIMIT 10000")
 
         # --- DECOUPLED WAR EFFORT TIME-LOCKING & TURSO HISTORY LOGIC ---
         we_file = "asset/war_effort.json"
@@ -408,6 +408,14 @@ async def main_async():
                     p = r.get('participants') if isinstance(r, dict) else r[2]
                     db_we_state[cat] = {'vanguards': v, 'participants': p}
                     
+                    # FIX: Restore locks directly from the database to survive JSON file loss or timeline limits!
+                    try:
+                        # Add "or '[]'" so it parses an empty array instead of crashing on None
+                        parsed_v = json.loads(v or '[]') 
+                        if parsed_v and len(parsed_v) > 0 and cat not in we_data["locks"]:
+                            we_data["locks"][cat] = {"vanguards": parsed_v}
+                    except: pass
+                    
             mvp_rows = await fetch_turso(session, f"SELECT category, champion, score FROM reigning_champs_history WHERE week_anchor='{week_anchor}'")
             if mvp_rows:
                 for r in mvp_rows:
@@ -420,6 +428,14 @@ async def main_async():
         async def smart_update_we(category, vanguards_list, participants_list):
             v_json, p_json = json.dumps(vanguards_list), json.dumps(participants_list)
             old = db_we_state.get(category, {})
+            
+            # FIX: Never destructively overwrite existing DB vanguards OR participants with an empty array
+            if old.get('vanguards') and old.get('vanguards') != '[]' and v_json == '[]':
+                v_json = old.get('vanguards')
+                
+            if old.get('participants') and old.get('participants') != '[]' and p_json == '[]':
+                p_json = old.get('participants')
+
             if old.get('vanguards') != v_json or old.get('participants') != p_json:
                 safe_v, safe_p = v_json.replace("'", "''"), p_json.replace("'", "''")
                 try: await fetch_turso(session, f"INSERT OR REPLACE INTO war_effort_history (week_anchor, category, vanguards, participants) VALUES ('{week_anchor}', '{category}', '{safe_v}', '{safe_p}')")
@@ -522,16 +538,19 @@ async def main_async():
         prev_week_anchor = (last_reset_berlin - timedelta(days=7)).strftime("%Y-%m-%d")
 
         try:
-            # FIX: Clean up the database by deleting any premature entries for the ongoing week
+            # Clean up the database by deleting any premature entries for the ongoing week
             await fetch_turso(session, f"DELETE FROM reigning_champs_history WHERE week_anchor = '{week_anchor}'")
         except Exception:
             pass
 
         async def smart_update_prev_mvp(category, champ, score):
-            try: 
-                await fetch_turso(session, f"INSERT OR REPLACE INTO reigning_champs_history (week_anchor, category, champion, score) VALUES ('{prev_week_anchor}', '{category}', '{champ}', {score})")
-            except Exception: 
-                pass
+            # FIX 1: Manually check if the DB already has a locked winner to avoid constraint/duplicate issues
+            existing = await fetch_turso(session, f"SELECT champion FROM reigning_champs_history WHERE week_anchor = '{prev_week_anchor}' AND category = '{category}'")
+            if not existing:
+                try: 
+                    await fetch_turso(session, f"INSERT INTO reigning_champs_history (week_anchor, category, champion, score) VALUES ('{prev_week_anchor}', '{category}', '{champ}', {score})")
+                except Exception: 
+                    pass
 
         # Extract to variables first to satisfy Pylance type-checking
         pve_winner = prev_mvps.get("pve")
@@ -542,6 +561,18 @@ async def main_async():
             
         if pvp_winner: 
             await smart_update_prev_mvp('pvp', pvp_winner["name"], pvp_winner["score"])
+
+        # FIX 2: Load the strictly locked values from the database, and feed those to the HTML generator
+        # This stops the dashboard from changing its mind if the active stats shift on Tuesday morning!
+        locked_mvp_rows = await fetch_turso(session, f"SELECT category, champion, score FROM reigning_champs_history WHERE week_anchor = '{prev_week_anchor}'")
+        if locked_mvp_rows:
+            for r in locked_mvp_rows:
+                cat = r.get('category') if isinstance(r, dict) else r[0]
+                champ = r.get('champion') if isinstance(r, dict) else r[1]
+                score = r.get('score') if isinstance(r, dict) else r[2]
+                
+                if cat in prev_mvps:
+                    prev_mvps[cat] = {"name": champ, "score": score}
         
         # 6. LADDER CHAMPS LOGIC (Gold, Silver, Bronze snapshots from previous week)
         try:
