@@ -1,0 +1,78 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap");
+
+/* ========================================= */
+/* BASE & GLOBALS                            */
+/* ========================================= */
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background:
+    radial-gradient(circle at top left, rgba(30, 15, 45, 0.35) 0%, transparent 45%),
+    radial-gradient(circle at top right, rgba(15, 25, 45, 0.35) 0%, transparent 45%),
+    radial-gradient(circle at bottom, rgba(45, 35, 10, 0.15) 0%, transparent 60%), #050507;
+  color: #eee;
+  font-family: "Inter", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a,
+.item-slot,
+.nav-btn,
+.clickable-class,
+.tt-char,
+.concise-item,
+.tl-btn,
+#backToTopBtn {
+  cursor: pointer !important;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(5, 5, 8, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #444, #222);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #666, #333);
+  border-color: rgba(255, 209, 0, 0.3);
+}
+::selection {
+  background: rgba(255, 209, 0, 0.4);
+  color: #fff;
+  text-shadow: none;
+}
+::-moz-selection {
+  background: rgba(255, 209, 0, 0.4);
+  color: #fff;
+  text-shadow: none;
+}
+
+:focus-visible {
+  outline: 2px solid #ffd100 !important;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.search-box:focus-visible,
+.search-box *:focus-visible,
+.hero-search-box:focus-visible,
+.hero-search-box *:focus-visible {
+  outline: none !important;
+}
+.search-container *,
+.hero-search-box * {
+  -webkit-tap-highlight-color: transparent;
+}

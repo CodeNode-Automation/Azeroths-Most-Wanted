@@ -99,14 +99,12 @@ async def fetch_wowhead_icon_url(session, item_id):
 
 def get_standardized_image_url(url):
     """
-    Standardizes image domains if pointing to a deprecated or restricted render URL.
-    Returns the direct URL for the HTML to render natively.
+    Rewrites Blizzard render-hosted item icon URLs to the direct image host used by the site.
     """
     if not url:
         return None
         
-    # Standardize image domains if pointing to a deprecated or restricted render URL
-    # Make sure we only apply this logic to item 'icons', not character portraits!
+    # Only rewrite Blizzard render-hosted item icons; leave portrait/media URLs untouched.
     if "render.worldofwarcraft.com" in url and "icons" in url:
         try:
             icon_name = url.split('/')[-1].split('.')[0]

@@ -4,6 +4,8 @@ from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 from jinja2 import Environment, FileSystemLoader
 
+from wow.alts import is_alt_record
+
 def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, raw_guild_roster=None, roster_history=None, prev_mvps=None):
     """
     Generates the interactive, high-performance HTML dashboard utilizing Jinja2 templates.
@@ -17,9 +19,11 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
 
     # Safely filter out any characters whose profile failed to load from the API
     roster_data = [char for char in roster_data if char and isinstance(char.get("profile"), dict)]
+    realm_data = realm_data or {}
+    global_metrics = realm_data.get("global_metrics") or {}
+    global_trends = realm_data.get("global_trends") or {}
 
     last_updated_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    sorted_roster = sorted(roster_data, key=lambda x: x.get("profile", {}).get("name", "").lower())
     sorted_stats_roster = sorted(roster_data, key=lambda x: (
         x.get("profile", {}).get("level", 0),
         x.get("profile", {}).get("equipped_item_level", 0)
@@ -28,8 +32,13 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
     total_processed = len(roster_data)
     total_level = 0
     active_14_days = 0 
+    active_14_days_mains = 0
     raid_ready_count = 0
-    class_counts = {}
+    raid_ready_count_mains = 0
+    total_ilvl_70 = 0
+    ilvl_70_count = 0
+    main_total_ilvl_70 = 0
+    main_ilvl_70_count = 0
     
     current_time_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
     fourteen_days_ms = 14 * 24 * 60 * 60 * 1000 
@@ -38,27 +47,44 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         p = char.get("profile", {})
         lvl = p.get('level', 0)
         ilvl = p.get('equipped_item_level', 0)
+        is_main = not is_alt_record(char)
         
         if isinstance(lvl, int): 
             total_level += lvl
             
         if lvl == 70 and ilvl >= 110:
             raid_ready_count += 1
+            if is_main:
+                raid_ready_count_mains += 1
+
+        if lvl == 70 and ilvl > 0:
+            total_ilvl_70 += ilvl
+            ilvl_70_count += 1
+
+        if is_main and lvl == 70 and ilvl > 0:
+            main_total_ilvl_70 += ilvl
+            main_ilvl_70_count += 1
             
         last_login = p.get('last_login_timestamp', 0)
         if current_time_ms - last_login <= fourteen_days_ms:
             active_14_days += 1
+            if is_main:
+                active_14_days_mains += 1
             
-    # Calculate accurate class counts using the entire raw guild roster
-    for char in raw_guild_roster:
-        c_class = char.get('class', 'Unknown')
-        if c_class != 'Unknown':
-            class_counts[c_class] = class_counts.get(c_class, 0) + 1
-
     avg_level = (total_level // total_processed) if total_processed > 0 else 0
-    display_total_members = len(raw_guild_roster)
+    fallback_total_members = len(raw_guild_roster)
+    fallback_total_members_mains = sum(1 for record in raw_guild_roster if not is_alt_record(record))
+    fallback_avg_ilvl_70 = round(total_ilvl_70 / ilvl_70_count) if ilvl_70_count > 0 else 0
+    fallback_avg_ilvl_70_mains = round(main_total_ilvl_70 / main_ilvl_70_count) if main_ilvl_70_count > 0 else 0
 
-    global_trends = realm_data.get('global_trends', {}) if isinstance(realm_data, dict) else {}
+    display_total_members = global_metrics.get("total_members", fallback_total_members)
+    total_members_mains = global_metrics.get("total_members_mains", fallback_total_members_mains)
+    active_14_days = global_metrics.get("active_14_days", active_14_days)
+    active_14_days_mains = global_metrics.get("active_14_days_mains", active_14_days_mains)
+    raid_ready_count = global_metrics.get("raid_ready_count", raid_ready_count)
+    raid_ready_count_mains = global_metrics.get("raid_ready_count_mains", raid_ready_count_mains)
+    avg_ilvl_70 = global_metrics.get("avg_ilvl_70", fallback_avg_ilvl_70)
+    avg_ilvl_70_mains = global_metrics.get("avg_ilvl_70_mains", fallback_avg_ilvl_70_mains)
 
     berlin_tz = ZoneInfo("Europe/Berlin")
 
@@ -100,10 +126,14 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         # Ensure 'today' always has the live exact count
         if i == 0:
             hist_total = display_total_members
+            hist_total_mains = total_members_mains
             hist_active = active_14_days
+            hist_active_mains = active_14_days_mains
         else:
             hist_total = hist_data.get('total_roster')
+            hist_total_mains = hist_data.get('total_roster_mains')
             hist_active = hist_data.get('active_roster')
+            hist_active_mains = hist_data.get('active_roster_mains')
 
         heatmap_data.append({
             "date": d_str, 
@@ -112,22 +142,51 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
             "loot": day_data["loot"],
             "levels": day_data["levels"],
             "total_roster": hist_total,
-            "active_roster": hist_active
+            "total_roster_mains": hist_total_mains,
+            "active_roster": hist_active,
+            "active_roster_mains": hist_active_mains
         })
-    
-        safe_heatmap_data = json.dumps(heatmap_data)
+
+    safe_heatmap_data = json.dumps(heatmap_data)
 
     base_dir = os.path.dirname(__file__)
 
     try:
-        with open(os.path.join(base_dir, "style.css"), "r", encoding="utf-8") as f:
-            css_content = f.read()
+        css_sources = [
+            os.path.join(base_dir, "src", "css", "base", "foundation.css"),
+            os.path.join(base_dir, "src", "css", "features", "architecture", "pipelines.css"),
+            os.path.join(base_dir, "src", "css", "layout", "footer.css"),
+            os.path.join(base_dir, "src", "css", "features", "timeline", "activity.css"),
+            os.path.join(base_dir, "src", "css", "base", "animations.css"),
+            os.path.join(base_dir, "style.css"),
+        ]
+        css_chunks = []
+        for css_path in css_sources:
+            with open(css_path, "r", encoding="utf-8") as f:
+                css_chunks.append(f.read())
+        css_content = "\n\n".join(css_chunks)
     except FileNotFoundError:
         css_content = ""
 
     try:
-        with open(os.path.join(base_dir, "script.js"), "r", encoding="utf-8") as f:
-            js_content = f.read()
+        js_sources = [
+            os.path.join(base_dir, "src", "js", "core", "formatting.js"),
+            os.path.join(base_dir, "src", "js", "core", "data.js"),
+            os.path.join(base_dir, "src", "js", "core", "dom.js"),
+            os.path.join(base_dir, "src", "js", "features", "command_hall", "command_shell.js"),
+            os.path.join(base_dir, "src", "js", "features", "command_hall", "hall_renderers.js"),
+            os.path.join(base_dir, "src", "js", "features", "ladder", "ladder_shell.js"),
+            os.path.join(base_dir, "src", "js", "features", "home_analytics", "analytics_cards.js"),
+            os.path.join(base_dir, "src", "js", "features", "home_analytics", "analytics_selectors.js"),
+            os.path.join(base_dir, "src", "js", "features", "home_analytics", "home_overview.js"),
+            os.path.join(base_dir, "src", "js", "features", "war_effort", "war_effort_shell.js"),
+            os.path.join(base_dir, "script.js"),
+        ]
+        js_chunks = []
+        for js_path in js_sources:
+            with open(js_path, "r", encoding="utf-8") as f:
+                js_chunks.append(f.read())
+        js_content = "\n\n".join(js_chunks)
     except FileNotFoundError:
         js_content = ""
 
@@ -139,8 +198,15 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
 
     dashboard_config = {
         "last_updated": last_updated_iso,
+        "total_members": display_total_members,
+        "total_members_mains": total_members_mains,
         "active_14_days": active_14_days,
+        "active_14_days_mains": active_14_days_mains,
         "raid_ready_count": raid_ready_count,
+        "raid_ready_count_mains": raid_ready_count_mains,
+        "avg_ilvl_70": avg_ilvl_70,
+        "avg_ilvl_70_mains": avg_ilvl_70_mains,
+        "global_trends": global_trends,
         "prev_mvps": prev_mvps
     }
     safe_config = json.dumps(dashboard_config)

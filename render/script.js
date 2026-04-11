@@ -64,1857 +64,7 @@ if (sessionStorage.getItem('amwIntroPlayed') === 'true') {
     });
 }
 
-// --- Helper: Safely Parse Arrays ---
-function safeParseArray(val) {
-    if (!val) return [];
-    if (Array.isArray(val)) return val;
-    if (typeof val === 'string') {
-        try {
-            const parsed = JSON.parse(val);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-            return [];
-        }
-    }
-    return [];
-}
-
-// --- Helper: Map Raw Badge Names to Thematic Names ---
-function getThematicName(rawName) {
-    if (!rawName) return 'Awarded';
-    const clean = rawName.toLowerCase().trim();
-    const map = {
-        'xp': "Hero's Journey",
-        'hks': "Blood of the Enemy", // Fixed to match main.py output
-        'hk': "Blood of the Enemy",
-        'loot': "Dragon's Hoard",
-        'zenith': "The Zenith Cohort",
-        'pve_gold': "PvE Ladder (Gold)",
-        'pve_silver': "PvE Ladder (Silver)",
-        'pve_bronze': "PvE Ladder (Bronze)",
-        'pvp_gold': "PvP Ladder (Gold)",
-        'pvp_silver': "PvP Ladder (Silver)",
-        'pvp_bronze': "PvP Ladder (Bronze)",
-        'mvp_pve': "PvE MVP Champion",
-        'mvp_pvp': "PvP MVP Champion",
-        'vanguard': "Vanguard Status",
-        'campaign': "Campaign Participant"
-    };
-    return map[clean] || (rawName.charAt(0).toUpperCase() + rawName.slice(1));
-}
-
-// --- Helper: Summarize Badges for Tooltips ---
-function summarizeBadges(badgeArray) {
-    const arr = safeParseArray(badgeArray);
-    if (arr.length === 0) return "";
-    const counts = arr.reduce((acc, val) => { 
-        const niceName = getThematicName(val);
-        acc[niceName] = (acc[niceName] || 0) + 1; 
-        return acc; 
-    }, {});
-    return Object.entries(counts).map(([k, v]) => `${v}x ${k}`).join(', ');
-}
-
-function appendConciseBadges(container, badgeConfigs) {
-    if (!container || !badgeConfigs || badgeConfigs.length === 0) return;
-
-    const wrapperTemplate = document.getElementById('tpl-concise-badges-wrapper');
-    const pillTemplate = document.getElementById('tpl-concise-badge-pill');
-    const reigningTemplate = document.getElementById('tpl-concise-badge-reigning');
-
-    if (!wrapperTemplate || !pillTemplate || !reigningTemplate) return;
-
-    const wrapperClone = wrapperTemplate.content.cloneNode(true);
-    const wrapper = wrapperClone.querySelector('.c-badges-wrapper');
-
-    badgeConfigs.forEach(({ text, title = '', classNames = [] }) => {
-        const isReigning = classNames.includes('c-badge-reigning');
-        const badgeTemplate = isReigning ? reigningTemplate : pillTemplate;
-        const badgeClone = badgeTemplate.content.cloneNode(true);
-        const badgeEl = badgeClone.querySelector(isReigning ? '.c-badge-reigning' : '.c-badge-pill');
-
-        classNames.forEach(cls => badgeEl.classList.add(cls));
-        badgeEl.textContent = text;
-        if (title) badgeEl.title = title;
-
-        wrapper.appendChild(badgeClone);
-    });
-
-    container.appendChild(wrapperClone);
-}
-
-function appendConciseMeta(container, { raceName, specIconUrl, displaySpecClass, isClickable }) {
-    if (!container) return;
-
-    container.textContent = '';
-
-    if (!isClickable) {
-        container.textContent = `${raceName} ${displaySpecClass}`;
-        return;
-    }
-
-    container.appendChild(document.createTextNode(`${raceName} • `));
-
-    if (specIconUrl) {
-        const specIconTemplate = document.getElementById('tpl-concise-spec-icon');
-        if (specIconTemplate) {
-            const specClone = specIconTemplate.content.cloneNode(true);
-            const specImg = specClone.querySelector('.concise-spec-icon');
-            specImg.src = specIconUrl;
-            container.appendChild(specClone);
-        }
-    }
-
-    container.appendChild(document.createTextNode(displaySpecClass));
-}
-
-function buildConciseTrendHtml(trend) {
-    const template = document.getElementById('tpl-concise-trend-indicator');
-    if (!template) return null;
-
-    const clone = template.content.cloneNode(true);
-    const trendEl = clone.querySelector('.trend-indicator-concise');
-    if (!trendEl) return null;
-
-    if (trend > 0) {
-        trendEl.classList.add('trend-positive');
-        trendEl.textContent = `▲ ${trend}`;
-    } else if (trend < 0) {
-        trendEl.classList.add('trend-negative');
-        trendEl.textContent = `▼ ${Math.abs(trend)}`;
-    } else {
-        trendEl.classList.add('trend-neutral');
-        trendEl.textContent = '-';
-    }
-
-    const rootEl = clone.firstElementChild;
-    return rootEl || null;
-}
-
-function getCharacterRole(cClass, specName = '') {
-    if (["Protection", "Blood"].includes(specName) || (cClass === "Druid" && specName === "Feral Combat")) return "Tank";
-    if (["Holy", "Discipline", "Restoration"].includes(specName)) return "Healer";
-    if (["Mage", "Warlock", "Hunter"].includes(cClass) || ["Balance", "Elemental", "Shadow"].includes(specName)) return "Ranged DPS";
-    return "Melee DPS";
-}
-
-function getLadderConfig(hashUrl) {
-    if (hashUrl === 'ladder-pvp') {
-        return {
-            theme: 'pvp',
-            overline: 'Netherstorm War Ledger',
-            heroTitle: 'The Blood Ledger of Outland',
-            heroDesc: "From the Ring of Trials to the skirmishes of Hellfire and Nagrand, this war board tracks the guild's fiercest killers, sharpest climbs, and the challengers pressing toward gladiatorial glory.",
-            metricLabel: 'Honorable Kills',
-            metricShort: 'HKs',
-            podiumKicker: 'Arena War Council',
-            podiumTitle: 'Champions of the Arena Sands',
-            podiumDesc: 'The three duelists currently holding command of the blood-soaked ladder.'
-        };
-    }
-
-    return {
-        theme: 'pve',
-        overline: 'Outland Raid Dispatch',
-        heroTitle: 'The Black Temple Vanguard',
-        heroDesc: "A command ledger for the raiders leading the march through Karazhan, Serpentshrine, Tempest Keep, Hyjal, and the Black Temple itself. See who stands ready, who is surging, and who is closing on the front line.",
-        metricLabel: 'Item Level',
-        metricShort: 'iLvl',
-        podiumKicker: 'Raid Vanguard',
-        podiumTitle: 'Champions of the Expedition',
-        podiumDesc: "The current standard-bearers for guild progression across Outland's hardest encounters."
-    };
-}
-
-function getLadderMetricValue(char, hashUrl) {
-    const profile = char && char.profile ? char.profile : {};
-    return hashUrl === 'ladder-pvp'
-        ? (profile.honorable_kills || 0)
-        : (profile.equipped_item_level || 0);
-}
-
-function getLadderTrendValue(char, hashUrl) {
-    const profile = char && char.profile ? char.profile : {};
-    return hashUrl === 'ladder-pvp'
-        ? (profile.trend_pvp || profile.trend_hks || 0)
-        : (profile.trend_pve || profile.trend_ilvl || 0);
-}
-
-function formatLadderMetricValue(value, hashUrl) {
-    const safeValue = Math.max(0, Number(value) || 0);
-    return hashUrl === 'ladder-pvp'
-        ? safeValue.toLocaleString()
-        : Math.round(safeValue).toLocaleString();
-}
-
-function formatCompactMetricValue(value) {
-    return new Intl.NumberFormat('en', {
-        notation: 'compact',
-        maximumFractionDigits: value >= 100000 ? 1 : 0
-    }).format(Math.max(0, Number(value) || 0));
-}
-
-function getLadderStatusMeta(trendValue) {
-    if (trendValue > 0) return { text: 'Rising', className: 'is-rising' };
-    if (trendValue < 0) return { text: 'Slipping', className: 'is-slipping' };
-    return { text: 'Holding', className: 'is-holding' };
-}
-
-function buildLadderHeroStatNode(value, label) {
-    const template = document.getElementById('tpl-ladder-hero-stat');
-    if (!template) return null;
-
-    const clone = template.content.cloneNode(true);
-    const valueEl = clone.querySelector('.ladder-hero-stat-value');
-    const labelEl = clone.querySelector('.ladder-hero-stat-label');
-
-    if (valueEl) valueEl.textContent = value;
-    if (labelEl) labelEl.textContent = label;
-
-    return clone.firstElementChild || null;
-}
-
-
-function resolveRosterProfile(char, isRawRoster = false) {
-    if (!char) return null;
-
-    if (isRawRoster) {
-        const deepRoster = Array.isArray(window.rosterData) ? window.rosterData : [];
-        const match = deepRoster.find(deep => deep.profile?.name?.toLowerCase() === (char.name || '').toLowerCase());
-        return match && match.profile ? match.profile : char;
-    }
-
-    return char.profile || char;
-}
-
-function getProfileClassName(profile) {
-    if (!profile) return 'Unknown';
-
-    if (profile.character_class && profile.character_class.name) {
-        return typeof profile.character_class.name === 'string'
-            ? profile.character_class.name
-            : (profile.character_class.name.en_US || 'Unknown');
-    }
-
-    return profile.class || 'Unknown';
-}
-
-function buildCommandHeroStatNode(value, label) {
-    const template = document.getElementById('tpl-command-view-stat');
-    if (!template) return null;
-
-    const clone = template.content.cloneNode(true);
-    const valueEl = clone.querySelector('.command-hero-stat-value');
-    const labelEl = clone.querySelector('.command-hero-stat-label');
-
-    if (valueEl) valueEl.textContent = value;
-    if (labelEl) labelEl.textContent = label;
-
-    return clone.firstElementChild || null;
-}
-
-function buildHeroBandItemNode({ kicker, value, meta = '', char = null, filterKey = '', filterValue = '' }) {
-    const template = document.getElementById('tpl-hero-band-item');
-    if (!template) return null;
-
-    const clone = template.content.cloneNode(true);
-    const cardEl = clone.querySelector('.hero-band-item');
-    const kickerEl = clone.querySelector('.hero-band-kicker');
-    const valueEl = clone.querySelector('.hero-band-value');
-    const metaEl = clone.querySelector('.hero-band-meta');
-
-    if (kickerEl) kickerEl.textContent = kicker;
-    if (valueEl) valueEl.textContent = value;
-    if (metaEl) metaEl.textContent = meta;
-
-    if (cardEl && char && char.profile && char.profile.name) {
-        const profile = char.profile;
-        const cClass = profile.character_class && profile.character_class.name
-            ? (typeof profile.character_class.name === 'string' ? profile.character_class.name : profile.character_class.name.en_US)
-            : 'Unknown';
-
-        cardEl.classList.add('tt-char', 'hero-band-item-interactive');
-        cardEl.setAttribute('data-char', profile.name.toLowerCase());
-        cardEl.setAttribute('data-class', cClass);
-        cardEl.setAttribute('data-spec', profile.active_spec || 'unspecced');
-        cardEl.setAttribute('data-awards', safeParseArray(profile.badges).join(','));
-        cardEl.setAttribute('tabindex', '0');
-    }
-
-    if (cardEl && filterKey && filterValue) {
-        cardEl.classList.add('hero-band-item-filter', 'hero-band-item-interactive');
-        cardEl.setAttribute('data-filter-key', filterKey);
-        cardEl.setAttribute('data-filter-value', filterValue);
-        cardEl.setAttribute('tabindex', '0');
-    }
-
-    return clone.firstElementChild || null;
-}
-
-function normalizeHallOfHeroesBadgeType(rawType = '') {
-    const cleanType = (rawType || '').toLowerCase().trim();
-    return cleanType === 'hk' ? 'hks' : cleanType;
-}
-
-function getHallOfHeroesDashboardConfig() {
-    const dashboardConfigEl = document.getElementById('dashboard-config');
-    if (!dashboardConfigEl) return {};
-
-    try {
-        return JSON.parse(dashboardConfigEl.textContent || '{}');
-    } catch (error) {
-        return {};
-    }
-}
-
-function getHallOfHeroesEntry(char, isRawMode = false) {
-    const profile = resolveRosterProfile(char, isRawMode);
-    if (!profile) return null;
-
-    const source = isRawMode
-        ? ((Array.isArray(window.rosterData) ? window.rosterData : []).find(deep => deep.profile?.name?.toLowerCase() === (char.name || '').toLowerCase()) || char)
-        : char;
-
-    const vBadges = safeParseArray(profile.vanguard_badges || source?.vanguard_badges);
-    const cBadges = safeParseArray(profile.campaign_badges || source?.campaign_badges);
-    const weeklyBadgeTypes = [...vBadges, ...cBadges].map(normalizeHallOfHeroesBadgeType);
-
-    const xpCount = weeklyBadgeTypes.filter(type => type === 'xp').length;
-    const hksCount = weeklyBadgeTypes.filter(type => type === 'hks').length;
-    const lootCount = weeklyBadgeTypes.filter(type => type === 'loot').length;
-    const zenithCount = weeklyBadgeTypes.filter(type => type === 'zenith').length;
-
-    const pveChamp = parseInt(profile.pve_champ_count || source?.pve_champ_count) || 0;
-    const pvpChamp = parseInt(profile.pvp_champ_count || source?.pvp_champ_count) || 0;
-    const pveGold = parseInt(profile.pve_gold || source?.pve_gold) || 0;
-    const pveSilver = parseInt(profile.pve_silver || source?.pve_silver) || 0;
-    const pveBronze = parseInt(profile.pve_bronze || source?.pve_bronze) || 0;
-    const pvpGold = parseInt(profile.pvp_gold || source?.pvp_gold) || 0;
-    const pvpSilver = parseInt(profile.pvp_silver || source?.pvp_silver) || 0;
-    const pvpBronze = parseInt(profile.pvp_bronze || source?.pvp_bronze) || 0;
-
-    const pveMedals = pveGold + pveSilver + pveBronze;
-    const pvpMedals = pvpGold + pvpSilver + pvpBronze;
-    const championCount = pveChamp + pvpChamp;
-    const weeklyBadgeCount = weeklyBadgeTypes.length;
-    const totalHonors = weeklyBadgeCount + championCount + pveMedals + pvpMedals;
-
-    const dashboardConfig = getHallOfHeroesDashboardConfig();
-    const prevMvps = dashboardConfig.prev_mvps || {};
-    const cleanName = (profile.name || '').toLowerCase();
-    const isPveReigning = !!(prevMvps.pve && prevMvps.pve.name && prevMvps.pve.name.toLowerCase() === cleanName);
-    const isPvpReigning = !!(prevMvps.pvp && prevMvps.pvp.name && prevMvps.pvp.name.toLowerCase() === cleanName);
-
-    const awards = [];
-    if (xpCount > 0) awards.push('xp');
-    if (hksCount > 0) awards.push('hks');
-    if (lootCount > 0) awards.push('loot');
-    if (zenithCount > 0) awards.push('zenith');
-    if (pveGold > 0) awards.push('pve_gold');
-    if (pveSilver > 0) awards.push('pve_silver');
-    if (pveBronze > 0) awards.push('pve_bronze');
-    if (pvpGold > 0) awards.push('pvp_gold');
-    if (pvpSilver > 0) awards.push('pvp_silver');
-    if (pvpBronze > 0) awards.push('pvp_bronze');
-    if (pveChamp > 0) awards.push('mvp_pve');
-    if (pvpChamp > 0) awards.push('mvp_pvp');
-    if (vBadges.length > 0) awards.push('vanguard');
-    if (cBadges.length > 0) awards.push('campaign');
-
-    return {
-        char,
-        profile,
-        source,
-        cleanName,
-        className: getProfileClassName(profile),
-        awards,
-        totalHonors,
-        weeklyBadgeCount,
-        championCount,
-        pveMedals,
-        pvpMedals,
-        hasXp: xpCount > 0,
-        hasHks: hksCount > 0,
-        hasLoot: lootCount > 0,
-        hasZenith: zenithCount > 0,
-        hasMvp: championCount > 0,
-        hasReigning: isPveReigning || isPvpReigning,
-        hasPveMedal: pveMedals > 0,
-        hasPvpMedal: pvpMedals > 0,
-        hasVanguard: vBadges.length > 0,
-        hasCampaign: cBadges.length > 0
-    };
-}
-
-function getHallOfHeroesEntries(characters, isRawMode = false) {
-    return characters
-        .map(char => getHallOfHeroesEntry(char, isRawMode))
-        .filter(Boolean);
-}
-
-function applyHallOfHeroesCardDataset(cardEl, entry) {
-    if (!cardEl || !entry || !entry.profile) return;
-
-    cardEl.classList.add('tt-char', 'hall-stage-card-interactive');
-    cardEl.setAttribute('data-char', entry.cleanName);
-    cardEl.setAttribute('data-class', entry.className);
-    cardEl.setAttribute('data-spec', entry.profile.active_spec || 'unspecced');
-    cardEl.setAttribute('data-awards', entry.awards.join(','));
-    cardEl.setAttribute('tabindex', '0');
-    cardEl.setAttribute('role', 'button');
-}
-
-function buildHallOfHeroesStageCard({ kicker, title, meta, emblem = '✦', tone = 'legend', entry = null, filterKey = '', filterValue = '' }) {
-    const card = document.createElement('article');
-    card.className = `hall-stage-card hall-stage-tone-${tone}`;
-
-    const kickerEl = document.createElement('span');
-    kickerEl.className = 'hall-stage-card-kicker';
-    kickerEl.textContent = kicker;
-
-    const bodyEl = document.createElement('div');
-    bodyEl.className = 'hall-stage-card-body';
-
-    const emblemEl = document.createElement('span');
-    emblemEl.className = 'hall-stage-emblem';
-    emblemEl.textContent = emblem;
-
-    const copyEl = document.createElement('div');
-    copyEl.className = 'hall-stage-copy';
-
-    const titleEl = document.createElement('strong');
-    titleEl.className = 'hall-stage-card-title';
-    titleEl.textContent = title;
-
-    const metaEl = document.createElement('span');
-    metaEl.className = 'hall-stage-card-meta';
-    metaEl.textContent = meta;
-
-    copyEl.appendChild(titleEl);
-    copyEl.appendChild(metaEl);
-    bodyEl.appendChild(emblemEl);
-    bodyEl.appendChild(copyEl);
-    card.appendChild(kickerEl);
-    card.appendChild(bodyEl);
-
-    if (entry) {
-        applyHallOfHeroesCardDataset(card, entry);
-    }
-
-    if (filterKey && filterValue) {
-        card.classList.add('hall-stage-card-filterable', 'hero-band-item-filter', 'hero-band-item-interactive');
-        card.setAttribute('data-filter-key', filterKey);
-        card.setAttribute('data-filter-value', filterValue);
-        card.setAttribute('tabindex', '0');
-        card.setAttribute('role', 'button');
-    }
-
-    return card;
-}
-
-function getTopHallOfHeroesEntry(entries, scorer) {
-    if (!Array.isArray(entries) || entries.length === 0) return null;
-
-    const scoreFn = typeof scorer === 'function'
-        ? scorer
-        : entry => entry && typeof entry[scorer] === 'number' ? entry[scorer] : 0;
-
-    return [...entries].sort((a, b) => {
-        const diff = (scoreFn(b) || 0) - (scoreFn(a) || 0);
-        if (diff !== 0) return diff;
-        return (a.profile?.name || '').localeCompare(b.profile?.name || '');
-    })[0] || null;
-}
-
-function buildHallOfHeroesStage(characters, isRawMode = false) {
-    const entries = getHallOfHeroesEntries(characters, isRawMode);
-    if (entries.length === 0) return null;
-
-    const dashboardConfig = getHallOfHeroesDashboardConfig();
-    const prevMvps = dashboardConfig.prev_mvps || {};
-    const findEntryByName = name => entries.find(entry => entry.cleanName === (name || '').toLowerCase()) || null;
-
-    const reigningPveEntry = findEntryByName(prevMvps.pve?.name || '');
-    const reigningPvpEntry = findEntryByName(prevMvps.pvp?.name || '');
-    const decoratedLeader = getTopHallOfHeroesEntry(entries, entry => entry.totalHonors);
-    const weeklyLeader = getTopHallOfHeroesEntry(entries, entry => entry.weeklyBadgeCount);
-    const crownLeaderTopCount = Math.max(0, ...entries.map(entry => entry.championCount));
-    const crownLeaders = crownLeaderTopCount > 0
-        ? entries
-            .filter(entry => entry.championCount === crownLeaderTopCount)
-            .sort((a, b) => (a.profile?.name || '').localeCompare(b.profile?.name || ''))
-        : [];
-    const crownLeader = crownLeaders[0] || null;
-
-    const totalWeeklyMarks = entries.reduce((sum, entry) => sum + entry.weeklyBadgeCount, 0);
-    const totalChampionCrowns = entries.reduce((sum, entry) => sum + entry.championCount, 0);
-    const totalPveMedals = entries.reduce((sum, entry) => sum + entry.pveMedals, 0);
-    const totalPvpMedals = entries.reduce((sum, entry) => sum + entry.pvpMedals, 0);
-    const totalCampaignVeterans = entries.filter(entry => entry.hasCampaign).length;
-
-    const stage = document.createElement('section');
-    stage.className = 'hall-stage';
-
-    const head = document.createElement('div');
-    head.className = 'hall-stage-head';
-
-    const headKicker = document.createElement('span');
-    headKicker.className = 'hall-stage-kicker';
-    headKicker.textContent = 'Featured Honors';
-
-    const headTitle = document.createElement('h3');
-    headTitle.className = 'hall-stage-title';
-    headTitle.textContent = 'The Command Dais of the Decorated';
-
-    const headDesc = document.createElement('p');
-    headDesc.className = 'hall-stage-desc';
-    headDesc.textContent = 'Singular honors below will open the hero directly. Broad honors will filter the decorated roster and badge history below.';
-
-    head.appendChild(headKicker);
-    head.appendChild(headTitle);
-    head.appendChild(headDesc);
-
-    const spotlightGrid = document.createElement('div');
-    spotlightGrid.className = 'hall-stage-spotlight';
-
-    spotlightGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Reigning PvE Champion',
-        title: reigningPveEntry ? reigningPveEntry.profile.name : 'Awaiting Champion',
-        meta: reigningPveEntry ? 'Current holder of the guild PvE MVP crown.' : 'The next weekly PvE MVP will rise here.',
-        emblem: '👑',
-        tone: 'pve',
-        entry: reigningPveEntry
-    }));
-
-    spotlightGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Reigning PvP Champion',
-        title: reigningPvpEntry ? reigningPvpEntry.profile.name : 'Awaiting Champion',
-        meta: reigningPvpEntry ? 'Current holder of the guild PvP MVP crown.' : 'The next weekly PvP MVP will rise here.',
-        emblem: '⚔️',
-        tone: 'pvp',
-        entry: reigningPvpEntry
-    }));
-
-    spotlightGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Most Decorated',
-        title: decoratedLeader ? decoratedLeader.profile.name : 'Awaiting Hero',
-        meta: decoratedLeader ? `${decoratedLeader.totalHonors.toLocaleString()} total honors recorded across weekly marks, crowns, and medals.` : 'No decorated heroes are on record yet.',
-        emblem: '🌟',
-        tone: 'legend',
-        entry: decoratedLeader
-    }));
-
-    spotlightGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'War Effort Standard-Bearer',
-        title: weeklyLeader ? weeklyLeader.profile.name : 'Awaiting Vanguard',
-        meta: weeklyLeader ? `${weeklyLeader.weeklyBadgeCount.toLocaleString()} weekly war effort marks secured.` : 'No weekly marks have been recorded yet.',
-        emblem: '🛡️',
-        tone: 'war',
-        entry: weeklyLeader
-    }));
-
-    spotlightGrid.appendChild(
-        crownLeaders.length <= 1
-            ? buildHallOfHeroesStageCard({
-                kicker: 'Champion Crown Leader',
-                title: crownLeader ? crownLeader.profile.name : 'Awaiting Champion',
-                meta: crownLeader ? `${crownLeader.championCount.toLocaleString()} combined PvE and PvP MVP crowns earned.` : 'No MVP crowns have been awarded yet.',
-                emblem: '🏆',
-                tone: 'crown',
-                entry: crownLeader
-            })
-            : buildHallOfHeroesStageCard({
-                kicker: 'Champion Crown Leaders',
-                title: `${crownLeaders.length.toLocaleString()} Heroes Tied`,
-                meta: `${crownLeaderTopCount.toLocaleString()} combined PvE and PvP MVP crown${crownLeaderTopCount === 1 ? '' : 's'} each.`,
-                emblem: '🏆',
-                tone: 'crown'
-            })
-    );
-
-    const wallGrid = document.createElement('div');
-    wallGrid.className = 'hall-stage-wall';
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Weekly Marks Recorded',
-        title: totalWeeklyMarks.toLocaleString(),
-        meta: 'Filter to heroes carrying any weekly war effort mark.',
-        emblem: '⚡',
-        tone: 'war',
-        filterKey: 'honor',
-        filterValue: 'weekly'
-    }));
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Champion Crowns',
-        title: totalChampionCrowns.toLocaleString(),
-        meta: 'Filter to PvE and PvP MVP crown holders.',
-        emblem: '👑',
-        tone: 'crown',
-        filterKey: 'honor',
-        filterValue: 'mvp'
-    }));
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'PvE Medal Wall',
-        title: totalPveMedals.toLocaleString(),
-        meta: 'Filter to decorated PvE medalists.',
-        emblem: '🥇',
-        tone: 'pve',
-        filterKey: 'honor',
-        filterValue: 'ladder_pve'
-    }));
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'PvP Medal Wall',
-        title: totalPvpMedals.toLocaleString(),
-        meta: 'Filter to decorated PvP medalists.',
-        emblem: '🩸',
-        tone: 'pvp',
-        filterKey: 'honor',
-        filterValue: 'ladder_pvp'
-    }));
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Campaign Veterans',
-        title: totalCampaignVeterans.toLocaleString(),
-        meta: 'Filter to veterans with campaign service recorded.',
-        emblem: '🎖️',
-        tone: 'legend',
-        filterKey: 'honor',
-        filterValue: 'campaign'
-    }));
-
-    stage.appendChild(head);
-    stage.appendChild(spotlightGrid);
-    stage.appendChild(wallGrid);
-
-    return stage;
-}
-
-function getCommandViewConfig(hashUrl, characters, isRawRoster = false) {
-    const profiles = characters
-        .map(char => resolveRosterProfile(char, isRawRoster))
-        .filter(Boolean);
-
-    if (profiles.length === 0) return null;
-
-    const now = Date.now();
-    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-    const level70s = profiles.filter(profile => (profile.level || 0) === 70);
-    const levelingCount = profiles.filter(profile => (profile.level || 0) < 70).length;
-    const avgLevel = Math.round(profiles.reduce((sum, profile) => sum + (profile.level || 0), 0) / profiles.length) || 0;
-    const avgLvl70Ilvl = level70s.length > 0
-        ? Math.round(level70s.reduce((sum, profile) => sum + (profile.equipped_item_level || 0), 0) / level70s.length)
-        : 0;
-    const active7Days = profiles.filter(profile => {
-        const lastLogin = profile.last_login_timestamp || 0;
-        return lastLogin > 0 && (now - lastLogin) <= sevenDaysMs;
-    }).length;
-
-    const roleCounts = profiles.reduce((acc, profile) => {
-        const cClass = getProfileClassName(profile);
-        const role = getCharacterRole(cClass, profile.active_spec || '');
-        acc[role] = (acc[role] || 0) + 1;
-        return acc;
-    }, { Tank: 0, Healer: 0, 'Ranged DPS': 0, 'Melee DPS': 0 });
-
-    const classCounts = profiles.reduce((acc, profile) => {
-        const cClass = getProfileClassName(profile);
-        acc[cClass] = (acc[cClass] || 0) + 1;
-        return acc;
-    }, {});
-
-    const dominantClassEntry = Object.entries(classCounts).sort((a, b) => b[1] - a[1])[0] || ['Unknown', 0];
-    const dominantRoleEntry = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])[0] || ['Unknown', 0];
-    const toTitleCase = value => (value || '').split(' ').map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '').join(' ');
-    const raceCounts = profiles.reduce((acc, profile) => {
-        const raceName = profile && profile.race && profile.race.name
-            ? (typeof profile.race.name === 'string' ? profile.race.name : (profile.race.name.en_US || 'Unknown'))
-            : 'Unknown';
-        acc[raceName] = (acc[raceName] || 0) + 1;
-        return acc;
-    }, {});
-    const dominantRaceEntry = Object.entries(raceCounts).sort((a, b) => b[1] - a[1])[0] || ['Unknown', 0];
-
-    if (hashUrl === 'total') {
-        return {
-            overline: 'Guild Census Ledger',
-            title: "The Roll of Azeroth's Most Wanted",
-            description: 'A complete census of the guild. Use this board to understand roster depth, class spread, and who has reached the level cap without the extra noise of awards and ladder theatrics.',
-            ruleText: 'Includes the full scanned guild roster.',
-            theme: 'total',
-            stats: [
-                { value: profiles.length.toLocaleString(), label: 'Total Members' },
-                { value: level70s.length.toLocaleString(), label: 'Level 70s' },
-                { value: avgLevel.toLocaleString(), label: 'Average Level' },
-                { value: avgLvl70Ilvl.toLocaleString(), label: 'Avg Lvl 70 iLvl' }
-            ],
-            bandItems: [
-                { kicker: 'Tank Depth', value: roleCounts.Tank.toLocaleString(), meta: 'Characters currently specced for front-line duty', filterKey: 'role', filterValue: 'Tank' },
-                { kicker: 'Healer Depth', value: roleCounts.Healer.toLocaleString(), meta: 'Dedicated healing-capable heroes in the guild', filterKey: 'role', filterValue: 'Healer' },
-                { kicker: 'Leveling Core', value: levelingCount.toLocaleString(), meta: 'Members still climbing toward level 70', filterKey: 'levelBracket', filterValue: 'lt70' },
-                { kicker: 'Most Common Class', value: dominantClassEntry[0], meta: `${dominantClassEntry[1]} members currently listed`, filterKey: dominantClassEntry[0] !== 'Unknown' ? 'class' : '', filterValue: dominantClassEntry[0] !== 'Unknown' ? dominantClassEntry[0] : '' }
-            ]
-        };
-    }
-
-    if (hashUrl === 'active') {
-        const active70s = profiles.filter(profile => (profile.level || 0) === 70).length;
-        const avgActiveIlvl = active70s > 0
-            ? Math.round(profiles.filter(profile => (profile.level || 0) === 70).reduce((sum, profile) => sum + (profile.equipped_item_level || 0), 0) / active70s)
-            : 0;
-
-        return {
-            overline: 'Warband Muster Roll',
-            title: 'The Fires Still Burning',
-            description: 'A present-tense view of the members still showing signs of life in the last two weeks. This page should answer who is realistically available and how battle-ready the active core looks right now.',
-            ruleText: 'Includes heroes seen within the last 14 days.',
-            theme: 'active',
-            stats: [
-                { value: profiles.length.toLocaleString(), label: 'Active in 14 Days' },
-                { value: active7Days.toLocaleString(), label: 'Active in 7 Days' },
-                { value: active70s.toLocaleString(), label: 'Active Level 70s' },
-                { value: avgActiveIlvl.toLocaleString(), label: 'Avg Active iLvl' }
-            ],
-            bandItems: [
-                { kicker: 'Seen in 7 Days', value: active7Days.toLocaleString(), meta: 'The most recently active names in the warband', filterKey: 'activityWindow', filterValue: '7d' },
-                { kicker: 'Active Tanks', value: roleCounts.Tank.toLocaleString(), meta: 'Front-line coverage inside the active roster', filterKey: 'role', filterValue: 'Tank' },
-                { kicker: 'Active Healers', value: roleCounts.Healer.toLocaleString(), meta: 'Healing depth available right now', filterKey: 'role', filterValue: 'Healer' },
-                { kicker: 'Leveling Alts', value: levelingCount.toLocaleString(), meta: 'Recently seen characters still below 70', filterKey: 'levelBracket', filterValue: 'lt70' }
-            ]
-        };
-    }
-
-    if (hashUrl === 'raidready') {
-        return {
-            overline: 'Vanguard Deployment Board',
-            title: 'Raid-Ready Vanguard',
-            description: 'A tactical board for officers and raiders. This view strips the roster down to characters who can step into progression content now, with the role mix and readiness counts visible at a glance.',
-            ruleText: 'Includes level 70 heroes with equipped item level 110 or higher.',
-            theme: 'raidready',
-            stats: [
-                { value: profiles.length.toLocaleString(), label: 'Ready Now' },
-                { value: roleCounts.Tank.toLocaleString(), label: 'Tanks' },
-                { value: roleCounts.Healer.toLocaleString(), label: 'Healers' },
-                { value: avgLvl70Ilvl.toLocaleString(), label: 'Average iLvl' }
-            ],
-            bandItems: [
-                { kicker: 'Tanks Ready', value: roleCounts.Tank.toLocaleString(), meta: 'Front-line slots available for raid night', filterKey: 'role', filterValue: 'Tank' },
-                { kicker: 'Healers Ready', value: roleCounts.Healer.toLocaleString(), meta: 'Healing coverage currently raid-ready', filterKey: 'role', filterValue: 'Healer' },
-                { kicker: 'Ranged Ready', value: roleCounts['Ranged DPS'].toLocaleString(), meta: 'Casters and hunters ready to deploy', filterKey: 'role', filterValue: 'Ranged DPS' },
-                { kicker: 'Melee Ready', value: roleCounts['Melee DPS'].toLocaleString(), meta: 'Close-range pressure available right now', filterKey: 'role', filterValue: 'Melee DPS' }
-            ]
-        };
-    }
-
-    if (hashUrl.startsWith('filter-role-')) {
-        const targetRoleHash = hashUrl.replace('filter-role-', '');
-        let targetRoleName = 'Unknown';
-        let title = 'Analytics Role Drill-Down';
-        let description = 'A focused roster slice built from the analytics role chart.';
-        let ruleText = 'Includes heroes whose current active spec maps to this raid role.';
-
-        if (targetRoleHash === 'tank') {
-            targetRoleName = 'Tank';
-            title = 'The Shield Wall';
-            description = 'A fortified command view of the guild tanks currently visible in the roster. Use this board when you want a true front-line read instead of a broad class or roster summary.';
-        } else if (targetRoleHash === 'healer') {
-            targetRoleName = 'Healer';
-            title = 'The Sanctified Reserve';
-            description = 'A healing-focused command board for officers checking sustain, recovery coverage, and which heroes currently carry the burden of keeping raids alive.';
-        } else if (targetRoleHash === 'melee-dps') {
-            targetRoleName = 'Melee DPS';
-            title = 'The Blade Line';
-            description = 'A strike roster for rogues, enhancement shamans, feral claws, retribution crusaders, and every other close-range damage dealer pressing the front.';
-        } else if (targetRoleHash === 'ranged-dps') {
-            targetRoleName = 'Ranged DPS';
-            title = 'The Arcane Volley';
-            description = 'A ranged damage board for casters and hunters delivering pressure from the second line while the front holds.';
-        }
-
-        return {
-            overline: 'Analytics Drill-Down',
-            title,
-            description,
-            ruleText,
-            theme: 'analytics-role',
-            stats: [
-                { value: profiles.length.toLocaleString(), label: 'Matching Heroes' },
-                { value: level70s.length.toLocaleString(), label: 'Level 70s' },
-                { value: avgLevel.toLocaleString(), label: 'Average Level' },
-                { value: avgLvl70Ilvl.toLocaleString(), label: 'Avg Lvl 70 iLvl' }
-            ],
-            bandItems: [
-                { kicker: 'Seen in 7 Days', value: active7Days.toLocaleString(), meta: 'How many of this role have shown recent signs of life', filterKey: 'activityWindow', filterValue: '7d' },
-                { kicker: 'Leveling Core', value: levelingCount.toLocaleString(), meta: 'Members in this role still climbing toward 70', filterKey: 'levelBracket', filterValue: 'lt70' },
-                { kicker: 'Dominant Class', value: dominantClassEntry[0], meta: `${dominantClassEntry[1]} heroes currently define this role slice`, filterKey: dominantClassEntry[0] !== 'Unknown' ? 'class' : '', filterValue: dominantClassEntry[0] !== 'Unknown' ? dominantClassEntry[0] : '' },
-                { kicker: 'Current Read', value: targetRoleName, meta: 'Opened from the analytics deployment pressure and role chart drill-downs' }
-            ]
-        };
-    }
-
-    if (hashUrl.startsWith('class-')) {
-        const classSlug = hashUrl.replace('class-', '');
-        const formattedClass = toTitleCase(classSlug);
-
-        return {
-            overline: 'Analytics Drill-Down',
-            title: `${formattedClass} Muster`,
-            description: `A focused class board opened from analytics. Use this view to inspect how the ${formattedClass} presence is distributed across levels, readiness, and live role coverage.`,
-            ruleText: `Includes all scanned ${formattedClass} characters currently recorded in the processed roster.`,
-            theme: 'analytics-class',
-            stats: [
-                { value: profiles.length.toLocaleString(), label: `${formattedClass}s` },
-                { value: level70s.length.toLocaleString(), label: 'Level 70s' },
-                { value: active7Days.toLocaleString(), label: 'Seen in 7 Days' },
-                { value: avgLvl70Ilvl.toLocaleString(), label: 'Avg Lvl 70 iLvl' }
-            ],
-            bandItems: [
-                { kicker: 'Tank Specs', value: roleCounts.Tank.toLocaleString(), meta: 'Characters in this class currently filling a tank role', filterKey: 'role', filterValue: 'Tank' },
-                { kicker: 'Healer Specs', value: roleCounts.Healer.toLocaleString(), meta: 'Characters in this class currently filling a healing role', filterKey: 'role', filterValue: 'Healer' },
-                { kicker: 'Ranged Specs', value: roleCounts['Ranged DPS'].toLocaleString(), meta: 'Characters in this class currently filling ranged damage slots', filterKey: 'role', filterValue: 'Ranged DPS' },
-                { kicker: 'Melee Specs', value: roleCounts['Melee DPS'].toLocaleString(), meta: 'Characters in this class currently filling melee damage slots', filterKey: 'role', filterValue: 'Melee DPS' }
-            ]
-        };
-    }
-
-    if (hashUrl.startsWith('filter-level-')) {
-        const range = hashUrl.replace('filter-level-', '');
-        const isEndgame = range === '70';
-        return {
-            overline: 'Analytics Drill-Down',
-            title: isEndgame ? 'The Endgame Muster' : `Campaign Levels ${range}`,
-            description: isEndgame
-                ? 'A direct read on the roster that has already reached the cap. This is the fastest way to inspect the guild members who are already in the real endgame conversation.'
-                : `A focused campaign board for characters in the ${range} bracket. Use it to understand where the leveling pressure currently sits and which role mix is coming up behind the capped core.`,
-            ruleText: isEndgame
-                ? 'Includes only characters at level 70.'
-                : `Includes only characters whose current level falls inside the ${range} bracket.`,
-            theme: 'analytics-level',
-            stats: [
-                { value: profiles.length.toLocaleString(), label: 'Matching Heroes' },
-                { value: avgLevel.toLocaleString(), label: 'Average Level' },
-                { value: active7Days.toLocaleString(), label: 'Seen in 7 Days' },
-                { value: avgLvl70Ilvl.toLocaleString(), label: 'Avg Lvl 70 iLvl' }
-            ],
-            bandItems: [
-                { kicker: 'Tank Count', value: roleCounts.Tank.toLocaleString(), meta: 'Front-line candidates inside this level bracket', filterKey: 'role', filterValue: 'Tank' },
-                { kicker: 'Healer Count', value: roleCounts.Healer.toLocaleString(), meta: 'Healing coverage inside this level bracket', filterKey: 'role', filterValue: 'Healer' },
-                { kicker: 'Dominant Class', value: dominantClassEntry[0], meta: `${dominantClassEntry[1]} heroes currently lead this bracket`, filterKey: dominantClassEntry[0] !== 'Unknown' ? 'class' : '', filterValue: dominantClassEntry[0] !== 'Unknown' ? dominantClassEntry[0] : '' },
-                { kicker: 'Dominant Race', value: dominantRaceEntry[0], meta: `${dominantRaceEntry[1]} heroes currently share the most common race in this slice` }
-            ]
-        };
-    }
-
-    if (hashUrl.startsWith('filter-ilvl-')) {
-        const range = hashUrl.replace('filter-ilvl-', '');
-        return {
-            overline: 'Analytics Drill-Down',
-            title: `Armament Bracket ${range}`,
-            description: 'A gear-focused board opened from the analytics item level spread. Use it to inspect who currently occupies this exact readiness band instead of only reading the chart from a distance.',
-            ruleText: `Includes level 70 heroes whose equipped item level falls in the ${range} bracket.`,
-            theme: 'analytics-ilvl',
-            stats: [
-                { value: profiles.length.toLocaleString(), label: 'Matching Heroes' },
-                { value: level70s.length.toLocaleString(), label: 'Level 70s' },
-                { value: active7Days.toLocaleString(), label: 'Seen in 7 Days' },
-                { value: avgLvl70Ilvl.toLocaleString(), label: 'Average iLvl' }
-            ],
-            bandItems: [
-                { kicker: 'Tank Count', value: roleCounts.Tank.toLocaleString(), meta: 'Tanks currently occupying this armament band', filterKey: 'role', filterValue: 'Tank' },
-                { kicker: 'Healer Count', value: roleCounts.Healer.toLocaleString(), meta: 'Healers currently occupying this armament band', filterKey: 'role', filterValue: 'Healer' },
-                { kicker: 'Ranged Count', value: roleCounts['Ranged DPS'].toLocaleString(), meta: 'Ranged damage coverage in this bracket', filterKey: 'role', filterValue: 'Ranged DPS' },
-                { kicker: 'Melee Count', value: roleCounts['Melee DPS'].toLocaleString(), meta: 'Melee damage coverage in this bracket', filterKey: 'role', filterValue: 'Melee DPS' }
-            ]
-        };
-    }
-
-    if (hashUrl.startsWith('filter-race-')) {
-        const targetRace = decodeURIComponent(hashUrl.replace('filter-race-', ''));
-        const displayRace = toTitleCase(targetRace);
-
-        return {
-            overline: 'Analytics Drill-Down',
-            title: `${displayRace} Muster`,
-            description: `A roster read for the ${displayRace} population inside the guild. This board turns the analytics race chart into a proper command view instead of a plain filtered list.`,
-            ruleText: `Includes all scanned ${displayRace} characters currently visible in the processed roster.`,
-            theme: 'analytics-race',
-            stats: [
-                { value: profiles.length.toLocaleString(), label: 'Matching Heroes' },
-                { value: level70s.length.toLocaleString(), label: 'Level 70s' },
-                { value: avgLevel.toLocaleString(), label: 'Average Level' },
-                { value: active7Days.toLocaleString(), label: 'Seen in 7 Days' }
-            ],
-            bandItems: [
-                { kicker: 'Tank Count', value: roleCounts.Tank.toLocaleString(), meta: 'Front-line coverage inside this race slice', filterKey: 'role', filterValue: 'Tank' },
-                { kicker: 'Healer Count', value: roleCounts.Healer.toLocaleString(), meta: 'Healing coverage inside this race slice', filterKey: 'role', filterValue: 'Healer' },
-                { kicker: 'Dominant Class', value: dominantClassEntry[0], meta: `${dominantClassEntry[1]} heroes currently define this race slice`, filterKey: dominantClassEntry[0] !== 'Unknown' ? 'class' : '', filterValue: dominantClassEntry[0] !== 'Unknown' ? dominantClassEntry[0] : '' },
-                { kicker: 'Leveling Core', value: levelingCount.toLocaleString(), meta: 'Members of this race still climbing toward the cap', filterKey: 'levelBracket', filterValue: 'lt70' }
-            ]
-        };
-    }
-
-    return null;
-}
-
-function buildCommandViewShell(hashUrl, characters, isRawRoster = false) {
-    const template = document.getElementById('tpl-command-view-shell');
-    if (!template || !Array.isArray(characters) || characters.length === 0) return null;
-
-    const config = getCommandViewConfig(hashUrl, characters, isRawRoster);
-    if (!config) return null;
-
-    const clone = template.content.cloneNode(true);
-    const shell = clone.querySelector('.command-hero-shell');
-    const overline = clone.querySelector('.command-overline');
-    const title = clone.querySelector('.command-hero-title');
-    const desc = clone.querySelector('.command-hero-desc');
-    const ribbonLabel = clone.querySelector('.command-hero-ribbon-label');
-    const ruleText = clone.querySelector('.command-hero-ribbon-text');
-    const statsGrid = clone.querySelector('.command-hero-stats');
-    const infoBand = clone.querySelector('.command-info-band');
-
-    if (shell) shell.classList.add(`command-shell-${config.theme}`);
-    if (overline) overline.textContent = config.overline;
-    if (title) title.textContent = config.title;
-    if (desc) desc.textContent = config.description;
-    if (ribbonLabel) ribbonLabel.textContent = config.ribbonLabel || 'Roster Rule';
-    if (ruleText) ruleText.textContent = config.ruleText;
-
-    config.stats.forEach(stat => {
-        const node = buildCommandHeroStatNode(stat.value, stat.label);
-        if (node && statsGrid) statsGrid.appendChild(node);
-    });
-
-    (config.bandItems || []).forEach(item => {
-        const node = buildHeroBandItemNode(item);
-        if (node && infoBand) infoBand.appendChild(node);
-    });
-
-    return clone;
-}
-
-function normalizeHonorBadgeType(rawType = '') {
-    const cleanType = (rawType || '').toLowerCase().trim();
-    return cleanType === 'hk' ? 'hks' : cleanType;
-}
-
-function getHallOfHeroesSnapshot(profile, source = null) {
-    if (!profile) return null;
-
-    const vBadges = safeParseArray(profile.vanguard_badges || source?.vanguard_badges);
-    const cBadges = safeParseArray(profile.campaign_badges || source?.campaign_badges);
-    const weeklyBadgeTypes = [...vBadges, ...cBadges].map(normalizeHonorBadgeType);
-
-    const pveChamp = parseInt(profile.pve_champ_count || source?.pve_champ_count) || 0;
-    const pvpChamp = parseInt(profile.pvp_champ_count || source?.pvp_champ_count) || 0;
-    const pveGold = parseInt(profile.pve_gold || source?.pve_gold) || 0;
-    const pveSilver = parseInt(profile.pve_silver || source?.pve_silver) || 0;
-    const pveBronze = parseInt(profile.pve_bronze || source?.pve_bronze) || 0;
-    const pvpGold = parseInt(profile.pvp_gold || source?.pvp_gold) || 0;
-    const pvpSilver = parseInt(profile.pvp_silver || source?.pvp_silver) || 0;
-    const pvpBronze = parseInt(profile.pvp_bronze || source?.pvp_bronze) || 0;
-    const pveMedals = pveGold + pveSilver + pveBronze;
-    const pvpMedals = pvpGold + pvpSilver + pvpBronze;
-
-    let prevMvps = {};
-    const dashboardConfigEl = document.getElementById('dashboard-config');
-    if (dashboardConfigEl) {
-        try {
-            const parsedConfig = JSON.parse(dashboardConfigEl.textContent || '{}');
-            prevMvps = parsedConfig.prev_mvps || {};
-        } catch (error) {
-            prevMvps = {};
-        }
-    }
-
-    const cleanName = (profile.name || '').toLowerCase();
-    const isPveReigning = !!(prevMvps.pve && prevMvps.pve.name && prevMvps.pve.name.toLowerCase() === cleanName);
-    const isPvpReigning = !!(prevMvps.pvp && prevMvps.pvp.name && prevMvps.pvp.name.toLowerCase() === cleanName);
-
-    return {
-        name: cleanName,
-        totalHonors: weeklyBadgeTypes.length + pveChamp + pvpChamp + pveMedals + pvpMedals,
-        weeklyBadgeCount: weeklyBadgeTypes.length,
-        championCount: pveChamp + pvpChamp,
-        pveChampCount: pveChamp,
-        pvpChampCount: pvpChamp,
-        vanguardCount: vBadges.length,
-        campaignCount: cBadges.length,
-        hasXp: weeklyBadgeTypes.includes('xp'),
-        hasHks: weeklyBadgeTypes.includes('hks'),
-        hasLoot: weeklyBadgeTypes.includes('loot'),
-        hasZenith: weeklyBadgeTypes.includes('zenith'),
-        hasMvp: (pveChamp + pvpChamp) > 0,
-        hasReigning: isPveReigning || isPvpReigning,
-        hasPveMedal: pveMedals > 0,
-        hasPvpMedal: pvpMedals > 0,
-        hasVanguard: vBadges.length > 0,
-        hasCampaign: cBadges.length > 0,
-        pveMedals,
-        pvpMedals
-    };
-}
-
-function getHallOfHeroesConfig(characters, isRawRoster = false) {
-    const snapshots = characters
-        .map(char => {
-            const profile = resolveRosterProfile(char, isRawRoster);
-            if (!profile) return null;
-
-            const source = isRawRoster
-                ? ((Array.isArray(window.rosterData) ? window.rosterData : []).find(deep => deep.profile?.name?.toLowerCase() === (char.name || '').toLowerCase()) || char)
-                : char;
-
-            return getHallOfHeroesSnapshot(profile, source);
-        })
-        .filter(Boolean);
-
-    if (snapshots.length === 0) return null;
-
-    const totalHonors = snapshots.reduce((sum, snapshot) => sum + snapshot.totalHonors, 0);
-    const weeklyBadgeTotal = snapshots.reduce((sum, snapshot) => sum + snapshot.weeklyBadgeCount, 0);
-    const reigningCount = snapshots.filter(snapshot => snapshot.hasReigning).length;
-    const filterCount = predicate => snapshots.filter(predicate).length;
-
-    return {
-        overline: 'Guild Honors Archive',
-        title: 'Hall of Heroes',
-        description: 'A ceremonial command board for the guild members who have earned distinction across weekly war efforts, champion crowns, ladder finishes, and long campaign service.',
-        ribbonLabel: 'Guild Decree',
-        ruleText: 'Use the honors below to call up each class of hero and inspect the decorated roster beneath it.',
-        theme: 'badges',
-        stats: [
-            { value: snapshots.length.toLocaleString(), label: 'Decorated Heroes' },
-            { value: totalHonors.toLocaleString(), label: 'Total Honors Earned' },
-            { value: weeklyBadgeTotal.toLocaleString(), label: 'Weekly Marks Recorded' },
-            { value: reigningCount.toLocaleString(), label: 'Reigning Champions' }
-        ],
-        bandItems: [
-            { kicker: 'Honor Roll', value: 'All Heroes', meta: `${snapshots.length.toLocaleString()} decorated names on record`, filterKey: 'honor', filterValue: 'all' },
-            { kicker: 'Weekly War Effort', value: "Hero's Journey", meta: `${filterCount(snapshot => snapshot.hasXp).toLocaleString()} heroes marked by leveling glory`, filterKey: 'honor', filterValue: 'xp' },
-            { kicker: 'Weekly War Effort', value: 'Blood of the Enemy', meta: `${filterCount(snapshot => snapshot.hasHks).toLocaleString()} heroes blooded in PvP`, filterKey: 'honor', filterValue: 'hks' },
-            { kicker: 'Weekly War Effort', value: "Dragon's Hoard", meta: `${filterCount(snapshot => snapshot.hasLoot).toLocaleString()} heroes stamped by epic spoils`, filterKey: 'honor', filterValue: 'loot' },
-            { kicker: 'Weekly War Effort', value: 'The Zenith Cohort', meta: `${filterCount(snapshot => snapshot.hasZenith).toLocaleString()} heroes who reached the summit`, filterKey: 'honor', filterValue: 'zenith' },
-            { kicker: 'Champion Honors', value: 'Weekly MVPs', meta: `${filterCount(snapshot => snapshot.hasMvp).toLocaleString()} heroes crowned by weekly MVP awards`, filterKey: 'honor', filterValue: 'mvp' },
-            { kicker: 'Champion Honors', value: 'Reigning Champions', meta: `${reigningCount.toLocaleString()} current title holders`, filterKey: 'honor', filterValue: 'reigning' },
-            { kicker: 'Ladder Honors', value: 'PvE Medalists', meta: `${filterCount(snapshot => snapshot.hasPveMedal).toLocaleString()} raiders with podium finishes`, filterKey: 'honor', filterValue: 'ladder_pve' },
-            { kicker: 'Ladder Honors', value: 'PvP Medalists', meta: `${filterCount(snapshot => snapshot.hasPvpMedal).toLocaleString()} duelists with podium finishes`, filterKey: 'honor', filterValue: 'ladder_pvp' },
-            { kicker: 'Service Honors', value: 'Vanguards', meta: `${filterCount(snapshot => snapshot.hasVanguard).toLocaleString()} heroes who seized early command`, filterKey: 'honor', filterValue: 'vanguard' },
-            { kicker: 'Service Honors', value: 'Campaign Veterans', meta: `${filterCount(snapshot => snapshot.hasCampaign).toLocaleString()} heroes decorated for campaign service`, filterKey: 'honor', filterValue: 'campaign' }
-        ]
-    };
-}
-
-function buildHallOfHeroesShell(characters, isRawRoster = false) {
-    const template = document.getElementById('tpl-command-view-shell');
-    if (!template || !Array.isArray(characters) || characters.length === 0) return null;
-
-    const config = getHallOfHeroesConfig(characters, isRawRoster);
-    if (!config) return null;
-
-    const clone = template.content.cloneNode(true);
-    const shell = clone.querySelector('.command-hero-shell');
-    const overline = clone.querySelector('.command-overline');
-    const title = clone.querySelector('.command-hero-title');
-    const desc = clone.querySelector('.command-hero-desc');
-    const ribbonLabel = clone.querySelector('.command-hero-ribbon-label');
-    const ruleText = clone.querySelector('.command-hero-ribbon-text');
-    const statsGrid = clone.querySelector('.command-hero-stats');
-    const infoBand = clone.querySelector('.command-info-band');
-
-    if (shell) shell.classList.add(`command-shell-${config.theme}`);
-    if (overline) overline.textContent = config.overline;
-    if (title) title.textContent = config.title;
-    if (desc) desc.textContent = config.description;
-    if (ribbonLabel) ribbonLabel.textContent = config.ribbonLabel;
-    if (ruleText) ruleText.textContent = config.ruleText;
-
-    config.stats.forEach(stat => {
-        const node = buildCommandHeroStatNode(stat.value, stat.label);
-        if (node && statsGrid) statsGrid.appendChild(node);
-    });
-
-    (config.bandItems || []).forEach(item => {
-        const node = buildHeroBandItemNode(item);
-        if (node && infoBand) infoBand.appendChild(node);
-    });
-
-    return clone;
-}
-
-function getHallOfHeroesDashboardConfig() {
-    const dashboardConfigEl = document.getElementById('dashboard-config');
-    if (!dashboardConfigEl) return {};
-
-    try {
-        return JSON.parse(dashboardConfigEl.textContent || '{}');
-    } catch (error) {
-        return {};
-    }
-}
-
-function getHallOfHeroesEntries(characters, isRawRoster = false) {
-    return characters
-        .map(char => {
-            const profile = resolveRosterProfile(char, isRawRoster);
-            if (!profile) return null;
-
-            const source = isRawRoster
-                ? ((Array.isArray(window.rosterData) ? window.rosterData : []).find(deep => deep.profile?.name?.toLowerCase() === (char.name || '').toLowerCase()) || char)
-                : char;
-
-            const snapshot = getHallOfHeroesSnapshot(profile, source);
-            if (!snapshot) return null;
-
-            return { char, profile, source, snapshot };
-        })
-        .filter(Boolean);
-}
-
-function applyHallOfHeroesCardDataset(cardEl, entry) {
-    if (!cardEl || !entry || !entry.profile) return;
-
-    const profile = entry.profile;
-    const cClass = getProfileClassName(profile);
-    const awards = [];
-
-    if (entry.snapshot.hasXp) awards.push('xp');
-    if (entry.snapshot.hasHks) awards.push('hks');
-    if (entry.snapshot.hasLoot) awards.push('loot');
-    if (entry.snapshot.hasZenith) awards.push('zenith');
-    if (entry.snapshot.hasMvp) awards.push('mvp_pve', 'mvp_pvp');
-    if (entry.snapshot.hasPveMedal) awards.push('pve_gold', 'pve_silver', 'pve_bronze');
-    if (entry.snapshot.hasPvpMedal) awards.push('pvp_gold', 'pvp_silver', 'pvp_bronze');
-    if (entry.snapshot.hasVanguard) awards.push('vanguard');
-    if (entry.snapshot.hasCampaign) awards.push('campaign');
-
-    cardEl.classList.add('tt-char');
-    cardEl.setAttribute('data-char', (profile.name || '').toLowerCase());
-    cardEl.setAttribute('data-class', cClass);
-    cardEl.setAttribute('data-spec', profile.active_spec || 'unspecced');
-    cardEl.setAttribute('data-awards', awards.join(','));
-    cardEl.setAttribute('tabindex', '0');
-}
-
-function getTopHallOfHeroesEntry(entries, scorer) {
-    if (!Array.isArray(entries) || entries.length === 0) return null;
-
-    const scoreFn = typeof scorer === 'function'
-        ? scorer
-        : entry => entry && entry.snapshot ? (entry.snapshot[scorer] || 0) : 0;
-
-    return [...entries].sort((a, b) => {
-        const scoreDiff = (scoreFn(b) || 0) - (scoreFn(a) || 0);
-        if (scoreDiff !== 0) return scoreDiff;
-        return (a.profile?.name || '').localeCompare(b.profile?.name || '');
-    })[0] || null;
-}
-
-function buildHallOfHeroesFeatureCard({ kicker, title, meta, emblem = '✦', tone = 'default', entry = null }) {
-    const card = document.createElement('article');
-    card.className = `hall-feature-card hall-tone-${tone}`;
-
-    const kickerEl = document.createElement('span');
-    kickerEl.className = 'hall-feature-kicker';
-    kickerEl.textContent = kicker;
-
-    const mainEl = document.createElement('div');
-    mainEl.className = 'hall-feature-main';
-
-    const emblemEl = document.createElement('span');
-    emblemEl.className = 'hall-feature-emblem';
-    emblemEl.textContent = emblem;
-
-    const copyEl = document.createElement('div');
-    copyEl.className = 'hall-feature-copy';
-
-    const titleEl = document.createElement('strong');
-    titleEl.className = 'hall-feature-title';
-    titleEl.textContent = title;
-
-    const metaEl = document.createElement('span');
-    metaEl.className = 'hall-feature-meta';
-    metaEl.textContent = meta;
-
-    copyEl.appendChild(titleEl);
-    copyEl.appendChild(metaEl);
-    mainEl.appendChild(emblemEl);
-    mainEl.appendChild(copyEl);
-    card.appendChild(kickerEl);
-    card.appendChild(mainEl);
-
-    if (entry) {
-        card.classList.add('hall-feature-card-interactive');
-        applyHallOfHeroesCardDataset(card, entry);
-    }
-
-    return card;
-}
-
-function buildHallOfHeroesWallCard({ kicker, value, meta, tone = 'default' }) {
-    const card = document.createElement('article');
-    card.className = `hall-wall-card hall-tone-${tone}`;
-
-    const kickerEl = document.createElement('span');
-    kickerEl.className = 'hall-wall-kicker';
-    kickerEl.textContent = kicker;
-
-    const valueEl = document.createElement('strong');
-    valueEl.className = 'hall-wall-value';
-    valueEl.textContent = value;
-
-    const metaEl = document.createElement('span');
-    metaEl.className = 'hall-wall-meta';
-    metaEl.textContent = meta;
-
-    card.appendChild(kickerEl);
-    card.appendChild(valueEl);
-    card.appendChild(metaEl);
-
-    return card;
-}
-
-function buildHallOfHeroesStage(characters, isRawRoster = false) {
-    const entries = getHallOfHeroesEntries(characters, isRawRoster);
-    if (entries.length === 0) return null;
-
-    const dashboardConfig = getHallOfHeroesDashboardConfig();
-    const prevMvps = dashboardConfig.prev_mvps || {};
-    const findEntryByName = name => entries.find(entry => (entry.profile.name || '').toLowerCase() === (name || '').toLowerCase()) || null;
-
-    const reigningPveEntry = findEntryByName(prevMvps.pve?.name || '');
-    const reigningPvpEntry = findEntryByName(prevMvps.pvp?.name || '');
-    const decoratedLeader = getTopHallOfHeroesEntry(entries, entry => entry.snapshot.totalHonors);
-    const weeklyLeader = getTopHallOfHeroesEntry(entries, entry => entry.snapshot.weeklyBadgeCount);
-
-    const crownLeaderTopCount = Math.max(0, ...entries.map(entry => entry.snapshot.championCount));
-    const crownLeaders = crownLeaderTopCount > 0
-        ? entries
-            .filter(entry => entry.snapshot.championCount === crownLeaderTopCount)
-            .sort((a, b) => (a.profile?.name || '').localeCompare(b.profile?.name || ''))
-        : [];
-    const crownLeader = crownLeaders[0] || null;
-
-    const totalWeeklyMarks = entries.reduce((sum, entry) => sum + entry.snapshot.weeklyBadgeCount, 0);
-    const totalChampionCrowns = entries.reduce((sum, entry) => sum + entry.snapshot.championCount, 0);
-    const totalPveMedals = entries.reduce((sum, entry) => sum + entry.snapshot.pveMedals, 0);
-    const totalPvpMedals = entries.reduce((sum, entry) => sum + entry.snapshot.pvpMedals, 0);
-    const totalCampaignVeterans = entries.filter(entry => entry.snapshot.hasCampaign).length;
-
-    const stage = document.createElement('section');
-    stage.className = 'hall-stage';
-
-    const head = document.createElement('div');
-    head.className = 'hall-stage-head';
-
-    const headKicker = document.createElement('span');
-    headKicker.className = 'hall-stage-kicker';
-    headKicker.textContent = 'Featured Honors';
-
-    const headTitle = document.createElement('h3');
-    headTitle.className = 'hall-stage-title';
-    headTitle.textContent = 'The Command Dais of the Decorated';
-
-    const headDesc = document.createElement('p');
-    headDesc.className = 'hall-stage-desc';
-    headDesc.textContent = 'Singular honors below will open the hero directly. Broad honors will filter the decorated roster and badge history below.';
-
-    head.appendChild(headKicker);
-    head.appendChild(headTitle);
-    head.appendChild(headDesc);
-
-    const spotlightGrid = document.createElement('div');
-    spotlightGrid.className = 'hall-stage-spotlight';
-
-    spotlightGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Reigning PvE Champion',
-        title: reigningPveEntry ? reigningPveEntry.profile.name : 'Awaiting Champion',
-        meta: reigningPveEntry ? 'Current holder of the guild PvE MVP crown.' : 'The next weekly PvE MVP will rise here.',
-        emblem: '👑',
-        tone: 'pve',
-        entry: reigningPveEntry
-    }));
-
-    spotlightGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Reigning PvP Champion',
-        title: reigningPvpEntry ? reigningPvpEntry.profile.name : 'Awaiting Champion',
-        meta: reigningPvpEntry ? 'Current holder of the guild PvP MVP crown.' : 'The next weekly PvP MVP will rise here.',
-        emblem: '⚔️',
-        tone: 'pvp',
-        entry: reigningPvpEntry
-    }));
-
-    spotlightGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Most Decorated',
-        title: decoratedLeader ? decoratedLeader.profile.name : 'Awaiting Hero',
-        meta: decoratedLeader ? `${decoratedLeader.snapshot.totalHonors.toLocaleString()} total honors recorded across weekly marks, crowns, and medals.` : 'No decorated heroes are on record yet.',
-        emblem: '🌟',
-        tone: 'legend',
-        entry: decoratedLeader
-    }));
-
-    spotlightGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'War Effort Standard-Bearer',
-        title: weeklyLeader ? weeklyLeader.profile.name : 'Awaiting Vanguard',
-        meta: weeklyLeader ? `${weeklyLeader.snapshot.weeklyBadgeCount.toLocaleString()} weekly war effort marks secured.` : 'No weekly marks have been recorded yet.',
-        emblem: '🛡️',
-        tone: 'war',
-        entry: weeklyLeader
-    }));
-
-    spotlightGrid.appendChild(
-        crownLeaders.length <= 1
-            ? buildHallOfHeroesStageCard({
-                kicker: 'Champion Crown Leader',
-                title: crownLeader ? crownLeader.profile.name : 'Awaiting Champion',
-                meta: crownLeader ? `${crownLeader.snapshot.championCount.toLocaleString()} combined PvE and PvP MVP crowns earned.` : 'No MVP crowns have been awarded yet.',
-                emblem: '🏆',
-                tone: 'crown',
-                entry: crownLeader
-            })
-            : buildHallOfHeroesStageCard({
-                kicker: 'Champion Crown Leaders',
-                title: `${crownLeaders.length.toLocaleString()} Heroes Tied`,
-                meta: `${crownLeaderTopCount.toLocaleString()} combined PvE and PvP MVP crown${crownLeaderTopCount === 1 ? '' : 's'} each.`,
-                emblem: '🏆',
-                tone: 'crown',
-                filterKey: 'honor',
-                filterValue: 'mvp'
-            })
-    );
-
-    const wallGrid = document.createElement('div');
-    wallGrid.className = 'hall-stage-wall';
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Weekly Marks Recorded',
-        title: totalWeeklyMarks.toLocaleString(),
-        meta: 'Filter to heroes carrying any weekly war effort mark.',
-        emblem: '⚡',
-        tone: 'war',
-        filterKey: 'honor',
-        filterValue: 'weekly'
-    }));
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Champion Crowns',
-        title: totalChampionCrowns.toLocaleString(),
-        meta: 'Filter to PvE and PvP MVP crown holders.',
-        emblem: '👑',
-        tone: 'crown',
-        filterKey: 'honor',
-        filterValue: 'mvp'
-    }));
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'PvE Medal Wall',
-        title: totalPveMedals.toLocaleString(),
-        meta: 'Filter to decorated PvE medalists.',
-        emblem: '🥇',
-        tone: 'pve',
-        filterKey: 'honor',
-        filterValue: 'ladder_pve'
-    }));
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'PvP Medal Wall',
-        title: totalPvpMedals.toLocaleString(),
-        meta: 'Filter to decorated PvP medalists.',
-        emblem: '🩸',
-        tone: 'pvp',
-        filterKey: 'honor',
-        filterValue: 'ladder_pvp'
-    }));
-
-    wallGrid.appendChild(buildHallOfHeroesStageCard({
-        kicker: 'Campaign Veterans',
-        title: totalCampaignVeterans.toLocaleString(),
-        meta: 'Filter to veterans with campaign service recorded.',
-        emblem: '🎖️',
-        tone: 'legend',
-        filterKey: 'honor',
-        filterValue: 'campaign'
-    }));
-
-    stage.appendChild(head);
-    stage.appendChild(spotlightGrid);
-    stage.appendChild(wallGrid);
-
-    return stage;
-}
-
-function buildWarEffortHeroStatNode(value, label) {
-    const template = document.getElementById('tpl-war-effort-hero-stat');
-    if (!template) return null;
-
-    const clone = template.content.cloneNode(true);
-    const valueEl = clone.querySelector('.war-effort-hero-stat-value');
-    const labelEl = clone.querySelector('.war-effort-hero-stat-label');
-
-    if (valueEl) valueEl.textContent = value;
-    if (labelEl) labelEl.textContent = label;
-
-    return clone.firstElementChild || null;
-}
-
-function getWarEffortConfig(type) {
-    const configs = {
-        xp: {
-            theme: 'xp',
-            overline: 'Outland Recruitment Drive',
-            title: "Hero's Journey",
-            desc: 'A war room for the guild leveling push. Track who is driving the campaign, how close the roster is to the weekly goal, and who is setting the pace for the march through Azeroth and into Outland.',
-            emptyTitle: 'The campaign has begun.',
-            emptyDesc: 'No levels have been claimed yet this cycle. Rally the leveling core, push your alts, and become the first name on the board.',
-            objectiveLabel: 'Levels earned this week',
-            unitLabel: 'Levels',
-            ctaValue: 'Be the first to add levels this week.',
-            ctaMeta: 'Turn a blank slate into forward motion and start the march toward the weekly objective.',
-            target: 750
-        },
-        hk: {
-            theme: 'hk',
-            overline: 'Blood Ledger of the Week',
-            title: 'Blood of the Enemy',
-            desc: 'A live war tally for battleground pressure and honorable kills. Use this page to see who is opening the week strongest, how close the guild is to the HK objective, and where the fiercest PvP momentum lives.',
-            emptyTitle: 'The blood ledger is still clean.',
-            emptyDesc: 'No honorable kills have been recorded yet this cycle. Hit the battlegrounds, hunt the enemy, and open the week with the first HKs.',
-            objectiveLabel: 'Honorable kills earned this week',
-            unitLabel: 'HKs',
-            ctaValue: 'Claim the first HKs of the week.',
-            ctaMeta: 'Open the battleground war board and give the guild its first surge of PvP momentum.',
-            target: 1000
-        },
-        loot: {
-            theme: 'loot',
-            overline: 'Raid Spoils Command',
-            title: "Dragon's Hoard",
-            desc: 'A trophy ledger for epic and legendary haul. This board turns the weekly loot race into a visible campaign, spotlighting who is filling the vault and how quickly the guild is stacking spoils.',
-            emptyTitle: 'The hoard stands empty.',
-            emptyDesc: 'No epics have been secured yet this cycle. Step into raids and dungeons, bring home the first trophy, and give the guild vault its first shine.',
-            objectiveLabel: 'Epics secured this week',
-            unitLabel: 'Epics',
-            ctaValue: 'Loot the first epic of the week.',
-            ctaMeta: 'Start the trophy wall with one clean pull and one prize worth remembering.',
-            target: 60
-        },
-        zenith: {
-            theme: 'zenith',
-            overline: 'Summit Race Ledger',
-            title: 'The Zenith Cohort',
-            desc: 'A ceremonial race board for the sprint to level 70. Watch the summit open, see who crossed first, and keep the weekly push visible until the cohort is filled.',
-            emptyTitle: 'The summit awaits.',
-            emptyDesc: 'No one has entered the Zenith Cohort this week. Push to level 70 and become the first hero etched into the record.',
-            objectiveLabel: 'New level 70s this week',
-            unitLabel: 'New 70s',
-            ctaValue: 'Be the first new level 70.',
-            ctaMeta: 'Turn the race board live and claim the first summit position before anyone else.',
-            target: 10
-        }
-    };
-
-    return configs[type] || configs.xp;
-}
-
-function getWarEffortResetText() {
-    const realNow = new Date();
-    const berlinString = realNow.toLocaleString('en-US', { timeZone: 'Europe/Berlin' });
-    const berlinNow = new Date(berlinString);
-
-    const nextResetBerlin = new Date(berlinNow);
-    nextResetBerlin.setHours(0, 0, 0, 0);
-
-    let day = nextResetBerlin.getDay();
-    let diff = (2 - day + 7) % 7;
-
-    if (diff === 0 && berlinNow > nextResetBerlin) diff = 7;
-    nextResetBerlin.setDate(nextResetBerlin.getDate() + diff);
-
-    const timeLeft = Math.max(0, nextResetBerlin - berlinNow);
-    const d = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const h = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const m = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-
-    return `${d}d ${h}h ${m}m`;
-}
-
-function getWarEffortProgressState(pct) {
-    if (pct >= 100) return 'we-fill-state-max';
-    if (pct >= 75) return 'we-fill-state-high';
-    if (pct >= 30) return 'we-fill-state-mid';
-    return 'we-fill-state-low';
-}
-
-function getWarEffortMilestoneText(snapshot, config) {
-    const pct = snapshot && snapshot.pct ? snapshot.pct : 0;
-    const current = snapshot && snapshot.current ? snapshot.current : 0;
-    const target = snapshot && snapshot.target ? snapshot.target : config.target;
-    const checkpoints = [25, 50, 75, 100];
-    const nextCheckpoint = checkpoints.find(step => pct < step);
-
-    if (!nextCheckpoint) {
-        return {
-            value: 'Objective crushed',
-            meta: 'The weekly target has already been cleared. Keep padding the record and widen the margin.'
-        };
-    }
-
-    const nextValue = Math.ceil((target * nextCheckpoint) / 100);
-    const remaining = Math.max(0, nextValue - current);
-
-    return {
-        value: `${remaining.toLocaleString()} ${config.unitLabel} to ${nextCheckpoint}%`,
-        meta: `Next campaign checkpoint: ${nextValue.toLocaleString()} ${config.unitLabel.toLowerCase()}.`
-    };
-}
-
-function buildWarEffortShell(hashUrl, characters = []) {
-    const template = document.getElementById('tpl-war-effort-shell');
-    if (!template || !hashUrl.startsWith('war-effort-')) return null;
-
-    const type = hashUrl.replace('war-effort-', '');
-    const config = getWarEffortConfig(type);
-    const snapshot = (window.warEffortSnapshots && window.warEffortSnapshots[type]) || {
-        current: 0,
-        target: config.target,
-        pct: 0,
-        contributorCount: 0,
-        topName: '',
-        topValue: 0,
-        vanguards: [],
-        lockTime: '',
-        ribbonText: `0 / ${config.target.toLocaleString()} ${config.unitLabel}`,
-        homeSummary: config.emptyDesc,
-        homeLeader: config.ctaValue
-    };
-
-    const clone = template.content.cloneNode(true);
-    const shell = clone.querySelector('.war-effort-shell');
-    const overline = clone.querySelector('.war-effort-overline');
-    const title = clone.querySelector('.war-effort-hero-title');
-    const desc = clone.querySelector('.war-effort-hero-desc');
-    const ribbonText = clone.querySelector('.war-effort-hero-ribbon-text');
-    const ribbonReset = clone.querySelector('.war-effort-hero-ribbon-reset');
-    const progressLabel = clone.querySelector('.war-effort-shell-progress-label');
-    const progressMeta = clone.querySelector('.war-effort-shell-progress-meta');
-    const progressFill = clone.querySelector('.war-effort-shell-progress-fill');
-    const progressText = clone.querySelector('.war-effort-shell-progress-text');
-    const statsGrid = clone.querySelector('.war-effort-hero-stats');
-    const infoBand = clone.querySelector('.war-effort-info-band');
-
-    if (shell) shell.classList.add(`war-effort-shell-${config.theme}`);
-    if (overline) overline.textContent = config.overline;
-    if (title) title.textContent = snapshot.contributorCount > 0 ? config.title : config.emptyTitle;
-    if (desc) desc.textContent = snapshot.contributorCount > 0 ? config.desc : config.emptyDesc;
-    if (ribbonText) ribbonText.textContent = snapshot.contributorCount > 0
-        ? `${snapshot.current.toLocaleString()} / ${snapshot.target.toLocaleString()} ${config.unitLabel}`
-        : `No ${config.unitLabel.toLowerCase()} recorded yet this cycle.`;
-    if (ribbonReset) ribbonReset.textContent = `Resets in ${getWarEffortResetText()} (Berlin)`;
-    if (progressLabel) progressLabel.textContent = config.objectiveLabel;
-    if (progressMeta) progressMeta.textContent = snapshot.contributorCount > 0
-        ? `${snapshot.contributorCount.toLocaleString()} contributors • ${Math.round(snapshot.pct)}% complete`
-        : 'Blank slate • first contribution sets the pace';
-
-    if (progressFill) {
-        progressFill.classList.add(`we-fill-${config.theme}`);
-        progressFill.classList.add(getWarEffortProgressState(snapshot.pct));
-        progressFill.style.width = `${Math.min(snapshot.pct, 100)}%`;
-    }
-
-    if (progressText) {
-        progressText.className = `challenge-text ${snapshot.pct >= 100 ? 'we-text-state-max' : 'we-text-state-normal'} we-text-type-${config.theme}`;
-        progressText.textContent = `${snapshot.current.toLocaleString()} / ${snapshot.target.toLocaleString()} ${config.unitLabel}`;
-    }
-
-    const lockState = snapshot.lockTime ? 'Locked' : 'Open';
-    const vanguardCount = Array.isArray(snapshot.vanguards) ? snapshot.vanguards.length : 0;
-    const milestone = getWarEffortMilestoneText(snapshot, config);
-
-    [
-        buildWarEffortHeroStatNode(snapshot.current.toLocaleString(), 'Progress So Far'),
-        buildWarEffortHeroStatNode(snapshot.contributorCount.toLocaleString(), 'Contributors'),
-        buildWarEffortHeroStatNode(vanguardCount > 0 ? `${vanguardCount}/3` : '0/3', 'Vanguards Locked'),
-        buildWarEffortHeroStatNode(lockState, 'Seal Status')
-    ].forEach(node => {
-        if (node && statsGrid) statsGrid.appendChild(node);
-    });
-
-    const topChar = snapshot.topName
-        ? (Array.isArray(window.rosterData) ? window.rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === snapshot.topName.toLowerCase()) : null)
-        : null;
-    const hasLockedVanguard = Boolean(snapshot.lockTime && vanguardCount > 0 && snapshot.vanguards[0]);
-    const vanguardValue = vanguardCount > 0
-        ? snapshot.vanguards.map(name => name.charAt(0).toUpperCase() + name.slice(1)).join(', ')
-        : 'Open slots';
-    const vanguardMeta = snapshot.lockTime
-        ? `Lock recorded ${snapshot.lockTime}`
-        : 'The first three names to set the pace will hold the vanguard line.';
-    const topCardKicker = type === 'zenith' ? 'First to the Summit' : 'Current Front-Runner';
-    let topValueMeta = 'Nobody has claimed the opening push yet.';
-
-    if (snapshot.topName) {
-        if (type === 'zenith') {
-            topValueMeta = hasLockedVanguard
-                ? `${snapshot.topName} secured the first locked summit position.`
-                : 'First to reach level 70 this cycle.';
-        } else if (hasLockedVanguard) {
-            const lockedPrefix = type === 'xp' ? '+' : '';
-            topValueMeta = `${lockedPrefix}${snapshot.topValue.toLocaleString()} ${config.unitLabel.toLowerCase()} secured the locked #1 position.`;
-        } else if (type === 'xp') {
-            topValueMeta = `+${snapshot.topValue.toLocaleString()} ${config.unitLabel.toLowerCase()} contributed this cycle`;
-        } else if (type === 'loot') {
-            topValueMeta = `${snapshot.topValue.toLocaleString()} ${config.unitLabel.toLowerCase()} contributed this cycle`;
-        } else {
-            topValueMeta = `${snapshot.topValue.toLocaleString()} ${config.unitLabel.toLowerCase()} contributed this cycle`;
-        }
-    }
-
-    const orderKicker = snapshot.contributorCount > 0 ? (hasLockedVanguard ? 'Seal Order' : 'Command Order') : 'Call to Arms';
-    const orderValue = hasLockedVanguard ? 'Vanguard line is sealed.' : config.ctaValue;
-    const orderMeta = hasLockedVanguard
-        ? 'Ranks #1, #2, and #3 are locked until the weekly reset.'
-        : config.ctaMeta;
-
-    [
-        {
-            kicker: topCardKicker,
-            value: snapshot.topName || 'Awaiting first hero',
-            meta: topValueMeta,
-            char: topChar
-        },
-        {
-            kicker: 'Vanguard Line',
-            value: vanguardValue,
-            meta: vanguardMeta
-        },
-        {
-            kicker: 'Next Milestone',
-            value: milestone.value,
-            meta: milestone.meta
-        },
-        {
-            kicker: orderKicker,
-            value: orderValue,
-            meta: orderMeta
-        }
-    ].forEach(item => {
-        const node = buildHeroBandItemNode(item);
-        if (node && infoBand) infoBand.appendChild(node);
-    });
-
-    return clone;
-}
-
-
-function buildLadderInsightNode(kicker, value, meta, char = null) {
-    const template = document.getElementById('tpl-ladder-insight-card');
-    if (!template) return null;
-
-    const clone = template.content.cloneNode(true);
-    const cardEl = clone.querySelector('.ladder-insight-card');
-    const kickerEl = clone.querySelector('.ladder-insight-kicker');
-    const valueEl = clone.querySelector('.ladder-insight-value');
-    const metaEl = clone.querySelector('.ladder-insight-meta');
-
-    if (kickerEl) kickerEl.textContent = kicker;
-    if (valueEl) valueEl.textContent = value;
-    if (metaEl) metaEl.textContent = meta;
-
-    if (cardEl && char && char.profile && char.profile.name) {
-        const profile = char.profile;
-        const cClass = profile.character_class && profile.character_class.name
-            ? (typeof profile.character_class.name === 'string' ? profile.character_class.name : profile.character_class.name.en_US)
-            : 'Unknown';
-
-        cardEl.setAttribute('data-char', profile.name.toLowerCase());
-        cardEl.setAttribute('data-class', cClass);
-        cardEl.setAttribute('data-spec', profile.active_spec || 'unspecced');
-        cardEl.setAttribute('data-awards', safeParseArray(profile.badges).join(','));
-    }
-
-    return clone.firstElementChild || null;
-}
-
-function buildLadderSeparatorNode(label) {
-    const template = document.getElementById('tpl-ladder-rank-separator');
-    if (!template) return null;
-
-    const clone = template.content.cloneNode(true);
-    const labelEl = clone.querySelector('.ladder-rank-separator-label');
-    if (labelEl) labelEl.textContent = label;
-
-    return clone.firstElementChild || null;
-}
-
-function getLadderSeparatorLabel(rankNumber, totalCount) {
-    if (rankNumber === 4) {
-        return `The Pursuing Pack • Ranks #4 - #${Math.min(9, totalCount)}`;
-    }
-
-    if (rankNumber >= 10 && (rankNumber - 10) % 5 === 0) {
-        return `Ranks #${rankNumber} - #${Math.min(rankNumber + 4, totalCount)}`;
-    }
-
-    return '';
-}
-
-function decorateLadderRows(rowNodes, totalCount) {
-    const decoratedNodes = [];
-
-    rowNodes.forEach((node, index) => {
-        const actualRank = index + 4;
-        const separatorLabel = getLadderSeparatorLabel(actualRank, totalCount);
-
-        if (separatorLabel) {
-            const separatorNode = buildLadderSeparatorNode(separatorLabel);
-            if (separatorNode) decoratedNodes.push(separatorNode);
-        }
-
-        decoratedNodes.push(node);
-    });
-
-    return decoratedNodes;
-}
-
-function findLadderCharacterIndex(characters, rawQuery) {
-    const query = (rawQuery || '').toLowerCase().trim();
-    if (!query) return -1;
-
-    const names = characters.map(char => char && char.profile && char.profile.name ? char.profile.name.toLowerCase() : '');
-
-    let matchIndex = names.findIndex(name => name === query);
-    if (matchIndex !== -1) return matchIndex;
-
-    matchIndex = names.findIndex(name => name.startsWith(query));
-    if (matchIndex !== -1) return matchIndex;
-
-    return names.findIndex(name => name.includes(query));
-}
-
-function buildLadderShell(characters, hashUrl) {
-    const template = document.getElementById('tpl-ladder-shell');
-    if (!template || !Array.isArray(characters) || characters.length === 0) return null;
-
-    const config = getLadderConfig(hashUrl);
-    const clone = template.content.cloneNode(true);
-    const shell = clone.querySelector('.ladder-hero-shell');
-    const overline = clone.querySelector('.ladder-overline');
-    const heroTitle = clone.querySelector('.ladder-hero-title');
-    const heroDesc = clone.querySelector('.ladder-hero-desc');
-    const statsGrid = clone.querySelector('.ladder-hero-stats');
-    const infoBand = clone.querySelector('.ladder-info-band');
-    const podiumKicker = clone.querySelector('.ladder-section-kicker');
-    const podiumTitle = clone.querySelector('.ladder-section-title');
-    const podiumDesc = clone.querySelector('.ladder-section-desc');
-
-    if (shell) shell.classList.add(`ladder-shell-${config.theme}`);
-    if (overline) overline.textContent = config.overline;
-    if (heroTitle) heroTitle.textContent = config.heroTitle;
-    if (heroDesc) heroDesc.textContent = config.heroDesc;
-    if (podiumKicker) podiumKicker.textContent = config.podiumKicker;
-    if (podiumTitle) podiumTitle.textContent = config.podiumTitle;
-    if (podiumDesc) podiumDesc.textContent = config.podiumDesc;
-
-    const leader = characters[0];
-    const second = characters[1] || null;
-    const leaderProfile = leader.profile || {};
-    const leaderName = leaderProfile.name || 'Unknown';
-    const leaderMetric = getLadderMetricValue(leader, hashUrl);
-    const averageMetric = Math.round(characters.reduce((sum, char) => sum + getLadderMetricValue(char, hashUrl), 0) / characters.length) || 0;
-
-    const classCounts = characters.reduce((acc, char) => {
-        const cClass = char && char.profile && char.profile.character_class && char.profile.character_class.name
-            ? (typeof char.profile.character_class.name === 'string' ? char.profile.character_class.name : char.profile.character_class.name.en_US)
-            : 'Unknown';
-        acc[cClass] = (acc[cClass] || 0) + 1;
-        return acc;
-    }, {});
-
-    const dominantClassEntry = Object.entries(classCounts).sort((a, b) => b[1] - a[1])[0] || ['Unknown', 0];
-    const biggestMover = [...characters]
-        .sort((a, b) => getLadderTrendValue(b, hashUrl) - getLadderTrendValue(a, hashUrl))[0] || leader;
-    const biggestMoverTrend = getLadderTrendValue(biggestMover, hashUrl);
-    const rivalryGap = second ? Math.max(0, leaderMetric - getLadderMetricValue(second, hashUrl)) : 0;
-    const leaderRole = getCharacterRole(
-        leader && leader.profile && leader.profile.character_class && leader.profile.character_class.name
-            ? (typeof leader.profile.character_class.name === 'string' ? leader.profile.character_class.name : leader.profile.character_class.name.en_US)
-            : 'Unknown',
-        leaderProfile.active_spec || ''
-    );
-
-    [
-        buildLadderHeroStatNode(characters.length.toLocaleString(), 'Ranked Heroes'),
-        buildLadderHeroStatNode(formatLadderMetricValue(leaderMetric, hashUrl), `Champion ${config.metricShort}`),
-        buildLadderHeroStatNode(formatLadderMetricValue(averageMetric, hashUrl), `Average ${config.metricShort}`)
-    ].forEach(node => {
-        if (node && statsGrid) statsGrid.appendChild(node);
-    });
-
-    const bandItems = [
-        {
-            kicker: 'Current Champion',
-            value: leaderName,
-            meta: `${formatLadderMetricValue(leaderMetric, hashUrl)} ${config.metricShort} • ${leaderRole}`,
-            char: leader
-        },
-        {
-            kicker: 'Current 7-Day MVP',
-            value: biggestMover && biggestMover.profile && biggestMover.profile.name ? biggestMover.profile.name : 'No movement yet',
-            meta: biggestMoverTrend > 0
-                ? `▲ ${formatLadderMetricValue(biggestMoverTrend, hashUrl)} this cycle`
-                : 'No positive climb recorded yet',
-            char: biggestMover && biggestMover.profile && biggestMover.profile.name ? biggestMover : null
-        },
-        {
-            kicker: 'Most Represented Class',
-            value: dominantClassEntry[0],
-            meta: `${dominantClassEntry[1]} heroes currently ranked`,
-            filterKey: dominantClassEntry[0] !== 'Unknown' ? 'class' : '',
-            filterValue: dominantClassEntry[0] !== 'Unknown' ? dominantClassEntry[0] : ''
-        },
-        {
-            kicker: 'Closest Rivalry',
-            value: second ? `${formatCompactMetricValue(rivalryGap)} ${config.metricShort}` : 'No rival yet',
-            meta: second ? `Gap between #1 ${leaderName} and #2 ${second.profile && second.profile.name ? second.profile.name : 'Unknown'}` : 'Only one player is currently ranked'
-        }
-    ];
-
-    bandItems.forEach(item => {
-        const node = buildHeroBandItemNode(item);
-        if (node && infoBand) infoBand.appendChild(node);
-    });
-
-    return clone;
-}
-
-// NEW: Added 'async' so we can fetch the external files
-function resolveRosterProfile(char, isRawRoster = false) {
-    if (!char) return null;
-
-    if (isRawRoster) {
-        const deepRoster = Array.isArray(window.rosterData) ? window.rosterData : [];
-        const match = deepRoster.find(deep => deep.profile?.name?.toLowerCase() === (char.name || '').toLowerCase());
-        return match && match.profile ? match.profile : char;
-    }
-
-    return char.profile || char;
-}
-
-function getProfileClassName(profile) {
-    if (!profile) return 'Unknown';
-
-    if (profile.character_class && profile.character_class.name) {
-        return typeof profile.character_class.name === 'string'
-            ? profile.character_class.name
-            : (profile.character_class.name.en_US || 'Unknown');
-    }
-
-    return profile.class || 'Unknown';
-}
-
-    window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', async () => {
 
     const config = JSON.parse(document.getElementById('dashboard-config').textContent);
     const heatmapData = JSON.parse(document.getElementById('heatmap-data').textContent);
@@ -1924,14 +74,14 @@ function getProfileClassName(profile) {
         introContainerEl.addEventListener('click', killIntro);
     }
 
-    // NEW: Download the heavy roster files silently in the background with error handling
+    // Load the roster payloads up front so route-level views can reuse the same cached data.
     let rosterData = [];
     let rawGuildRoster = [];
     let warEffortLocks = {}; 
     
-    // 1. Fetch CRITICAL Roster Data Firstt
+    // Fetch the core roster files before wiring the rest of the dashboard.
     try {
-        const cb = new Date().getTime(); // Cache Buster
+        const cb = new Date().getTime();
         const rosterRes = await fetch(`asset/roster.json?t=${cb}`);
         rosterData = await rosterRes.json();
 
@@ -1975,14 +125,14 @@ function getProfileClassName(profile) {
         document.body.dataset.appReady = 'true';
     }
     
-    const active14Days = config.active_14_days;
+    const active14Days = getNumericConfigValue(config, 'active_14_days', 0);
     const btnViewHeroes = document.getElementById('btn-view-heroes');
     if (btnViewHeroes) {
         btnViewHeroes.addEventListener('click', () => {
             window.location.hash = 'badges';
         });
     }
-    const raidReadyCount = config.raid_ready_count;
+    const raidReadyCount = getNumericConfigValue(config, 'raid_ready_count', 0);
 
     const rawDate = new Date(config.last_updated);
     const dateOptions = { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
@@ -2048,7 +198,7 @@ function getProfileClassName(profile) {
         conciseList.addEventListener('click', (e) => {
             if (e.target.closest('.we-loot-link')) return;
 
-            const trigger = e.target.closest('.concise-char-bar.tt-char[data-char], .podium-block.tt-char[data-char], .ladder-insight-card.tt-char[data-char], .hero-band-item.tt-char[data-char], .hall-stage-card.tt-char[data-char]');
+            const trigger = e.target.closest('.concise-char-bar.tt-char[data-char], .podium-block.tt-char[data-char], .hero-band-item.tt-char[data-char], .hall-stage-card.tt-char[data-char]');
             if (!trigger) return;
 
             const charName = trigger.getAttribute('data-char');
@@ -2071,39 +221,6 @@ function getProfileClassName(profile) {
         return "Mana";
     }
     
-    function getClassIcon(className) {
-        const clean = className.toLowerCase().replace(/\s/g, '');
-        return `https://wow.zamimg.com/images/wow/icons/large/class_${clean}.jpg`;
-    }
-    
-    function getSpecIcon(className, specName) {
-        if (!specName || specName.trim() === '') return null;
-        const icons = {
-            "Druid": { "Balance": "spell_nature_starfall", "Feral Combat": "ability_racial_bearform", "Restoration": "spell_nature_healingtouch" },
-            "Hunter": { "Beast Mastery": "ability_hunter_beasttaming", "Marksmanship": "ability_hunter_snipershot", "Survival": "ability_hunter_swiftstrike" },
-            "Mage": { "Arcane": "spell_holy_magicalsentry", "Fire": "spell_fire_firebolt02", "Frost": "spell_frost_frostbolt02" },
-            "Paladin": { "Holy": "spell_holy_holybolt", "Protection": "spell_holy_devotionaura", "Retribution": "spell_holy_auraoflight" },
-            "Priest": { "Discipline": "spell_holy_wordfortitude", "Holy": "spell_holy_guardianspirit", "Shadow": "spell_shadow_shadowwordpain" },
-            "Rogue": { "Assassination": "ability_rogue_eviscerate", "Combat": "ability_backstab", "Subtlety": "ability_stealth" },
-            "Shaman": { "Elemental": "spell_nature_lightning", "Enhancement": "ability_shaman_stormstrike", "Restoration": "spell_nature_magicimmunity" },
-            "Warlock": { "Affliction": "spell_shadow_deathcoil", "Demonology": "spell_shadow_requiem", "Destruction": "spell_shadow_rainoffire" },
-            "Warrior": { "Arms": "ability_warrior_savageblow", "Fury": "ability_warrior_innerrage", "Protection": "inv_shield_06" },
-            "Death Knight": { "Blood": "spell_deathknight_bloodpresence", "Frost": "spell_deathknight_frostpresence", "Unholy": "spell_deathknight_unholypresence" }
-        };
-        const classIcons = icons[className];
-        if (classIcons && classIcons[specName]) {
-            return `https://wow.zamimg.com/images/wow/icons/small/${classIcons[specName]}.jpg`;
-        }
-        return null;
-    }
-    
-    function getCharClass(char) {
-        if (char.profile && char.profile.character_class && char.profile.character_class.name) {
-            return typeof char.profile.character_class.name === 'string' ? char.profile.character_class.name : char.profile.character_class.name.en_US;
-        }
-        return char.class || 'Unknown';
-    }
-
     function appendCharacterSearchResult(targetEl, char, options = {}) {
         const { forceObjectFitCover = false } = options;
         const template = document.getElementById('tpl-hero-search-result');
@@ -2180,7 +297,7 @@ function getProfileClassName(profile) {
         });
     }
 
-    // NEW: Force mobile keyboards to open when tapping the collapsed search icon
+    // Focus the nav search input when the compact search box is tapped.
     const searchBox = document.querySelector('.search-box');
     if (searchBox && searchInput) {
         searchBox.addEventListener('click', () => {
@@ -2294,7 +411,7 @@ function getProfileClassName(profile) {
         selectValueText.className = 'selected-value';
         selectValueText.style.removeProperty('--selected-char-color');
         
-        // Smarter logic: Read the actual active URL hash to determine the label
+        // Read the active hash so the dropdown label matches the current route.
         const hash = window.location.hash.substring(1); 
         
         if (hash === '') {
@@ -2305,6 +422,8 @@ function getProfileClassName(profile) {
             selectValueText.innerHTML = "🔥 Active Roster";
         } else if (hash === 'raidready') {
             selectValueText.innerHTML = "⚔️ Raid Ready";
+        } else if (hash === 'alt-heroes') {
+            selectValueText.innerHTML = "🛡️ Alt Heroes";
         } else if (hash === 'analytics') {
             selectValueText.innerHTML = "📊 Analytics";
         } else if (hash === 'architecture') {
@@ -2331,7 +450,7 @@ function getProfileClassName(profile) {
     const heatmapGrid = document.getElementById('heatmap-grid');
     if (heatmapGrid && heatmapData && heatmapData.length > 0) {
 
-        // --- NEW: Chart.js Line Graph ---
+        // Render the 7-day activity trend chart above the heatmap.
         const ctx = document.getElementById('activityChart');
         if (ctx) {
             new Chart(ctx, {
@@ -2414,10 +533,10 @@ function getProfileClassName(profile) {
                         'y-roster': {
                             type: 'linear',
                             position: 'right',
-                            beginAtZero: false, // Setting false so large roster numbers don't compress the lines
+                            beginAtZero: false,
                             title: { display: true, text: 'Player Count', color: '#888', font: {family: 'Cinzel'} },
                             ticks: { color: '#888', font: {family: 'Cinzel'} },
-                            grid: { drawOnChartArea: false } // Prevents overlapping grid lines
+                            grid: { drawOnChartArea: false }
                         },
                         x: { ticks: { color: '#888', font: { family: 'Cinzel', weight: 'bold' } }, grid: { display: false } }
                     },
@@ -3295,7 +1414,7 @@ function getProfileClassName(profile) {
 
         const hks = p.honorable_kills || 0;
         
-        // --- NEW: Page 2 Weapon & Gear Breakdown ---
+        // Build the weapon and gear breakdown values for the detailed character view.
         const mhMin = st.main_hand_damage_min || st.main_hand_min || ((st.main_hand_weapon_damage && st.main_hand_weapon_damage.min) || 0);
         const mhMax = st.main_hand_damage_max || st.main_hand_max || ((st.main_hand_weapon_damage && st.main_hand_weapon_damage.max) || 0);
         const mhSpeed = st.main_hand_speed || ((st.main_hand_weapon_damage && st.main_hand_weapon_damage.speed) || 0);
@@ -3575,7 +1694,7 @@ function getProfileClassName(profile) {
             return count + (isHighValue && canBeEnchanted && !hasEnchant ? 1 : 0);
         }, 0);
 
-        // --- NEW: Grab the Guild Rank & Badges (Scope-Safe) ---
+        // Pull guild rank and honor badges from the flattened roster payload.
         const guildRank = p.guild_rank || 'Member';
         const vBadges = safeParseArray(p.vanguard_badges || char.vanguard_badges);
         const cBadges = safeParseArray(p.campaign_badges || char.campaign_badges);
@@ -3808,6 +1927,10 @@ function getProfileClassName(profile) {
                                     ? `${vCount.toLocaleString()} Vanguard mark${vCount === 1 ? '' : 's'}`
                                     : 'Awaiting first honor';
         const serviceMeta = `${raceName} • ${guildRank} • ${factionType === 'HORDE' ? 'Horde' : 'Alliance'}`;
+        const lastLoginText = formatLastLoginAge(
+            p.last_login_timestamp || char.last_login_ms || eq.last_login_ms || 0,
+            'Unknown'
+        );
         const gearStateLabel = equippedCount > 0
             ? (missingEnchantCount > 0
                 ? `${missingEnchantCount} missing enchant${missingEnchantCount === 1 ? '' : 's'}`
@@ -3891,6 +2014,11 @@ function getProfileClassName(profile) {
         appendFullCardBadge(badgesEl, {
             text: `🛡️ ${guildRank}`,
             classNames: ['char-badge-guild-rank']
+        });
+
+        appendFullCardBadge(badgesEl, {
+            text: `Last login: ${lastLoginText}`,
+            classNames: ['default-badge']
         });
 
         appendFullCardBadge(badgesEl, {
@@ -4017,12 +2145,6 @@ function getProfileClassName(profile) {
         });
 
         return clone.firstElementChild || null;
-    }
-
-    function getTemplateRootHtml(templateId) {
-        const template = document.getElementById(templateId);
-        const rootEl = template?.content?.firstElementChild;
-        return rootEl ? rootEl.cloneNode(true) : null;
     }
 
     function buildFullCardGearContributionRowHtml({ label, baseValue, gainValue }) {
@@ -4544,7 +2666,7 @@ function getProfileClassName(profile) {
         const statsTop = clone.querySelector('.concise-row-stats-top');
         const statsBottom = clone.querySelector('.concise-row-stats-bottom');
         const isHallOfHeroesView = hashUrl === 'badges';
-        const isCommandView = ['total', 'active', 'raidready', 'badges'].includes(hashUrl);
+        const isCommandView = ['total', 'active', 'raidready', 'alt-heroes', 'badges'].includes(hashUrl);
 
         if (podiumClass) bar.classList.add(podiumClass);
         if (vanguardClass) bar.classList.add(vanguardClass);
@@ -5074,7 +3196,7 @@ function getProfileClassName(profile) {
             if (hashUrl.startsWith('war-effort-')) {
                 const type = hashUrl.replace('war-effort-', '');
                 
-                // --- NEW: FORCE VANGUARDS TO HOLD TOP 3 RANKS ---
+                // Preserve the locked vanguard order at the top of each war-effort board.
                 if (window.warEffortVanguards && window.warEffortVanguards[type]) {
                     const vanguards = window.warEffortVanguards[type];
                     const idxA = vanguards.indexOf(nameA);
@@ -5163,7 +3285,7 @@ function getProfileClassName(profile) {
             
             // 2. Setup Variables
             let isClickable = false;
-            let cleanName = ''; // <--- NEW: Strict logic name
+            let cleanName = '';
             let baseName = '';
             let displayName, cClass, raceName, cHex, portraitURL, level;
             let activeSpecAttr = 'unspecced';
@@ -5182,8 +3304,8 @@ function getProfileClassName(profile) {
                 
                 const vBadges = safeParseArray(p.vanguard_badges || char.vanguard_badges || deepChar.vanguard_badges);
                 const cBadges = safeParseArray(p.campaign_badges || char.campaign_badges || deepChar.campaign_badges);
-                const campaignBadgeTypes = cBadges.map(normalizeHonorBadgeType);
-                const allHonorBadgeTypes = [...vBadges, ...cBadges].map(normalizeHonorBadgeType);
+                const campaignBadgeTypes = cBadges.map(normalizeHallOfHeroesBadgeType);
+                const allHonorBadgeTypes = [...vBadges, ...cBadges].map(normalizeHallOfHeroesBadgeType);
                 const vCount = vBadges.length;
                 const cCount = cBadges.length;
                 const xpCount = campaignBadgeTypes.filter(type => type === 'xp').length;
@@ -5411,7 +3533,7 @@ function getProfileClassName(profile) {
                 rankNumber = index + 1;
             }
 
-            // --- NEW: Vanguard Aura Logic ---
+            // Add the vanguard treatment when this character finished a war-effort push first.
             let vanguardClass = '';
             let showVanguardBadge = false;
             let vanguardBadgeTimeText = '';
@@ -5421,7 +3543,7 @@ function getProfileClassName(profile) {
                     vanguardClass = 'vanguard-aura';
                     showVanguardBadge = true;
 
-                    // Grab the locked timestamp and format it nicely (24-Hour)
+                    // Format the lock timestamp for the vanguard badge.
                     if (window.warEffortLockTimes && window.warEffortLockTimes[type]) {
                         const dt = new Date(window.warEffortLockTimes[type]);
                         if (!isNaN(dt)) {
@@ -5431,7 +3553,7 @@ function getProfileClassName(profile) {
                 }
             }
 
-            // --- NEW: Custom War Effort Stats Overrides ---
+            // Swap in war-effort-specific stat summaries when this roster is challenge-scoped.
             const defaultStatsTemplate = document.getElementById('tpl-concise-default-stats');
             let statsNode = null;
 
@@ -5471,7 +3593,7 @@ function getProfileClassName(profile) {
             let isWarEffortLootRow = false;
 
             if (hashUrl.startsWith('war-effort-')) {
-                // By default, stretch the bars
+                // War-effort rows use the expanded stat layout.
                 isWarEffortRow = true;
                 
                 if (hashUrl === 'war-effort-hk') {
@@ -5485,7 +3607,7 @@ function getProfileClassName(profile) {
                         statsNode = hkClone;
                     }
                 } else if (window.warEffortContext) {
-                    const charKey = cleanName; // FIXED: Using cleanName
+                    const charKey = cleanName;
                     const contextData = window.warEffortContext[charKey];
                     
                     if (contextData) {
@@ -5722,7 +3844,7 @@ function getProfileClassName(profile) {
             || hashUrl.startsWith('filter-ilvl-')
             || hashUrl.startsWith('filter-race-')
             || hashUrl.startsWith('class-');
-        const isCommandHash = ['total', 'active', 'raidready'].includes(hashUrl) || isAnalyticsDrillHash;
+        const isCommandHash = ['total', 'active', 'raidready', 'alt-heroes'].includes(hashUrl) || isAnalyticsDrillHash;
         const isHallOfHeroesHash = hashUrl === 'badges';
 
         if (!isHallOfHeroesHash && currentSortMethod === 'badges') {
@@ -5800,16 +3922,20 @@ function getProfileClassName(profile) {
                 const powerName = getPowerName(cClass);
                 const raceName = p.race && p.race.name ? (typeof p.race.name === 'string' ? p.race.name : (p.race.name.en_US || 'Unknown')) : 'Unknown';
                 const tooltipClassKey = cClass || 'Unknown';
+                const lastLoginText = formatLastLoginAge(
+                    p.last_login_timestamp || char.last_login_ms || (char.equipped && char.equipped.last_login_ms) || 0,
+                    'Unknown'
+                );
                 
                 const activeSpec = p.active_spec ? p.active_spec : '';
                 const specIconUrl = getSpecIcon(cClass, activeSpec);
                 const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
                 
-                // --- NEW: Grab the Guild Rank & MVP Badges (Scope-Safe) ---
+                // Read guild rank plus honor markers from the flattened roster payload.
                 const guildRank = p.guild_rank || 'Member';
                 const vBadges = safeParseArray(p.vanguard_badges || char.vanguard_badges);
                 const cBadges = safeParseArray(p.campaign_badges || char.campaign_badges);
-                const campaignBadgeTypes = cBadges.map(normalizeHonorBadgeType);
+                const campaignBadgeTypes = cBadges.map(normalizeHallOfHeroesBadgeType);
                 const vCount = vBadges.length;
                 const xpCount = campaignBadgeTypes.filter(type => type === 'xp').length;
                 const hksCount = campaignBadgeTypes.filter(type => type === 'hks').length;
@@ -5900,6 +4026,28 @@ function getProfileClassName(profile) {
                     
                     clone.querySelector('.tooltip-ilvl').textContent = p.equipped_item_level || 0;
                     clone.querySelector('.tooltip-power-label').textContent = powerName;
+                    
+                    const hpRow = clone.querySelector('.tooltip-health-power')?.closest('.tt-row');
+                    const lastLoginRow = document.createElement('div');
+                    lastLoginRow.className = 'tt-row';
+
+                    const lastLoginLabel = document.createElement('span');
+                    lastLoginLabel.className = 'tt-label';
+                    lastLoginLabel.textContent = 'Last login';
+
+                    const lastLoginValue = document.createElement('span');
+                    lastLoginValue.className = 'tt-val tooltip-last-login';
+                    lastLoginValue.textContent = lastLoginText;
+
+                    lastLoginRow.appendChild(lastLoginLabel);
+                    lastLoginRow.appendChild(lastLoginValue);
+
+                    if (hpRow && hpRow.parentNode) {
+                        hpRow.parentNode.insertBefore(lastLoginRow, hpRow);
+                    } else {
+                        clone.appendChild(lastLoginRow);
+                    }
+
                     clone.querySelector('.tooltip-health-power').textContent = `${st.health || 0} / ${st.power || 0}`;
                     
                     tooltip.appendChild(clone);
@@ -5937,7 +4085,7 @@ function getProfileClassName(profile) {
             // Filter by Character
             if (window.currentFilteredChars && !window.currentFilteredChars.includes(charName)) return false;
 
-            // --- NEW: Badge Filter Logic ---
+            // Route badge-specific filters through the dedicated badge timeline feed.
             if (tlTypeFilter.startsWith('badge_')) {
                 if (eventType !== 'badge') return false; // Show ONLY badges
                 if (tlTypeFilter === 'badge_mvp' && event.badge_type !== 'mvp_pve' && event.badge_type !== 'mvp_pvp') return false;
@@ -5950,10 +4098,11 @@ function getProfileClassName(profile) {
                 if (tlTypeFilter === 'badge_ladder_pve' && !['pve_gold','pve_silver','pve_bronze'].includes(event.badge_type)) return false;
                 if (tlTypeFilter === 'badge_ladder_pvp' && !['pvp_gold','pvp_silver','pvp_bronze'].includes(event.badge_type)) return false;
                 
-                // FIX: Add the missing logic to evaluate the Medals button
+                // Handle the combined ladder-medal badge filter.
                 if (tlTypeFilter === 'badge_ladder' && !['pve_gold','pve_silver','pve_bronze','pvp_gold','pvp_silver','pvp_bronze'].includes(event.badge_type)) return false;
             } else {
-                if (eventType === 'badge') return false; // NEVER show badges in normal feeds
+                // Non-badge timeline views exclude badge events.
+                if (eventType === 'badge') return false;
                 
                 // Normal Rarity/Type filters
                 if (tlTypeFilter === 'rare_plus') {
@@ -5984,7 +4133,7 @@ function getProfileClassName(profile) {
             return true;
         });
 
-        // --- NEW: Deduplicate identical badge events in the feed ---
+        // Deduplicate identical badge events before rendering the timeline batch.
         const uniqueEvents = [];
         const seenKeys = new Set();
         
@@ -6257,192 +4406,26 @@ function getProfileClassName(profile) {
 
         const nowMs = Date.now();
         const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
         const recentHeatmap = Array.isArray(heatmapData) ? heatmapData.slice(-7) : [];
         const dashboardConfig = typeof getHallOfHeroesDashboardConfig === 'function' ? getHallOfHeroesDashboardConfig() : {};
         const prevMvps = dashboardConfig.prev_mvps || {};
+        const mainRoster = filterMainCharacters(rosterData);
+        const formatDualCount = (mainCount, allCount) => `${mainCount.toLocaleString()} / ${allCount.toLocaleString()}`;
 
-        const findRosterEntryByName = (name) => {
-            if (!name) return null;
-            return rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === name.toLowerCase()) || null;
-        };
-
-        const formatHashName = (name) => (name || '').toLowerCase();
-
-        const setHomeRoute = (el, route) => {
-            if (!el) return;
-            if (route) el.setAttribute('data-home-route', route);
-            else el.removeAttribute('data-home-route');
-        };
-
-        const resolvePortrait = (entry) => {
-            if (!entry) return getClassIcon('Warrior');
-            return entry.render_url || getClassIcon(getCharClass(entry));
-        };
-
-        const applyPressureCard = (id, count, stateText, metaText) => {
-            const card = document.getElementById(id);
-            if (!card) return;
-            const valueEl = card.querySelector('.analytics-pressure-value');
-            const stateEl = card.querySelector('.analytics-pressure-state');
-            const metaEl = card.querySelector('.analytics-pressure-meta');
-            if (valueEl) valueEl.textContent = count.toLocaleString();
-            if (stateEl) stateEl.textContent = stateText;
-            if (metaEl) metaEl.textContent = metaText;
-        };
-
-        const applyReadinessCard = (id, config) => {
-            const card = document.getElementById(id);
-            if (!card) return;
-
-            const {
-                eyebrow = '',
-                name = 'Awaiting deployment',
-                value = 'No geared hero logged',
-                meta = 'This slot updates when a matching endgame hero is available.',
-                route = '',
-                portrait = getClassIcon('Warrior'),
-                alt = '',
-                cta = 'Inspect dossier ➔'
-            } = config || {};
-
-            const eyebrowEl = card.querySelector('.analytics-readiness-kicker');
-            const nameEl = card.querySelector('.analytics-readiness-name');
-            const valueEl = card.querySelector('.analytics-readiness-value');
-            const metaEl = card.querySelector('.analytics-readiness-meta');
-            const ctaEl = card.querySelector('.analytics-readiness-cta');
-            const portraitEl = card.querySelector('.analytics-readiness-portrait');
-
-            if (eyebrowEl) eyebrowEl.textContent = eyebrow;
-            if (nameEl) nameEl.textContent = name;
-            if (valueEl) valueEl.textContent = value;
-            if (metaEl) metaEl.textContent = meta;
-            if (ctaEl) ctaEl.textContent = cta;
-            if (portraitEl) {
-                portraitEl.src = portrait;
-                portraitEl.alt = alt || name;
-            }
-
-            setHomeRoute(card, route);
-        };
-
-        const applySpotlightCard = (id, config) => {
-            const card = document.getElementById(id);
-            if (!card) return;
-
-            const {
-                eyebrow = '',
-                name = 'Awaiting data',
-                value = 'No movement recorded',
-                meta = 'This slot will populate when the guild logs more history.',
-                route = '',
-                portrait = getClassIcon('Warrior'),
-                alt = '',
-                cta = 'Inspect ➔'
-            } = config || {};
-
-            const eyebrowEl = card.querySelector('.analytics-spotlight-kicker');
-            const nameEl = card.querySelector('.analytics-spotlight-name');
-            const valueEl = card.querySelector('.analytics-spotlight-value');
-            const metaEl = card.querySelector('.analytics-spotlight-meta');
-            const ctaEl = card.querySelector('.analytics-spotlight-cta');
-            const portraitEl = card.querySelector('.analytics-spotlight-portrait');
-
-            if (eyebrowEl) eyebrowEl.textContent = eyebrow;
-            if (nameEl) nameEl.textContent = name;
-            if (valueEl) valueEl.textContent = value;
-            if (metaEl) metaEl.textContent = meta;
-            if (ctaEl) ctaEl.textContent = cta;
-            if (portraitEl) {
-                portraitEl.src = portrait;
-                portraitEl.alt = alt || name;
-            }
-
-            setHomeRoute(card, route);
-        };
-
-        const applyChronicleCard = (id, config) => {
-            const card = document.getElementById(id);
-            if (!card) return;
-
-            const {
-                kicker = '',
-                title = 'Awaiting entry',
-                value = 'No chronicle entry recorded',
-                meta = 'This card will populate when relevant data is available.',
-                route = '',
-                cta = 'Inspect ➔'
-            } = config || {};
-
-            const kickerEl = card.querySelector('.analytics-chronicle-kicker');
-            const titleEl = card.querySelector('.analytics-chronicle-title');
-            const valueEl = card.querySelector('.analytics-chronicle-value');
-            const metaEl = card.querySelector('.analytics-chronicle-meta');
-            const ctaEl = card.querySelector('.analytics-chronicle-cta');
-
-            if (kickerEl) kickerEl.textContent = kicker;
-            if (titleEl) titleEl.textContent = title;
-            if (valueEl) valueEl.textContent = value;
-            if (metaEl) metaEl.textContent = meta;
-            if (ctaEl) ctaEl.textContent = cta;
-
-            setHomeRoute(card, route);
-        };
-
-        const getPressureState = (count, role) => {
-            if (role === 'Tank') {
-                if (count <= 2) return { state: 'Thin shield wall', meta: 'Priority role for dependable raid structure and dungeon leadership.' };
-                if (count <= 4) return { state: 'Serviceable line', meta: 'Enough tanks to field content, but depth can still improve.' };
-                return { state: 'Fortified line', meta: 'Tank coverage is healthy across the known-spec roster.' };
-            }
-
-            if (role === 'Healer') {
-                if (count <= 3) return { state: 'Fragile sustain', meta: 'Healing coverage is light and should stay on the officer radar.' };
-                if (count <= 6) return { state: 'Stable support', meta: 'Healing depth can sustain most nights without feeling wasteful.' };
-                return { state: 'Sanctified reserve', meta: 'Healer depth looks comfortable for split groups and absences.' };
-            }
-
-            if (role === 'Ranged DPS') {
-                if (count <= 4) return { state: 'Arcane gap', meta: 'Caster and ranged pressure feels thin for larger raid compositions.' };
-                if (count <= 8) return { state: 'Balanced volley', meta: 'Ranged support is present, but still worth growing for flexibility.' };
-                return { state: 'Volley secured', meta: 'Ranged depth is strong and well represented in the current roster.' };
-            }
-
-            if (count <= 5) return { state: 'Lean blade line', meta: 'Melee coverage exists, though substitutions could still feel tight.' };
-            if (count <= 10) return { state: 'Battle-ready line', meta: 'Melee presence is healthy for most progression and farm nights.' };
-            return { state: 'Frontline overflowing', meta: 'Melee pressure is abundant across the current warband.' };
-        };
-
-        const getTrendEntry = (kind) => {
-            const sorted = [...rosterData]
-                .filter(c => c.profile)
-                .filter(c => {
-                    if (kind === 'pvp') return (c.profile.trend_pvp || c.profile.trend_hks || 0) > 0;
-                    return (c.profile.trend_pve || c.profile.trend_ilvl || 0) > 0;
-                })
-                .sort((a, b) => {
-                    const aVal = kind === 'pvp' ? (a.profile.trend_pvp || a.profile.trend_hks || 0) : (a.profile.trend_pve || a.profile.trend_ilvl || 0);
-                    const bVal = kind === 'pvp' ? (b.profile.trend_pvp || b.profile.trend_hks || 0) : (b.profile.trend_pve || b.profile.trend_ilvl || 0);
-                    return bVal - aVal;
-                });
-            return sorted[0] || null;
-        };
-
-        const getTopRoleAnchor = (roleName) => {
-            return [...rosterData]
-                .filter(c => c.profile && c.profile.level === 70)
-                .filter(c => getCharacterRole(getCharClass(c), c.profile.active_spec || '') === roleName)
-                .sort((a, b) => (b.profile.equipped_item_level || 0) - (a.profile.equipped_item_level || 0))[0] || null;
-        };
-
-        let totalIlvl = 0;
         let lvl70Count = 0;
         let totalHks = 0;
+        let mainTotalIlvl = 0;
+        let mainLvl70Count = 0;
         rosterData.forEach(c => {
             const p = c.profile;
             if (p) {
                 if (p.level === 70 && p.equipped_item_level) {
-                    totalIlvl += p.equipped_item_level;
                     lvl70Count++;
+                    if (!isAltCharacter(c)) {
+                        mainTotalIlvl += p.equipped_item_level;
+                        mainLvl70Count++;
+                    }
                 }
                 if (p.honorable_kills) totalHks += p.honorable_kills;
             }
@@ -6451,17 +4434,41 @@ function getProfileClassName(profile) {
         const epicLootCount = recentHeatmap.reduce((sum, day) => sum + (day.loot || 0), 0);
         const recentLevelUps = recentHeatmap.reduce((sum, day) => sum + (day.levels || 0), 0);
         const raidReadyRoster = rosterData.filter(c => c.profile && c.profile.level === 70 && (c.profile.equipped_item_level || 0) >= 110);
-        const activeRosterCount = active14Days || 0;
+        const mainRaidReadyRoster = mainRoster.filter(c => c.profile && c.profile.level === 70 && (c.profile.equipped_item_level || 0) >= 110);
+        const activeRosterCount = active14Days;
+        const mainActiveRosterFallback = mainRoster.filter(c => {
+            const lastLogin = c.profile && c.profile.last_login_timestamp ? c.profile.last_login_timestamp : 0;
+            return lastLogin > 0 && (nowMs - lastLogin) <= fourteenDaysMs;
+        }).length;
+        const mainActiveRosterCount = getNumericConfigValue(config, 'active_14_days_mains', mainActiveRosterFallback);
+        const mainRaidReadyCount = getNumericConfigValue(config, 'raid_ready_count_mains', mainRaidReadyRoster.length);
+        const mainAvgIlvl = getNumericConfigValue(config, 'avg_ilvl_70_mains', mainLvl70Count > 0 ? Math.round(mainTotalIlvl / mainLvl70Count) : 0);
         const leveling6069Count = rawGuildRoster.filter(c => {
             const lvl = c.level || 0;
             return lvl >= 60 && lvl <= 69;
         }).length;
 
+        const setKpiLabel = (valueId, text) => {
+            const valueEl = document.getElementById(valueId);
+            const labelEl = valueEl ? valueEl.closest('.stat-box')?.querySelector('.stat-label') : null;
+            if (labelEl) labelEl.textContent = text;
+        };
+
+        const setPressureNote = (valueId, valueText, copyText) => {
+            const valueEl = document.getElementById(valueId);
+            if (valueEl) valueEl.textContent = valueText;
+
+            const copyEl = valueEl ? valueEl.closest('.analytics-pressure-note')?.querySelector('.analytics-pressure-note-copy') : null;
+            if (copyEl) copyEl.textContent = copyText;
+        };
+
         const kpiIlvl = document.getElementById('kpi-avg-ilvl');
-        if (kpiIlvl) kpiIlvl.innerText = lvl70Count > 0 ? Math.round(totalIlvl / lvl70Count) : 0;
+        if (kpiIlvl) kpiIlvl.innerText = mainAvgIlvl;
+        setKpiLabel('kpi-avg-ilvl', 'Avg Level 70 iLvl (Mains)');
 
         const kpiReady = document.getElementById('kpi-raid-ready');
-        if (kpiReady) kpiReady.innerText = raidReadyRoster.length.toLocaleString();
+        if (kpiReady) kpiReady.innerText = formatDualCount(mainRaidReadyCount, raidReadyCount);
+        setKpiLabel('kpi-raid-ready', 'Raid Ready (Mains / All)');
 
         const kpiHks = document.getElementById('kpi-total-hks');
         if (kpiHks) kpiHks.innerText = totalHks >= 1000000 ? (totalHks / 1000000).toFixed(1) + 'M' : totalHks.toLocaleString();
@@ -6488,7 +4495,7 @@ function getProfileClassName(profile) {
         }
 
         const roleCounts = { 'Tank': 0, 'Healer': 0, 'Melee DPS': 0, 'Ranged DPS': 0 };
-        rosterData.forEach(c => {
+        mainRoster.forEach(c => {
             if (!c.profile || !c.profile.active_spec) return;
             const role = getCharacterRole(getCharClass(c), c.profile.active_spec);
             if (roleCounts[role] !== undefined) roleCounts[role]++;
@@ -6499,33 +4506,42 @@ function getProfileClassName(profile) {
         const meleeState = getPressureState(roleCounts['Melee DPS'], 'Melee DPS');
         const rangedState = getPressureState(roleCounts['Ranged DPS'], 'Ranged DPS');
 
-        applyPressureCard('analytics-pressure-tank', roleCounts['Tank'], tankState.state, tankState.meta);
-        applyPressureCard('analytics-pressure-healer', roleCounts['Healer'], healerState.state, healerState.meta);
-        applyPressureCard('analytics-pressure-melee', roleCounts['Melee DPS'], meleeState.state, meleeState.meta);
-        applyPressureCard('analytics-pressure-ranged', roleCounts['Ranged DPS'], rangedState.state, rangedState.meta);
+        applyPressureCard('analytics-pressure-tank', roleCounts['Tank'], tankState.state, `${tankState.meta} Mains only.`);
+        applyPressureCard('analytics-pressure-healer', roleCounts['Healer'], healerState.state, `${healerState.meta} Mains only.`);
+        applyPressureCard('analytics-pressure-melee', roleCounts['Melee DPS'], meleeState.state, `${meleeState.meta} Mains only.`);
+        applyPressureCard('analytics-pressure-ranged', roleCounts['Ranged DPS'], rangedState.state, `${rangedState.meta} Mains only.`);
 
-        const pressureFresh = document.getElementById('analytics-pressure-fresh70');
-        if (pressureFresh) pressureFresh.textContent = lvl70Count.toLocaleString();
+        setPressureNote(
+            'analytics-pressure-fresh70',
+            formatDualCount(mainLvl70Count, lvl70Count),
+            'Level 70 mains / all characters currently recorded in the guild.'
+        );
 
-        const pressureReady = document.getElementById('analytics-pressure-ready');
-        if (pressureReady) pressureReady.textContent = raidReadyRoster.length.toLocaleString();
+        setPressureNote(
+            'analytics-pressure-ready',
+            formatDualCount(mainRaidReadyCount, raidReadyCount),
+            'Raid-ready mains / all characters that can answer the call right now.'
+        );
 
-        const pressureActive = document.getElementById('analytics-pressure-active');
-        if (pressureActive) pressureActive.textContent = activeRosterCount.toLocaleString();
+        setPressureNote(
+            'analytics-pressure-active',
+            formatDualCount(mainActiveRosterCount, activeRosterCount),
+            'Active mains / all characters seen in the last 14 days.'
+        );
 
         const pressureCampaign = document.getElementById('analytics-pressure-campaign');
         if (pressureCampaign) pressureCampaign.textContent = recentLevelUps.toLocaleString();
 
-        const topTankAnchor = getTopRoleAnchor('Tank');
-        const topHealerAnchor = getTopRoleAnchor('Healer');
-        const topRangedAnchor = getTopRoleAnchor('Ranged DPS');
-        const topMeleeAnchor = getTopRoleAnchor('Melee DPS');
+        const topTankAnchor = getTopRoleAnchor(rosterData, 'Tank');
+        const topHealerAnchor = getTopRoleAnchor(rosterData, 'Healer');
+        const topRangedAnchor = getTopRoleAnchor(rosterData, 'Ranged DPS');
+        const topMeleeAnchor = getTopRoleAnchor(rosterData, 'Melee DPS');
 
         applyReadinessCard('analytics-readiness-tank', topTankAnchor ? {
             eyebrow: 'Shield Captain',
             name: topTankAnchor.profile.name,
             value: `${(topTankAnchor.profile.equipped_item_level || 0).toLocaleString()} equipped iLvl`,
-            meta: 'Highest geared level 70 tank currently visible in the processed roster.',
+            meta: 'Highest geared level 70 tank main currently visible in the processed roster.',
             route: formatHashName(topTankAnchor.profile.name),
             portrait: resolvePortrait(topTankAnchor),
             alt: `${topTankAnchor.profile.name} portrait`,
@@ -6533,8 +4549,8 @@ function getProfileClassName(profile) {
         } : {
             eyebrow: 'Shield Captain',
             name: 'Awaiting tank anchor',
-            value: 'No geared tank logged',
-            meta: 'This slot updates from the highest item level level 70 tank currently in the roster.',
+            value: 'No geared tank main logged',
+            meta: 'This slot updates from the highest item level level 70 tank main currently in the roster.',
             route: 'filter-role-tank',
             portrait: getClassIcon('Warrior'),
             alt: 'Tank anchor placeholder',
@@ -6545,7 +4561,7 @@ function getProfileClassName(profile) {
             eyebrow: 'Sanctified Anchor',
             name: topHealerAnchor.profile.name,
             value: `${(topHealerAnchor.profile.equipped_item_level || 0).toLocaleString()} equipped iLvl`,
-            meta: 'Highest geared level 70 healer currently visible in the processed roster.',
+            meta: 'Highest geared level 70 healer main currently visible in the processed roster.',
             route: formatHashName(topHealerAnchor.profile.name),
             portrait: resolvePortrait(topHealerAnchor),
             alt: `${topHealerAnchor.profile.name} portrait`,
@@ -6553,8 +4569,8 @@ function getProfileClassName(profile) {
         } : {
             eyebrow: 'Sanctified Anchor',
             name: 'Awaiting healing anchor',
-            value: 'No geared healer logged',
-            meta: 'This slot updates from the highest item level level 70 healer currently in the roster.',
+            value: 'No geared healer main logged',
+            meta: 'This slot updates from the highest item level level 70 healer main currently in the roster.',
             route: 'filter-role-healer',
             portrait: getClassIcon('Priest'),
             alt: 'Healer anchor placeholder',
@@ -6565,7 +4581,7 @@ function getProfileClassName(profile) {
             eyebrow: 'Arcane Spearhead',
             name: topRangedAnchor.profile.name,
             value: `${(topRangedAnchor.profile.equipped_item_level || 0).toLocaleString()} equipped iLvl`,
-            meta: 'Highest geared level 70 ranged damage dealer currently visible in the processed roster.',
+            meta: 'Highest geared level 70 ranged damage dealer main currently visible in the processed roster.',
             route: formatHashName(topRangedAnchor.profile.name),
             portrait: resolvePortrait(topRangedAnchor),
             alt: `${topRangedAnchor.profile.name} portrait`,
@@ -6573,8 +4589,8 @@ function getProfileClassName(profile) {
         } : {
             eyebrow: 'Arcane Spearhead',
             name: 'Awaiting ranged anchor',
-            value: 'No geared ranged logged',
-            meta: 'This slot updates from the highest item level level 70 ranged damage dealer currently in the roster.',
+            value: 'No geared ranged main logged',
+            meta: 'This slot updates from the highest item level level 70 ranged damage dealer main currently in the roster.',
             route: 'filter-role-ranged-dps',
             portrait: getClassIcon('Mage'),
             alt: 'Ranged anchor placeholder',
@@ -6585,7 +4601,7 @@ function getProfileClassName(profile) {
             eyebrow: 'Blade Vanguard',
             name: topMeleeAnchor.profile.name,
             value: `${(topMeleeAnchor.profile.equipped_item_level || 0).toLocaleString()} equipped iLvl`,
-            meta: 'Highest geared level 70 melee damage dealer currently visible in the processed roster.',
+            meta: 'Highest geared level 70 melee damage dealer main currently visible in the processed roster.',
             route: formatHashName(topMeleeAnchor.profile.name),
             portrait: resolvePortrait(topMeleeAnchor),
             alt: `${topMeleeAnchor.profile.name} portrait`,
@@ -6593,16 +4609,16 @@ function getProfileClassName(profile) {
         } : {
             eyebrow: 'Blade Vanguard',
             name: 'Awaiting melee anchor',
-            value: 'No geared melee logged',
-            meta: 'This slot updates from the highest item level level 70 melee damage dealer currently in the roster.',
+            value: 'No geared melee main logged',
+            meta: 'This slot updates from the highest item level level 70 melee damage dealer main currently in the roster.',
             route: 'filter-role-melee-dps',
             portrait: getClassIcon('Rogue'),
             alt: 'Melee anchor placeholder',
             cta: 'Inspect melee ➔'
         });
 
-        const topPveTrend = getTrendEntry('pve');
-        const topPvpTrend = getTrendEntry('pvp');
+        const topPveTrend = getTrendEntry(rosterData, 'pve');
+        const topPvpTrend = getTrendEntry(rosterData, 'pvp');
 
         const newest70Events = timelineData
             .filter(e => e.type === 'level_up' && e.level === 70)
@@ -6613,7 +4629,7 @@ function getProfileClassName(profile) {
             .sort((a, b) => new Date((b.timestamp || '').replace('Z', '+00:00')).getTime() - new Date((a.timestamp || '').replace('Z', '+00:00')).getTime());
 
         const newest70Event = newest70Events[0] || null;
-        const newest70Char = newest70Event ? findRosterEntryByName(newest70Event.character_name) : null;
+        const newest70Char = newest70Event ? findRosterEntryByName(rosterData, newest70Event.character_name) : null;
 
         const levelingVanguardRaw = [...rawGuildRoster]
             .filter(c => {
@@ -6622,7 +4638,7 @@ function getProfileClassName(profile) {
             })
             .sort((a, b) => (b.level || 0) - (a.level || 0))[0] || null;
 
-        const levelingVanguard = levelingVanguardRaw ? findRosterEntryByName(levelingVanguardRaw.name) : null;
+        const levelingVanguard = levelingVanguardRaw ? findRosterEntryByName(rosterData, levelingVanguardRaw.name) : null;
         const levelingVanguardLevel = levelingVanguardRaw ? (levelingVanguardRaw.level || 0) : 0;
 
         applySpotlightCard('analytics-spotlight-pve', topPveTrend ? {
@@ -6705,8 +4721,8 @@ function getProfileClassName(profile) {
             cta: 'Inspect 60-69 bracket ➔'
         });
 
-        const reigningPveEntry = findRosterEntryByName(prevMvps.pve && prevMvps.pve.name ? prevMvps.pve.name : '');
-        const reigningPvpEntry = findRosterEntryByName(prevMvps.pvp && prevMvps.pvp.name ? prevMvps.pvp.name : '');
+        const reigningPveEntry = findRosterEntryByName(rosterData, prevMvps.pve && prevMvps.pve.name ? prevMvps.pve.name : '');
+        const reigningPvpEntry = findRosterEntryByName(rosterData, prevMvps.pvp && prevMvps.pvp.name ? prevMvps.pvp.name : '');
 
         const recentEpicEvents = timelineData
             .filter(e => e.type === 'item' && (e.item_quality === 'EPIC' || e.item_quality === 'LEGENDARY'))
@@ -6783,8 +4799,14 @@ function getProfileClassName(profile) {
             cta: 'Review campaign pulse ➔'
         });
 
+        const roleChartCard = document.getElementById('roleDonutChart')?.closest('.analytics-card');
+        const roleChartSub = roleChartCard ? roleChartCard.querySelector('.chart-title-sub') : null;
+        const roleChartHint = roleChartCard ? roleChartCard.querySelector('.analytics-card-hint') : null;
+        if (roleChartSub) roleChartSub.textContent = 'Known Specs / Mains';
+        if (roleChartHint) roleChartHint.textContent = 'Mains-only deployment view. Click a slice to inspect matching heroes.';
+
         if (window.roleChartInstance) window.roleChartInstance.destroy();
-        window.roleChartInstance = drawRoleChart('roleDonutChart', rosterData, false);
+        window.roleChartInstance = drawRoleChart('roleDonutChart', mainRoster, false);
 
         const levelLabels = ['1-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70'];
         const levelData = [0, 0, 0, 0, 0, 0, 0, 0];
@@ -6920,8 +4942,8 @@ function getProfileClassName(profile) {
                     datasets: [
                         { label: 'Loot Drops', data: heatmapData.map(d => d.loot || 0), borderColor: '#a335ee', backgroundColor: 'rgba(163, 53, 238, 0.1)', borderWidth: 2, pointBackgroundColor: '#a335ee', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y' },
                         { label: 'Level Ups', data: heatmapData.map(d => d.levels || 0), borderColor: '#ffd100', backgroundColor: 'rgba(255, 209, 0, 0.1)', borderWidth: 2, pointBackgroundColor: '#ffd100', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y' },
-                        { label: 'Total Roster', data: heatmapData.map(d => d.total_roster || 0), borderColor: 'rgba(52, 152, 219, 0.3)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#3498db', pointBorderColor: '#fff', tension: 0.3, fill: false, yAxisID: 'y-roster' },
-                        { label: 'Active Roster', data: heatmapData.map(d => d.active_roster || 0), borderColor: 'rgba(46, 204, 113, 0.6)', backgroundColor: 'rgba(46, 204, 113, 0.05)', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#2ecc71', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y-roster' }
+                        { label: 'Total Roster (All)', data: heatmapData.map(d => getHeatmapMetricValue(d, 'total_roster', 'total_roster')), borderColor: 'rgba(52, 152, 219, 0.3)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#3498db', pointBorderColor: '#fff', tension: 0.3, fill: false, yAxisID: 'y-roster' },
+                        { label: 'Active Roster (Mains)', data: heatmapData.map(d => getHeatmapMetricValue(d, 'active_roster_mains', 'active_roster')), borderColor: 'rgba(46, 204, 113, 0.6)', backgroundColor: 'rgba(46, 204, 113, 0.05)', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#2ecc71', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y-roster' }
                     ]
                 },
                 options: {
@@ -6988,109 +5010,6 @@ function getProfileClassName(profile) {
         bindTimelineFilterControls();
     }
 
-    function getDecoratedRosterCount() {
-        return rosterData.filter(c => {
-            const p = c.profile;
-            if (!p) return false;
-
-            const vCount = safeParseArray(p.vanguard_badges || c.vanguard_badges).length;
-            const cCount = safeParseArray(p.campaign_badges || c.campaign_badges).length;
-            const pveMvp = parseInt(p.pve_champ_count || c.pve_champ_count) || 0;
-            const pvpMvp = parseInt(p.pvp_champ_count || c.pvp_champ_count) || 0;
-            const pveG = parseInt(p.pve_gold || c.pve_gold) || 0;
-            const pvpG = parseInt(p.pvp_gold || c.pvp_gold) || 0;
-            const pveS = parseInt(p.pve_silver || c.pve_silver) || 0;
-            const pvpS = parseInt(p.pvp_silver || c.pvp_silver) || 0;
-            const pveB = parseInt(p.pve_bronze || c.pve_bronze) || 0;
-            const pvpB = parseInt(p.pvp_bronze || c.pvp_bronze) || 0;
-
-            return (vCount + cCount + pveMvp + pvpMvp + pveG + pvpG + pveS + pvpS + pveB + pvpB) > 0;
-        }).length;
-    }
-
-    function setHomeText(id, value) {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value;
-    }
-
-    function populateHomeOverview() {
-        let totalIlvl = 0;
-        let lvl70Count = 0;
-
-        rosterData.forEach(c => {
-            if (!c.profile) return;
-            if (c.profile.level === 70 && c.profile.equipped_item_level) {
-                totalIlvl += c.profile.equipped_item_level;
-                lvl70Count++;
-            }
-        });
-
-        const totalRoster = rawGuildRoster.length || rosterData.length;
-        const avgLvl70Ilvl = lvl70Count > 0 ? Math.round(totalIlvl / lvl70Count) : 0;
-        const decoratedCount = getDecoratedRosterCount();
-
-        setHomeText('home-command-total-value', totalRoster.toLocaleString());
-        setHomeText('home-command-active-value', active14Days.toLocaleString());
-        setHomeText('home-command-raidready-value', raidReadyCount.toLocaleString());
-        setHomeText('home-command-badges-value', decoratedCount.toLocaleString());
-
-        setHomeText('home-pulse-total', totalRoster.toLocaleString());
-        setHomeText('home-pulse-active', active14Days.toLocaleString());
-        setHomeText('home-pulse-raidready', raidReadyCount.toLocaleString());
-        setHomeText('home-kpi-ilvl', avgLvl70Ilvl.toLocaleString());
-    }
-    function getDecoratedRosterCount() {
-        return rosterData.filter(c => {
-            const p = c.profile;
-            if (!p) return false;
-
-            const vCount = safeParseArray(p.vanguard_badges || c.vanguard_badges).length;
-            const cCount = safeParseArray(p.campaign_badges || c.campaign_badges).length;
-            const pveMvp = parseInt(p.pve_champ_count || c.pve_champ_count) || 0;
-            const pvpMvp = parseInt(p.pvp_champ_count || c.pvp_champ_count) || 0;
-            const pveG = parseInt(p.pve_gold || c.pve_gold) || 0;
-            const pvpG = parseInt(p.pvp_gold || c.pvp_gold) || 0;
-            const pveS = parseInt(p.pve_silver || c.pve_silver) || 0;
-            const pvpS = parseInt(p.pvp_silver || c.pvp_silver) || 0;
-            const pveB = parseInt(p.pve_bronze || c.pve_bronze) || 0;
-            const pvpB = parseInt(p.pvp_bronze || c.pvp_bronze) || 0;
-
-            return (vCount + cCount + pveMvp + pvpMvp + pveG + pvpG + pveS + pvpS + pveB + pvpB) > 0;
-        }).length;
-    }
-
-    function setHomeText(id, value) {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value;
-    }
-
-    function populateHomeOverview() {
-        let totalIlvl = 0;
-        let lvl70Count = 0;
-
-        rosterData.forEach(c => {
-            if (!c.profile) return;
-            if (c.profile.level === 70 && c.profile.equipped_item_level) {
-                totalIlvl += c.profile.equipped_item_level;
-                lvl70Count++;
-            }
-        });
-
-        const totalRoster = rawGuildRoster.length || rosterData.length;
-        const avgLvl70Ilvl = lvl70Count > 0 ? Math.round(totalIlvl / lvl70Count) : 0;
-        const decoratedCount = getDecoratedRosterCount();
-
-        setHomeText('home-command-total-value', totalRoster.toLocaleString());
-        setHomeText('home-command-active-value', active14Days.toLocaleString());
-        setHomeText('home-command-raidready-value', raidReadyCount.toLocaleString());
-        setHomeText('home-command-badges-value', decoratedCount.toLocaleString());
-
-        setHomeText('home-pulse-total', totalRoster.toLocaleString());
-        setHomeText('home-pulse-active', active14Days.toLocaleString());
-        setHomeText('home-pulse-raidready', raidReadyCount.toLocaleString());
-        setHomeText('home-kpi-ilvl', avgLvl70Ilvl.toLocaleString());
-    }
-
     function showArchitectureView() {
         hideAllViews();
         setSoloDashboardLayout();
@@ -7126,7 +5045,7 @@ function getProfileClassName(profile) {
         const xpCont = document.getElementById('guild-xp-container');
         if (xpCont) xpCont.hidden = false;
 
-        populateHomeOverview();
+        populateHomeOverview(config);
 
         if (typeof window.renderGuildXPBar === 'function') window.renderGuildXPBar();
 
@@ -7169,10 +5088,10 @@ function getProfileClassName(profile) {
                 el.appendChild(span);
             }
 
-            applyTrend('trend-total', today.total_roster, yesterday.total_roster);
-            applyTrend('trend-active', today.active_roster, yesterday.active_roster);
+            applyTrend('trend-total', getHeatmapMetricValue(today, 'total_roster', 'total_roster'), getHeatmapMetricValue(yesterday, 'total_roster', 'total_roster'));
+            applyTrend('trend-active', getHeatmapMetricValue(today, 'active_roster_mains', 'active_roster'), getHeatmapMetricValue(yesterday, 'active_roster_mains', 'active_roster'));
 
-            function drawSpark(canvasId, dataKey, colorStr) {
+            function drawSpark(canvasId, dataKey, colorStr, fallbackKey = '') {
                 const ctx = document.getElementById(canvasId);
                 if (!ctx) return;
 
@@ -7181,7 +5100,7 @@ function getProfileClassName(profile) {
                     window.homeSparkCharts[canvasId].destroy();
                 }
 
-                const dataPoints = heatmapData.map(d => d[dataKey] || 0);
+                const dataPoints = heatmapData.map(d => getHeatmapMetricValue(d, dataKey, fallbackKey));
                 window.homeSparkCharts[canvasId] = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -7213,7 +5132,7 @@ function getProfileClassName(profile) {
             }
 
             drawSpark('spark-total', 'total_roster', 'rgba(255, 209, 0, 0.5)');
-            drawSpark('spark-active', 'active_roster', 'rgba(46, 204, 113, 0.5)');
+            drawSpark('spark-active', 'active_roster_mains', 'rgba(46, 204, 113, 0.5)', 'active_roster');
         }
 
         if (timelineData && timelineData.length > 0) {
@@ -7297,7 +5216,6 @@ function getProfileClassName(profile) {
         window.location.hash = charName;
     }
 
-    // Added defaultSort parameter to override the standard "level" start
     function getRoutePresentation(hashValue) {
         const hash = (hashValue || '').toLowerCase();
 
@@ -7313,6 +5231,7 @@ function getProfileClassName(profile) {
             || hash === 'total'
             || hash === 'active'
             || hash === 'raidready'
+            || hash === 'alt-heroes'
             || hash.startsWith('class-')
             || hash.startsWith('spec-')
             || hash.startsWith('filter-')
@@ -7337,7 +5256,6 @@ function getProfileClassName(profile) {
         window.dispatchEvent(new CustomEvent('amw:route-theme', { detail: presentation }));
     }
 
-    // Added defaultSort parameter to override the standard "level" start
     function showConciseView(title, characters, isRawRoster = false, showBadges = true, defaultSort = 'level') {
         hideAllViews();
         setSoloDashboardLayout();
@@ -7354,7 +5272,7 @@ function getProfileClassName(profile) {
             || hash.startsWith('filter-ilvl-')
             || hash.startsWith('filter-race-')
             || hash.startsWith('class-');
-        const isCommandHash = ['total', 'active', 'raidready'].includes(hash) || isAnalyticsDrillHash;
+        const isCommandHash = ['total', 'active', 'raidready', 'alt-heroes'].includes(hash) || isAnalyticsDrillHash;
         const isHallOfHeroesHash = hash === 'badges';
         const isWarEffortHash = hash.startsWith('war-effort-');
         const shellHost = document.getElementById('concise-shell-host');
@@ -7363,11 +5281,11 @@ function getProfileClassName(profile) {
         conciseView.classList.toggle('concise-view-command', isCommandHash || isHallOfHeroesHash);
         conciseView.classList.toggle('concise-view-war-effort', isWarEffortHash);
         conciseView.classList.toggle('concise-view-hall-of-heroes', isHallOfHeroesHash);
-        conciseView.classList.remove('command-view-total', 'command-view-active', 'command-view-raidready', 'command-view-badges', 'command-view-analytics-filter');
+        conciseView.classList.remove('command-view-total', 'command-view-active', 'command-view-raidready', 'command-view-alt-heroes', 'command-view-badges', 'command-view-analytics-filter');
 
         if (isHallOfHeroesHash) {
             conciseView.classList.add('command-view-badges');
-        } else if (['total', 'active', 'raidready'].includes(hash)) {
+        } else if (['total', 'active', 'raidready', 'alt-heroes'].includes(hash)) {
             conciseView.classList.add(`command-view-${hash}`);
         } else if (isAnalyticsDrillHash) {
             conciseView.classList.add('command-view-analytics-filter');
@@ -7382,7 +5300,7 @@ function getProfileClassName(profile) {
                     bindHeroBandFilters(shellHost, characters, isRawRoster);
                 }
             } else if (isCommandHash) {
-                const shellFragment = buildCommandViewShell(hash, characters, isRawRoster);
+                const shellFragment = buildCommandViewShell(hash, characters, isRawRoster, config);
                 if (shellFragment) {
                     shellHost.appendChild(shellFragment);
                     bindHeroBandFilters(shellHost, characters, isRawRoster);
@@ -7649,6 +5567,10 @@ function getProfileClassName(profile) {
             const raidReadyRoster = rosterData.filter(c => c.profile && c.profile.level === 70 && (c.profile.equipped_item_level || 0) >= 110);
             showConciseView(`Raid Ready Overview (${raidReadyRoster.length})`, raidReadyRoster, false, false, 'ilvl');
             updateDropdownLabel('all');
+        } else if (hash === 'alt-heroes') {
+            const altRoster = rosterData.filter(c => isAltCharacter(c));
+            showConciseView(`Alt Heroes (${altRoster.length})`, altRoster, false, false, 'ilvl');
+            updateDropdownLabel('alt-heroes');
         } else if (hash === 'all') {
             const activeLabel = active14Days > 0 ? `(${active14Days} Active)` : '';
             showConciseView(`Processed Roster Overview ${activeLabel}`, rosterData, false, true);
@@ -8594,9 +6516,7 @@ function getProfileClassName(profile) {
             
             const eventEl = document.createElement('div');
             
-            // Monument rendering moved to dedicated feed.
-            
-            // Restored the proper concise-item class from your production site!
+            // Keep concise-item so shared list styling and tooltip hooks still apply here.
             eventEl.className = 'concise-item tt-char timeline-event';
             eventEl.onclick = () => selectCharacter((event.character_name || '').toLowerCase());
             
@@ -8730,7 +6650,7 @@ function getProfileClassName(profile) {
         loadMoreBtn.addEventListener('click', renderTimelineBatch);
     }
 
-    // --- NEW: Hamburger Menu Logic ---
+    // Mobile navigation drawer logic.
     const menuToggle = document.querySelector('.mobile-menu-toggle');
     const navLinksContainer = document.querySelector('.nav-links-container');
     const navScrim = document.querySelector('.nav-scrim');
@@ -8738,14 +6658,33 @@ function getProfileClassName(profile) {
     const navWarEffortLinks = document.querySelectorAll('.nav-dropdown-link[href^="#war-effort-"]');
     const navRouteButtons = document.querySelectorAll('.nav-btn-route[data-nav-target]');
     
+    function syncPrimaryNavAccessibilityState() {
+        if (!navLinksContainer) return;
+        const isDesktopLayout = window.innerWidth > 1024;
+        const isOpen = navLinksContainer.classList.contains('open');
+        navLinksContainer.setAttribute('aria-hidden', isDesktopLayout ? 'false' : String(!isOpen));
+    }
+
     function closeMobileMenu() {
         if (!menuToggle || !navLinksContainer) return;
+        const willHideNav = window.innerWidth <= 1024;
+        const activeElement = document.activeElement;
+        const focusIsInsideNav = activeElement instanceof HTMLElement && navLinksContainer.contains(activeElement);
+
         menuToggle.classList.remove('open');
         menuToggle.setAttribute('aria-expanded', 'false');
         navLinksContainer.classList.remove('open');
-        navLinksContainer.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('nav-menu-open');
         if (navScrim) navScrim.classList.remove('open');
+
+        if (willHideNav && focusIsInsideNav) {
+            menuToggle.focus({ preventScroll: true });
+            if (document.activeElement === activeElement && typeof activeElement.blur === 'function') {
+                activeElement.blur();
+            }
+        }
+
+        syncPrimaryNavAccessibilityState();
     }
 
     function openMobileMenu() {
@@ -8753,16 +6692,16 @@ function getProfileClassName(profile) {
         menuToggle.classList.add('open');
         menuToggle.setAttribute('aria-expanded', 'true');
         navLinksContainer.classList.add('open');
-        navLinksContainer.setAttribute('aria-hidden', 'false');
         document.body.classList.add('nav-menu-open');
         if (navScrim) navScrim.classList.add('open');
+        syncPrimaryNavAccessibilityState();
     }
 
     function syncNavActiveState() {
         const currentHash = decodeURIComponent(window.location.hash.substring(1));
         let activeTarget = '';
 
-        if (!currentHash || currentHash === '' || ['total', 'active', 'raidready'].includes(currentHash)) {
+        if (!currentHash || currentHash === '' || ['total', 'active', 'raidready', 'alt-heroes'].includes(currentHash)) {
             activeTarget = 'home';
         } else if (currentHash.startsWith('war-effort-')) {
             activeTarget = 'war-effort';
@@ -8837,6 +6776,7 @@ function getProfileClassName(profile) {
         });
     }
 
+    syncPrimaryNavAccessibilityState();
     syncNavActiveState();
     window.addEventListener('hashchange', syncNavActiveState);
 
@@ -9209,10 +7149,10 @@ function getProfileClassName(profile) {
         renderBar('guild-loot-fill', 'guild-loot-text', totalLoot, 60, 'LOOT');
         renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, 10, 'ZENITH');
 
-        // --- NEW: VANGUARD AURA & TIMELINE MONUMENT CALCULATION ---
+        // Track locked vanguards and milestone monuments for the current war-effort board.
         window.warEffortVanguards = { xp: [], hk: [], loot: [], zenith: [] };
         window.warEffortMonuments = [];
-        window.warEffortLockTimes = {}; // <-- NEW: Store the exact time it locked
+        window.warEffortLockTimes = {};
 
         function applyLockFallback(type, fallbackMon, dynVanguards) {
             if (warEffortLocks[type]) {
@@ -9282,7 +7222,7 @@ function getProfileClassName(profile) {
             });
         }
         
-        // --- NEW: COMPACT MONUMENTS GRID FEED ---
+        // Render the compact monument card feed above the timeline.
         const timelineEl = document.getElementById('timeline');
         const monContainer = document.getElementById('monuments-container');
         if (timelineEl && monContainer) {
@@ -9332,82 +7272,6 @@ function getProfileClassName(profile) {
                     monContainer.appendChild(eventEl);
                 });
             }
-        }
-
-        function buildWarEffortSnapshot(type, current, target, contributors, options = {}) {
-            function getWarEffortContributorValue(contributors, name) {
-                if (!contributors || !name) return 0;
-
-                if (contributors[name] !== undefined && contributors[name] !== null) {
-                    return Number(contributors[name]) || 0;
-                }
-
-                const loweredName = String(name).toLowerCase();
-                const match = Object.entries(contributors).find(([key]) => String(key).toLowerCase() === loweredName);
-                return match ? (Number(match[1]) || 0) : 0;
-            }
-
-            const config = getWarEffortConfig(type);
-            const safeContributors = contributors || {};
-            const sortedEntries = Object.entries(safeContributors).sort((a, b) => b[1] - a[1]);
-            const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
-            const contributorCount = sortedEntries.length;
-            const vanguards = window.warEffortVanguards && window.warEffortVanguards[type]
-                ? window.warEffortVanguards[type]
-                : [];
-            const hasLockedVanguard = Boolean(window.warEffortLockTimes && window.warEffortLockTimes[type] && vanguards[0]);
-            const topEntry = sortedEntries[0] || ['', 0];
-            const topName = hasLockedVanguard
-                ? vanguards[0]
-                : (options.topNameOverride || topEntry[0] || '');
-            const topValue = options.topValueOverride ?? (topName ? getWarEffortContributorValue(safeContributors, topName) : (topEntry[1] ?? 0));
-            const displayTopName = topName
-                ? topName.split(' ').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
-                : '';
-            const lockTime = window.warEffortLockTimes && window.warEffortLockTimes[type]
-                ? new Date(window.warEffortLockTimes[type]).toLocaleString('en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')
-                : '';
-
-            let homeSummary = config.emptyDesc;
-            let homeLeader = config.ctaValue;
-
-            if (contributorCount > 0) {
-                if (type === 'xp') {
-                    homeSummary = `${contributorCount.toLocaleString()} heroes have added ${current.toLocaleString()} levels since reset.`;
-                    homeLeader = hasLockedVanguard
-                        ? `${displayTopName} holds the locked #1 slot with +${topValue.toLocaleString()} levels.`
-                        : `${displayTopName} leads with +${topValue.toLocaleString()} levels this week.`;
-                } else if (type === 'hk') {
-                    homeSummary = `${contributorCount.toLocaleString()} slayers have claimed ${current.toLocaleString()} HKs this cycle.`;
-                    homeLeader = hasLockedVanguard
-                        ? `${displayTopName} holds the locked #1 slot with +${topValue.toLocaleString()} HKs.`
-                        : `${displayTopName} leads the blood ledger with +${topValue.toLocaleString()} HKs.`;
-                } else if (type === 'loot') {
-                    homeSummary = `${contributorCount.toLocaleString()} raiders have hauled in ${current.toLocaleString()} epic drops this week.`;
-                    homeLeader = hasLockedVanguard
-                        ? `${displayTopName} holds the locked #1 slot with ${topValue.toLocaleString()} epic${topValue === 1 ? '' : 's'}.`
-                        : `${displayTopName} has already secured ${topValue.toLocaleString()} epic${topValue === 1 ? '' : 's'} this cycle.`;
-                } else {
-                    homeSummary = `${current.toLocaleString()} heroes have reached level 70 since the reset.`;
-                    homeLeader = topName
-                        ? `${displayTopName} reached the summit first${vanguards[1] ? ` ahead of ${vanguards[1].charAt(0).toUpperCase() + vanguards[1].slice(1)}` : ''}.`
-                        : 'The summit race is live.';
-                }
-            }
-
-            return {
-                type,
-                current,
-                target,
-                pct,
-                contributorCount,
-                topName,
-                topValue,
-                vanguards,
-                lockTime,
-                homeSummary,
-                homeLeader
-            };
         }
 
         window.warEffortSnapshots = {
@@ -9523,7 +7387,7 @@ function getProfileClassName(profile) {
                 tooltip.setAttribute('aria-hidden', 'true');
             });
             
-            // --- NEW: Interactive Navigation ---
+            // Route the tooltip trigger directly to the related war-effort view.
             newTrigger.addEventListener('click', e => {
                 e.stopPropagation();
                 tooltip.classList.remove('visible');
@@ -9545,3 +7409,4 @@ function getProfileClassName(profile) {
 
     window.addEventListener('hashchange', route);
 });
+

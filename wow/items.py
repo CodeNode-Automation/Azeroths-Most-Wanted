@@ -9,7 +9,7 @@ from wow.quality import fetch_item_quality
 from config import FALLBACK_ICON
 
 async def process_single_item(session, token, item, past_gear, fallback_url):
-    """Helper function to process a single item asynchronously."""
+    """Process one equipped item and reuse cached icon and tooltip data when it is still valid."""
     slot_type = item.get('slot', {}).get('type', '')
     item_id = item.get('item', {}).get('id')
     item_level = item.get('level', {}).get('value', 0)
@@ -17,12 +17,11 @@ async def process_single_item(session, token, item, past_gear, fallback_url):
     name_data = item.get('name', 'Empty')
     item_name = name_data if isinstance(name_data, str) else name_data.get('en_US', 'Empty')
     
-    # LOCAL CACHE CHECK
     past_item = past_gear.get(slot_type, {})
     cached_icon = past_item.get('icon_data')
     cached_tooltip = past_item.get('tooltip_params')
     
-    # Reject the cache if it wiped to None, or if it saved the fallback logo
+    # Ignore cache entries that only captured the fallback icon or incomplete tooltip data.
     is_invalid_cache = (
         not cached_icon or 
         not cached_tooltip or 
@@ -42,7 +41,6 @@ async def process_single_item(session, token, item, past_gear, fallback_url):
             "tooltip_params": cached_tooltip
         }
         
-    # NETWORK FETCH SETUP
     item_href = item.get('item', {}).get('key', {}).get('href')
     media_href = item.get('media', {}).get('key', {}).get('href')
     payload_quality = item.get('quality', {}).get('type')
@@ -76,10 +74,10 @@ async def process_single_item(session, token, item, past_gear, fallback_url):
         is_fallback = True
 
     enchants = item.get('enchantments', [])
-    ench_str = "&ench=" + ":".join([str(e.get('enchantment_id')) for e in enchants]) if enchants else ""
+    ench_str = "&ench=" + ":".join(str(e.get('enchantment_id')) for e in enchants) if enchants else ""
     
     sockets = item.get('sockets', [])
-    gems_str = "&gems=" + ":".join([str(s.get('item', {}).get('id')) for s in sockets if s.get('item')]) if sockets else ""
+    gems_str = "&gems=" + ":".join(str(s.get('item', {}).get('id')) for s in sockets if s.get('item')) if sockets else ""
     
     tooltip_params = f"item={item_id}{ench_str}{gems_str}"
 
@@ -95,14 +93,15 @@ async def process_single_item(session, token, item, past_gear, fallback_url):
 
 async def process_equipment(session, token, equipment, past_gear=None):
     """Parses the character equipment payload sequentially to prevent media rate limits."""
-    if past_gear is None: past_gear = {}
+    if past_gear is None:
+        past_gear = {}
     equipped_dict = {}
     fallback_url = get_standardized_image_url(FALLBACK_ICON)
 
     if equipment and 'equipped_items' in equipment:
         items = equipment['equipped_items']
         
-        # Sequentially iterate to safely heal the database without overloading Blizzard
+        # Walk the items sequentially so media retries do not pile up against Blizzard.
         for item in items:
             try:
                 slot_type, item_data = await process_single_item(session, token, item, past_gear, fallback_url)
