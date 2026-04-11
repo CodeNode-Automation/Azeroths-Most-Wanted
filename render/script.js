@@ -142,6 +142,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     let tlTypeFilter = 'rare_plus';
     let tlDateFilter = 'all'; // Start with 7 days to match the heatmap
     let tlSpecificDate = null; 
+    let campaignArchiveSelectedWeek = '';
     window.currentFilteredChars = null;
     window.activeClassExpanded = null;
     let mainDonutChartInstance = null;     
@@ -162,6 +163,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const conciseView = document.getElementById('concise-view');
     const conciseViewTitle = document.getElementById('concise-view-title');
     const conciseList = document.getElementById('concise-char-list');
+    const conciseShellHost = document.getElementById('concise-shell-host');
     const fullCardContainer = document.getElementById('full-card-container');
     const timeline = document.getElementById('timeline');
     const timelineTitle = document.getElementById('timeline-title');
@@ -194,8 +196,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         timelineMeta.textContent = baseMeta ? `${baseMeta} • ${countLabel}` : countLabel;
     }
     
-        if (conciseList) {
-        conciseList.addEventListener('click', (e) => {
+    function bindDelegatedCharacterSurfaceClicks(container) {
+        if (!container) return;
+
+        container.addEventListener('click', (e) => {
             if (e.target.closest('.we-loot-link')) return;
 
             const trigger = e.target.closest('.concise-char-bar.tt-char[data-char], .podium-block.tt-char[data-char], .hero-band-item.tt-char[data-char], .hall-stage-card.tt-char[data-char]');
@@ -206,7 +210,10 @@ window.addEventListener('DOMContentLoaded', async () => {
                 selectCharacter(charName);
             }
         });
+    }
 
+    if (conciseList) {
+        bindDelegatedCharacterSurfaceClicks(conciseList);
         conciseList.addEventListener('error', (e) => {
             const img = e.target;
             if (img instanceof HTMLImageElement && img.classList.contains('c-portrait')) {
@@ -214,6 +221,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         }, true);
     }
+
+    bindDelegatedCharacterSurfaceClicks(conciseShellHost);
 
     function getPowerName(cClass) {
         if (cClass === "Warrior") return "Rage";
@@ -432,6 +441,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             selectValueText.innerHTML = "🌟 Hall of Heroes";
         } else if (hash.startsWith('class-') || hash.startsWith('spec-') || hash.startsWith('filter-')) {
             selectValueText.innerHTML = "⚡ Filter Active";
+        } else if (hash === 'campaign-archive') {
+            selectValueText.innerHTML = "Campaign Archive";
         } else {
             // It's a specific character
             const char = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === hash);
@@ -1940,6 +1951,40 @@ window.addEventListener('DOMContentLoaded', async () => {
             ? `${equippedCount}/${SLOTS.length} slots equipped • ${epicGearCount.toLocaleString()} epic or legendary piece${epicGearCount === 1 ? '' : 's'} • ${readinessLabel}`
             : 'No equipped gear was returned for this scan';
 
+        const deploymentShellEl = clone.querySelector('.char-card-deployment-shell');
+        const deploymentStripEl = clone.querySelector('.char-card-deployment-strip');
+        if (deploymentStripEl && typeof buildDossierDeploymentStrip === 'function') {
+            deploymentStripEl.textContent = '';
+            const deploymentStripNode = buildDossierDeploymentStrip({
+                readinessLabel,
+                lastLoginText,
+                equippedCount,
+                totalSlots: SLOTS.length,
+                epicGearCount,
+                missingEnchantCount
+            });
+            if (deploymentStripNode) {
+                deploymentStripEl.appendChild(deploymentStripNode);
+            }
+        } else if (deploymentShellEl) {
+            deploymentShellEl.remove();
+        }
+
+        const commendationShellEl = clone.querySelector('.char-card-commendation-shell');
+        const commendationProfileEl = clone.querySelector('.char-card-commendation-profile');
+        if (commendationProfileEl && typeof buildDossierCommendationProfile === 'function') {
+            commendationProfileEl.textContent = '';
+            const commendationProfileNode = buildDossierCommendationProfile({
+                profile: p,
+                source: char
+            });
+            if (commendationProfileNode) {
+                commendationProfileEl.appendChild(commendationProfileNode);
+            }
+        } else if (commendationShellEl) {
+            commendationShellEl.remove();
+        }
+
         const identityTitleEl = clone.querySelector('.char-card-identity-title');
         if (identityTitleEl) {
             identityTitleEl.textContent = displaySpecClass;
@@ -2933,8 +2978,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Variable to track current sort method
     let currentSortMethod = 'level';
     let conciseRenderedCount = 0;
+    let conciseShellFilterState = null;
     let pendingLadderJumpQuery = '';
     const conciseBatchSize = 25;
+
+    function usesConciseIncrementalReveal(hashUrl) {
+        return hashUrl === 'ladder-pve'
+            || hashUrl === 'ladder-pvp'
+            || hashUrl === 'badges'
+            || hashUrl === 'total'
+            || hashUrl === 'active'
+            || hashUrl === 'raidready'
+            || hashUrl === 'alt-heroes'
+            || hashUrl.startsWith('war-effort-');
+    }
 
     function setLadderJumpStatus(shellNode, message, state = '') {
         if (!shellNode) return;
@@ -3052,6 +3109,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                     if (filterValue === 'zenith') return entry.hasZenith;
                     if (filterValue === 'mvp') return entry.hasMvp;
                     if (filterValue === 'reigning') return entry.hasReigning;
+                    if (filterValue === 'ladder') return entry.hasPveMedal || entry.hasPvpMedal;
                     if (filterValue === 'ladder_pve') return entry.hasPveMedal;
                     if (filterValue === 'ladder_pvp') return entry.hasPvpMedal;
                     if (filterValue === 'vanguard') return entry.hasVanguard;
@@ -3077,16 +3135,88 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     function getHallOfHeroesTimelineFilterType(filterValue = '') {
+        if (filterValue === 'weekly') return 'badge_weekly';
         if (filterValue === 'xp') return 'badge_xp';
         if (filterValue === 'hks') return 'badge_hks';
         if (filterValue === 'loot') return 'badge_loot';
         if (filterValue === 'zenith') return 'badge_zenith';
         if (filterValue === 'mvp' || filterValue === 'reigning') return 'badge_mvp';
+        if (filterValue === 'ladder') return 'badge_ladder';
         if (filterValue === 'ladder_pve') return 'badge_ladder_pve';
         if (filterValue === 'ladder_pvp') return 'badge_ladder_pvp';
         if (filterValue === 'vanguard') return 'badge_vanguard';
         if (filterValue === 'campaign') return 'badge_campaign';
         return 'badge_all';
+    }
+
+    function hasActiveConciseShellFilter() {
+        return !!(
+            conciseShellFilterState
+            && conciseShellFilterState.filterKey
+            && conciseShellFilterState.filterValue
+        );
+    }
+
+    function getConciseShellFilteredCharacters(characters, isRawMode = false) {
+        if (!hasActiveConciseShellFilter()) return [...characters];
+
+        const visibleNames = new Set(
+            getHeroBandFilteredNames(
+                characters,
+                isRawMode,
+                conciseShellFilterState.filterKey,
+                conciseShellFilterState.filterValue
+            )
+        );
+
+        return characters.filter(char => {
+            const profile = resolveRosterProfile(char, isRawMode);
+            const charName = profile && profile.name ? profile.name.toLowerCase() : '';
+            return visibleNames.has(charName);
+        });
+    }
+
+    function syncHeroBandFilterUi() {
+        const activeKey = hasActiveConciseShellFilter() ? conciseShellFilterState.filterKey : '';
+        const activeValue = hasActiveConciseShellFilter() ? conciseShellFilterState.filterValue : '';
+
+        document.querySelectorAll('.hero-band-item-filter, .command-hero-stat-filter').forEach(button => {
+            const matchesActive = activeKey
+                && activeValue
+                && (button.getAttribute('data-filter-key') || '') === activeKey
+                && (button.getAttribute('data-filter-value') || '') === activeValue;
+
+            button.classList.toggle('hero-band-item-active', !!matchesActive);
+            button.classList.toggle('hero-band-item-dimmed', !!(activeKey && activeValue && !matchesActive));
+        });
+    }
+
+    function applyConciseShellFilterState(characters, isRawMode = false, filterKey = '', filterValue = '') {
+        if (filterKey && filterValue) {
+            conciseShellFilterState = { filterKey, filterValue };
+            window.currentFilteredChars = getHeroBandFilteredNames(characters, isRawMode, filterKey, filterValue);
+        } else {
+            conciseShellFilterState = null;
+            window.currentFilteredChars = getAllHeroBandNames(characters, isRawMode);
+        }
+
+        if (window.location.hash.substring(1) === 'badges') {
+            tlTypeFilter = filterKey === 'honor' && filterValue
+                ? getHallOfHeroesTimelineFilterType(filterValue)
+                : 'badge_all';
+            syncTimelineFilterButtons(tlTypeFilter);
+        }
+    }
+
+    function refreshConciseShellFilterView(title, characters, isRawMode = false) {
+        const hashUrl = window.location.hash.substring(1);
+        if (usesConciseIncrementalReveal(hashUrl)) {
+            conciseRenderedCount = conciseBatchSize;
+        }
+
+        syncHeroBandFilterUi();
+        renderConciseList(title, characters, isRawMode);
+        applyTimelineFilters();
     }
 
     function syncTimelineFilterButtons(activeType = '') {
@@ -3098,7 +3228,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     function bindHeroBandFilters(shellFragment, characters, isRawMode = false) {
         if (!shellFragment) return;
 
-        const filterButtons = [...shellFragment.querySelectorAll('.hero-band-item-filter')];
+        const filterButtons = [...shellFragment.querySelectorAll('.hero-band-item-filter, .command-hero-stat-filter')];
         if (filterButtons.length === 0) return;
 
         const animateList = () => {
@@ -3111,23 +3241,17 @@ window.addEventListener('DOMContentLoaded', async () => {
         };
 
         const clearFilterState = () => {
-            filterButtons.forEach(btn => btn.classList.remove('hero-band-item-active', 'hero-band-item-dimmed'));
-            document.querySelectorAll('.concise-char-bar').forEach(el => {
-                el.classList.remove('concise-char-bar-filtered-out');
-            });
-            window.currentFilteredChars = getAllHeroBandNames(characters, isRawMode);
-
-            if (window.location.hash.substring(1) === 'badges') {
-                tlTypeFilter = 'badge_all';
-                syncTimelineFilterButtons('badge_all');
-            }
-
-            applyTimelineFilters();
+            applyConciseShellFilterState(characters, isRawMode);
+            refreshConciseShellFilterView(conciseViewTitle.textContent, characters, isRawMode);
         };
 
         filterButtons.forEach(button => {
             const handleToggle = () => {
-                const isActive = button.classList.contains('hero-band-item-active');
+                const filterKey = button.getAttribute('data-filter-key') || '';
+                const filterValue = button.getAttribute('data-filter-value') || '';
+                const isActive = hasActiveConciseShellFilter()
+                    && conciseShellFilterState.filterKey === filterKey
+                    && conciseShellFilterState.filterValue === filterValue;
 
                 animateList();
 
@@ -3136,34 +3260,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                const filterKey = button.getAttribute('data-filter-key') || '';
-                const filterValue = button.getAttribute('data-filter-value') || '';
-                const visibleChars = getHeroBandFilteredNames(characters, isRawMode, filterKey, filterValue);
-                const visibleSet = new Set(visibleChars);
-
-                filterButtons.forEach(btn => btn.classList.remove('hero-band-item-active', 'hero-band-item-dimmed'));
-                filterButtons.forEach(btn => {
-                    if (btn !== button) btn.classList.add('hero-band-item-dimmed');
-                });
-                button.classList.add('hero-band-item-active');
-
-                document.querySelectorAll('.concise-char-bar').forEach(el => {
-                    const charName = (el.getAttribute('data-char') || '').toLowerCase();
-                    if (visibleSet.has(charName)) {
-                        el.classList.remove('concise-char-bar-filtered-out');
-                    } else {
-                        el.classList.add('concise-char-bar-filtered-out');
-                    }
-                });
-
-                window.currentFilteredChars = visibleChars;
-
-                if (window.location.hash.substring(1) === 'badges' && filterKey === 'honor') {
-                    tlTypeFilter = getHallOfHeroesTimelineFilterType(filterValue);
-                    syncTimelineFilterButtons(tlTypeFilter);
-                }
-
-                applyTimelineFilters();
+                applyConciseShellFilterState(characters, isRawMode, filterKey, filterValue);
+                refreshConciseShellFilterView(conciseViewTitle.textContent, characters, isRawMode);
             };
 
             button.addEventListener('click', handleToggle);
@@ -3174,6 +3272,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
+
+        syncHeroBandFilterUi();
     }
 
     function renderConciseList(title, characters, isRawMode = false) {
@@ -3269,11 +3369,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         
 
         // Generate the HTML for the list
+        const renderCharacters = getConciseShellFilteredCharacters(sortedCharacters, isRawMode);
         const usePodium = hashUrl === 'ladder-pve' || hashUrl === 'ladder-pvp' || hashUrl.startsWith('war-effort-');
         const podiumNodes = [];
         const listItemNodes = [];
 
-        sortedCharacters.forEach((char, index) => {
+        renderCharacters.forEach((char, index) => {
             let statLabel = currentSortMethod === 'hks'
                 ? 'HKs'
                 : currentSortMethod === 'badges'
@@ -3757,15 +3858,18 @@ window.addEventListener('DOMContentLoaded', async () => {
         conciseList.textContent = '';
 
         const isPaginatedLadder = hashUrl === 'ladder-pve' || hashUrl === 'ladder-pvp';
-        const visibleListCount = isPaginatedLadder
+        const useIncrementalReveal = usesConciseIncrementalReveal(hashUrl);
+        const visibleListCount = useIncrementalReveal
             ? Math.max(0, conciseRenderedCount - podiumNodes.length)
             : listItemNodes.length;
-        const visibleListNodes = isPaginatedLadder
+        const visibleListNodes = useIncrementalReveal
             ? listItemNodes.slice(0, visibleListCount)
             : listItemNodes;
+        const totalRenderableRows = podiumNodes.length + listItemNodes.length;
         const renderedListNodes = isPaginatedLadder
-            ? decorateLadderRows(visibleListNodes, characters.length)
+            ? decorateLadderRows(visibleListNodes, totalRenderableRows)
             : visibleListNodes;
+        const currentlyVisibleCount = podiumNodes.length + visibleListNodes.length;
 
         if (isPaginatedLadder) {
             const ladderShell = buildLadderShell(characters, hashUrl);
@@ -3816,26 +3920,18 @@ window.addEventListener('DOMContentLoaded', async () => {
 
         const conciseLoadMoreContainer = document.getElementById('concise-load-more-container');
         const conciseLoadMoreBtn = document.getElementById('concise-load-more-btn');
-
-        if (conciseLoadMoreContainer && conciseLoadMoreBtn) {
-            const hasMoreRows = isPaginatedLadder && visibleListNodes.length < listItemNodes.length;
-
-            conciseLoadMoreContainer.hidden = !hasMoreRows;
-            conciseLoadMoreBtn.hidden = !hasMoreRows;
-
-            if (hasMoreRows) {
-                const remainingRows = listItemNodes.length - visibleListNodes.length;
-                const nextLoadCount = Math.min(conciseBatchSize, remainingRows);
-
-                conciseLoadMoreBtn.textContent = `Load ${nextLoadCount} More Players`;
-                conciseLoadMoreBtn.onclick = () => {
-                    conciseRenderedCount += conciseBatchSize;
-                    renderConciseList(title, characters, isRawMode);
-                };
-            } else {
-                conciseLoadMoreBtn.onclick = null;
+        configureIncrementalRevealButton({
+            container: conciseLoadMoreContainer,
+            button: conciseLoadMoreBtn,
+            visibleCount: currentlyVisibleCount,
+            totalCount: totalRenderableRows,
+            batchSize: conciseBatchSize,
+            itemLabel: 'Players',
+            onReveal: () => {
+                conciseRenderedCount += conciseBatchSize;
+                renderConciseList(title, characters, isRawMode);
             }
-        }
+        });
         
         let templateId = null;
         const isLadderHash = hashUrl === 'ladder-pve' || hashUrl === 'ladder-pvp';
@@ -4088,6 +4184,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             // Route badge-specific filters through the dedicated badge timeline feed.
             if (tlTypeFilter.startsWith('badge_')) {
                 if (eventType !== 'badge') return false; // Show ONLY badges
+                if (tlTypeFilter === 'badge_weekly' && !['xp', 'hks', 'hk', 'loot', 'zenith'].includes(event.badge_type)) return false;
                 if (tlTypeFilter === 'badge_mvp' && event.badge_type !== 'mvp_pve' && event.badge_type !== 'mvp_pvp') return false;
                 if (tlTypeFilter === 'badge_vanguard' && event.badge_type !== 'vanguard') return false;
                 if (tlTypeFilter === 'badge_campaign' && event.badge_type !== 'campaign') return false;
@@ -5232,6 +5329,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             || hash === 'active'
             || hash === 'raidready'
             || hash === 'alt-heroes'
+            || hash === 'campaign-archive'
             || hash.startsWith('class-')
             || hash.startsWith('spec-')
             || hash.startsWith('filter-')
@@ -5277,11 +5375,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         const isWarEffortHash = hash.startsWith('war-effort-');
         const shellHost = document.getElementById('concise-shell-host');
 
+        conciseShellFilterState = null;
+
         conciseView.classList.toggle('concise-view-ladder', isLadderHash);
         conciseView.classList.toggle('concise-view-command', isCommandHash || isHallOfHeroesHash);
         conciseView.classList.toggle('concise-view-war-effort', isWarEffortHash);
         conciseView.classList.toggle('concise-view-hall-of-heroes', isHallOfHeroesHash);
-        conciseView.classList.remove('command-view-total', 'command-view-active', 'command-view-raidready', 'command-view-alt-heroes', 'command-view-badges', 'command-view-analytics-filter');
+        conciseView.classList.remove('command-view-total', 'command-view-active', 'command-view-raidready', 'command-view-alt-heroes', 'command-view-badges', 'command-view-analytics-filter', 'command-view-campaign-archive');
 
         if (isHallOfHeroesHash) {
             conciseView.classList.add('command-view-badges');
@@ -5314,13 +5414,9 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
 
         currentSortMethod = defaultSort;
-        conciseRenderedCount = isLadderHash ? 25 : 0;
+        conciseRenderedCount = usesConciseIncrementalReveal(hash) ? conciseBatchSize : 0;
         renderConciseList(title, characters, isRawRoster);
-        
-        window.currentFilteredChars = characters.map(c => {
-            if (isRawRoster) return c.name ? c.name.toLowerCase() : '';
-            return c.profile && c.profile.name ? c.profile.name.toLowerCase() : '';
-        });
+        applyConciseShellFilterState(characters, isRawRoster);
         
         const chartViews = [];
 
@@ -5456,7 +5552,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 hash.startsWith('spec-') ||
                 hash.startsWith('filter-');
 
-            if (isLadderHash || isCommandHash || isWarEffortHash || isDrilldownHash) {
+            if (isLadderHash || isCommandHash || isHallOfHeroesHash || isWarEffortHash || isDrilldownHash) {
                 timeline.classList.add('view-hidden');
             } else {
                 timeline.classList.remove('view-hidden');
@@ -5505,6 +5601,94 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function showCampaignArchiveView() {
+        hideAllViews();
+        setSoloDashboardLayout();
+
+        conciseView.classList.add('view-active');
+        if (navbar) {
+            navbar.classList.remove('navbar-theme-home');
+            navbar.classList.add('navbar-theme-app');
+        }
+
+        const shellHost = document.getElementById('concise-shell-host');
+        const wrapper = document.getElementById('concise-content-wrapper');
+        const leftCol = document.getElementById('concise-left-col');
+        const badgesContainer = document.getElementById('concise-class-badges');
+        const specContainer = document.getElementById('concise-spec-container');
+        const donutContainer = document.getElementById('concise-donut-container');
+        const conciseLoadMoreContainer = document.getElementById('concise-load-more-container');
+        const conciseLoadMoreBtn = document.getElementById('concise-load-more-btn');
+        const archiveData = (config && config.campaign_archive) || {};
+        const weekOptions = Array.isArray(archiveData.weeks)
+            ? archiveData.weeks.map(week => week.week_anchor).filter(Boolean)
+            : [];
+
+        if (!campaignArchiveSelectedWeek || !weekOptions.includes(campaignArchiveSelectedWeek)) {
+            campaignArchiveSelectedWeek = getCampaignArchiveDefaultWeek(archiveData);
+        }
+
+        conciseViewTitle.textContent = 'Weekly Campaign Archive';
+        currentSortMethod = 'level';
+        conciseRenderedCount = 0;
+        conciseShellFilterState = null;
+        window.currentFilteredChars = null;
+
+        conciseView.classList.remove('concise-view-ladder', 'concise-view-war-effort', 'concise-view-hall-of-heroes');
+        conciseView.classList.add('concise-view-command');
+        conciseView.classList.remove(
+            'command-view-total',
+            'command-view-active',
+            'command-view-raidready',
+            'command-view-alt-heroes',
+            'command-view-badges',
+            'command-view-analytics-filter'
+        );
+        conciseView.classList.add('command-view-campaign-archive');
+
+        const renderArchiveContent = () => {
+            if (shellHost) {
+                shellHost.textContent = '';
+                const archiveShell = buildCampaignArchiveShell(archiveData, campaignArchiveSelectedWeek);
+                if (archiveShell) shellHost.appendChild(archiveShell);
+            }
+
+            conciseList.textContent = '';
+            const archiveBody = buildCampaignArchiveBody(
+                archiveData,
+                campaignArchiveSelectedWeek,
+                nextWeek => {
+                    campaignArchiveSelectedWeek = nextWeek;
+                    renderArchiveContent();
+                }
+            );
+            if (archiveBody) conciseList.appendChild(archiveBody);
+
+            setupTooltips();
+        };
+
+        if (wrapper) wrapper.classList.remove('concise-wrapper-awards-layout', 'concise-wrapper-ladder-layout');
+        if (leftCol) {
+            leftCol.classList.remove('concise-sidebar-awards-layout');
+            leftCol.classList.add('concise-sidebar-hidden');
+        }
+        if (badgesContainer) {
+            badgesContainer.classList.remove('concise-badges-default-layout', 'concise-badges-awards-layout');
+            badgesContainer.classList.add('badges-hidden');
+        }
+        if (specContainer) specContainer.hidden = true;
+        if (donutContainer) {
+            donutContainer.classList.remove('is-visible');
+            donutContainer.textContent = '';
+        }
+        if (conciseLoadMoreContainer) conciseLoadMoreContainer.hidden = true;
+        if (conciseLoadMoreBtn) conciseLoadMoreBtn.hidden = true;
+
+        if (timeline) timeline.classList.add('view-hidden');
+
+        renderArchiveContent();
+    }
+
     function route() {
         const hash = decodeURIComponent(window.location.hash.substring(1));
         applyRoutePresentation(hash);
@@ -5517,6 +5701,9 @@ window.addEventListener('DOMContentLoaded', async () => {
         } else if (hash === 'architecture') {
             showArchitectureView();
             updateDropdownLabel('all');
+        } else if (hash === 'campaign-archive') {
+            showCampaignArchiveView();
+            updateDropdownLabel('campaign-archive');
         } else if (hash === 'total') {
             showConciseView(`Total Guild Roster (${rawGuildRoster.length})`, [...rawGuildRoster].sort((a,b) => b.level - a.level), true, false, 'level');
             updateDropdownLabel('all');
@@ -5540,21 +5727,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             showConciseView(`🌟 Hall of Heroes (${badgeRoster.length})`, badgeRoster, false, false, 'badges');
             updateDropdownLabel('badges');
             
-            // --- OVERRIDE TIMELINE FILTERS FOR BADGE LOG ---
-            if (timeline) {
-                setTimelineShellHeader({
-                    kicker: 'Decorated Chronicle',
-                    title: '',
-                    subtitle: 'Campaign marks, medals, MVP crowns, and vanguard honors recorded across the guild.',
-                    meta: 'Honors ledger'
-                });
-                renderTimelineFilters('tpl-timeline-filters-badges');
-                tlTypeFilter = 'badge_all';
-                tlDateFilter = 'all'; // Ignore time limits for history
-                window.currentFilteredChars = null; 
-                applyTimelineFilters();
-            }
-
         } else if (hash === 'active') {
             const activeRoster = rosterData.filter(c => {
                 const lastLogin = c.profile && c.profile.last_login_timestamp ? c.profile.last_login_timestamp : 0;
@@ -6701,7 +6873,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const currentHash = decodeURIComponent(window.location.hash.substring(1));
         let activeTarget = '';
 
-        if (!currentHash || currentHash === '' || ['total', 'active', 'raidready', 'alt-heroes'].includes(currentHash)) {
+        if (!currentHash || currentHash === '' || ['total', 'active', 'raidready', 'alt-heroes', 'campaign-archive'].includes(currentHash)) {
             activeTarget = 'home';
         } else if (currentHash.startsWith('war-effort-')) {
             activeTarget = 'war-effort';

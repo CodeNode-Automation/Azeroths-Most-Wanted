@@ -6,7 +6,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from wow.alts import is_alt_record
 
-def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, raw_guild_roster=None, roster_history=None, prev_mvps=None):
+def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, raw_guild_roster=None, roster_history=None, prev_mvps=None, campaign_archive=None):
     """
     Generates the interactive, high-performance HTML dashboard utilizing Jinja2 templates.
     """
@@ -16,6 +16,8 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         raw_guild_roster = []
     if not roster_history:
         roster_history = {}
+    if not campaign_archive:
+        campaign_archive = {}
 
     # Safely filter out any characters whose profile failed to load from the API
     roster_data = [char for char in roster_data if char and isinstance(char.get("profile"), dict)]
@@ -158,6 +160,8 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
             os.path.join(base_dir, "src", "css", "layout", "footer.css"),
             os.path.join(base_dir, "src", "css", "features", "timeline", "activity.css"),
             os.path.join(base_dir, "src", "css", "base", "animations.css"),
+            os.path.join(base_dir, "src", "css", "features", "campaign", "archive.css"),
+            os.path.join(base_dir, "src", "css", "features", "character", "dossier.css"),
             os.path.join(base_dir, "style.css"),
         ]
         css_chunks = []
@@ -175,6 +179,8 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
             os.path.join(base_dir, "src", "js", "core", "dom.js"),
             os.path.join(base_dir, "src", "js", "features", "command_hall", "command_shell.js"),
             os.path.join(base_dir, "src", "js", "features", "command_hall", "hall_renderers.js"),
+            os.path.join(base_dir, "src", "js", "features", "character_dossier", "dossier_view.js"),
+            os.path.join(base_dir, "src", "js", "features", "campaign_archive", "archive_view.js"),
             os.path.join(base_dir, "src", "js", "features", "ladder", "ladder_shell.js"),
             os.path.join(base_dir, "src", "js", "features", "home_analytics", "analytics_cards.js"),
             os.path.join(base_dir, "src", "js", "features", "home_analytics", "analytics_selectors.js"),
@@ -207,7 +213,8 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
         "avg_ilvl_70": avg_ilvl_70,
         "avg_ilvl_70_mains": avg_ilvl_70_mains,
         "global_trends": global_trends,
-        "prev_mvps": prev_mvps
+        "prev_mvps": prev_mvps,
+        "campaign_archive": campaign_archive,
     }
     safe_config = json.dumps(dashboard_config)
 
