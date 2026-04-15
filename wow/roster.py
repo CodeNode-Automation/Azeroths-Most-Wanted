@@ -1,5 +1,11 @@
 import asyncio
 
+class GuildRosterFetchError(RuntimeError):
+    def __init__(self, status_code=None, message="", url=""):
+        self.status_code = status_code
+        self.url = url
+        super().__init__(message or f"Guild roster fetch failed ({status_code or 'unknown'})")
+
 
 async def fetch_guild_roster(session, token, realm, guild_name, class_map, race_map, rank_map, max_retries=3):
     slug = guild_name.lower().replace(" ", "-").replace("'", "")
@@ -9,6 +15,7 @@ async def fetch_guild_roster(session, token, realm, guild_name, class_map, race_
     roster_names = []
     raw_guild_roster = []
     char_ranks = {}
+    last_error = None
 
     for attempt in range(max_retries):
         try:
@@ -37,11 +44,26 @@ async def fetch_guild_roster(session, token, realm, guild_name, class_map, race_
                         )
                         if char_level > 10:
                             roster_names.append(char_name.lower())
-                    break
-                resp.raise_for_status()
-        except Exception as e:
-            print(f"⚠️ Roster fetch failed: {e}")
-            if attempt < max_retries - 1:
-                await asyncio.sleep(5)
+                    return roster_names, raw_guild_roster, char_ranks
 
-    return roster_names, raw_guild_roster, char_ranks
+                body = await resp.text()
+                last_error = GuildRosterFetchError(
+                    status_code=resp.status,
+                    message=f"Roster fetch failed: {resp.status}, message={body[:500]!r}, url={url}",
+                    url=url,
+                )
+                print(f"⚠️ {last_error}")
+        except Exception as e:
+            last_error = e
+            print(f"⚠️ Roster fetch failed: {e}")
+
+        if attempt < max_retries - 1:
+            await asyncio.sleep(5)
+
+    if isinstance(last_error, GuildRosterFetchError):
+        raise last_error
+
+    raise GuildRosterFetchError(
+        message=str(last_error) if last_error else "Roster fetch failed with an unknown error.",
+        url=url,
+    )

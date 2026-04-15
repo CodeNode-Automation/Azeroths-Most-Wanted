@@ -112,6 +112,20 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.warn("War Effort locks not generated yet. Proceeding with dynamic data.");
     }
 
+    try {
+        const cb = new Date().getTime();
+        const apiStatusRes = await fetch(`asset/api_status.json?t=${cb}`);
+        if (apiStatusRes.ok) {
+            const apiStatus = await apiStatusRes.json();
+            window.apiStatus = apiStatus;
+            if (typeof renderHomeApiStatus === 'function') {
+                renderHomeApiStatus(apiStatus);
+            }
+        }
+    } catch (error) {
+        console.warn("API status file not available. Proceeding without outage banner.");
+    }
+
     // Hide the loading overlay once data is ready
     const loader = document.getElementById('loading-overlay');
     document.body.dataset.appReady = 'false';

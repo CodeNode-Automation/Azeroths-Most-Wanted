@@ -32,6 +32,46 @@ function setHomeCardText(valueId, selector, value) {
     if (targetEl) targetEl.textContent = value;
 }
 
+function formatHomeApiStatusTime(isoString) {
+    if (!isoString) return '';
+
+    try {
+        return new Date(isoString).toLocaleString('de-DE', {
+            timeZone: 'Europe/Berlin',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }) + ' Uhr';
+    } catch (error) {
+        return '';
+    }
+}
+
+function renderHomeApiStatus(apiStatus = {}) {
+    const banner = document.getElementById('home-api-status-banner');
+    const titleEl = document.getElementById('home-api-status-title');
+    const messageEl = document.getElementById('home-api-status-message');
+    if (!banner || !titleEl || !messageEl) return;
+
+    if (!apiStatus || apiStatus.ok !== false) {
+        banner.hidden = true;
+        return;
+    }
+
+    const codeText = apiStatus.code ? ` (HTTP ${apiStatus.code})` : '';
+    const updatedText = formatHomeApiStatusTime(apiStatus.updated_at);
+    const baseMessage = apiStatus.message
+        ? `${apiStatus.message} Showing the last successful command snapshot.`
+        : 'Live guild refresh is temporarily paused. Showing the last successful command snapshot.';
+
+    titleEl.textContent = `Blizzard API outage detected${codeText}`;
+    messageEl.textContent = updatedText ? `${baseMessage} Last check: ${updatedText}.` : baseMessage;
+    banner.hidden = false;
+}
+
 function populateHomeOverview(dashboardConfig = {}) {
     const processedRoster = Array.isArray(rosterData) ? rosterData : [];
     const rawRoster = Array.isArray(rawGuildRoster) ? rawGuildRoster : [];

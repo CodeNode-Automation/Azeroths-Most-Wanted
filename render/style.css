@@ -8117,6 +8117,60 @@ body.nav-menu-open {
   animation: fadeInUp 0.5s forwards;
 }
 
+.home-api-status-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+  max-width: 1240px;
+  margin: -28px auto 32px auto;
+  padding: 18px 22px;
+  border: 1px solid rgba(255, 124, 10, 0.35);
+  border-top: 1px solid rgba(255, 209, 0, 0.4);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(42, 20, 10, 0.94) 0%, rgba(20, 10, 8, 0.97) 100%);
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.72),
+    inset 0 0 20px rgba(255, 124, 10, 0.08);
+}
+
+.home-api-status-icon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 209, 0, 0.28) 0%, rgba(255, 124, 10, 0.22) 42%, rgba(40, 18, 8, 0.94) 100%);
+  border: 1px solid rgba(255, 209, 0, 0.24);
+  font-size: 20px;
+  box-shadow: inset 0 0 14px rgba(255, 209, 0, 0.08);
+}
+
+.home-api-status-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.home-api-status-title {
+  color: #ffd100;
+  font-family: "Cinzel", serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.home-api-status-message {
+  margin: 0;
+  color: rgba(238, 226, 198, 0.9);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
 .ribbon-left {
   flex: 1.45;
   display: flex;
@@ -10764,5 +10818,20 @@ body[data-route-family="analytics"] .analytics-intel-section::after {
   .timeline-kicker,
   .tt-label {
     letter-spacing: 0.13em;
+  }
+}
+
+@media (max-width: 780px) {
+  .home-api-status-banner {
+    margin: -22px auto 28px auto;
+    padding: 16px 18px;
+  }
+
+  .home-api-status-title {
+    font-size: 16px;
+  }
+
+  .home-api-status-message {
+    font-size: 13px;
   }
 }

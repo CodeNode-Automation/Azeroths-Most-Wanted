@@ -27,9 +27,9 @@ from wow.history_queries import (
     build_prev_mvp_query,
     build_trend_query,
 )
-from wow.output import finalize_dashboard_output
+from wow.output import finalize_dashboard_output, write_api_status_output
 from wow.pipeline_state import build_historical_state, build_prev_mvps
-from wow.roster import fetch_guild_roster
+from wow.roster import GuildRosterFetchError, fetch_guild_roster
 from wow.turso import fetch_turso, push_turso_batch, setup_database
 from wow.trends import process_character_trends, process_global_trends
 from wow.war_effort import (
@@ -135,15 +135,39 @@ async def main_async():
         realm_data = await fetch_realm_data(session, token, REALM)
 
         print(f"📜 Fetching guild roster for <{GUILD_NAME}>...")
-        roster_names, raw_guild_roster, char_ranks = await fetch_guild_roster(
-            session,
-            token,
-            REALM,
-            GUILD_NAME,
-            class_map,
-            race_map,
-            RANK_MAP,
-        )
+        try:
+            roster_names, raw_guild_roster, char_ranks = await fetch_guild_roster(
+                session,
+                token,
+                REALM,
+                GUILD_NAME,
+                class_map,
+                race_map,
+                RANK_MAP,
+            )
+        except GuildRosterFetchError as e:
+            print(f"❌ Aborting pipeline before live writes: {e}")
+            write_api_status_output(
+                ok=False,
+                code=e.status_code,
+                message=str(e),
+                source="guild_roster",
+            )
+            return
+
+        if not raw_guild_roster:
+            outage_message = (
+                f"Roster fetch returned an empty guild roster for <{GUILD_NAME}>. "
+                "Skipping live writes to avoid accidental purge."
+            )
+            print(f"❌ {outage_message}")
+            write_api_status_output(
+                ok=False,
+                code=200,
+                message=outage_message,
+                source="guild_roster",
+            )
+            return
 
         print(f"👥 Guild: {len(raw_guild_roster)} Total Members. Processing {len(roster_names)} valid characters.")
 
@@ -537,7 +561,12 @@ async def main_async():
             raw_guild_roster,
             prev_mvps,
         )
-            
+        write_api_status_output(
+            ok=True,
+            code=200,
+            message="Live guild roster refresh completed successfully.",
+            source="guild_roster",
+        )
 
         print("🎉 ALL DONE! The pipeline ran successfully.")
 
