@@ -8134,6 +8134,10 @@ body.nav-menu-open {
     inset 0 0 20px rgba(255, 124, 10, 0.08);
 }
 
+.home-api-status-banner[hidden] {
+  display: none !important;
+}
+
 .home-api-status-icon {
   flex: 0 0 auto;
   width: 42px;
