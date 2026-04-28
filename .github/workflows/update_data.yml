@@ -26,6 +26,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Validate Offline Tests
+        run: |
+          python -m compileall -q main.py wow render tests
+          python -m unittest discover
+
       - name: Run Python Script
         env:
           BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}

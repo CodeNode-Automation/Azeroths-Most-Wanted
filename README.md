@@ -77,3 +77,5 @@ Required environment variables for the live pipeline:
 - `TURSO_AUTH_TOKEN`
 
 `python main.py` is credentialed integration/pipeline execution, not the normal offline pre-commit test. It requires the Blizzard and Turso environment variables above, and it may write remote data and regenerate tracked output depending on the current code path. Passing offline validation does not prove live Blizzard/Turso integration is healthy.
+
+GitHub Actions runs the same offline validation before the credentialed pipeline step.
