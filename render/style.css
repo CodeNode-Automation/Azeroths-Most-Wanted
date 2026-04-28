@@ -1007,8 +1007,8 @@ body.nav-menu-open {
 
 .expand-lb-btn:disabled:hover {
   background: linear-gradient(90deg, transparent, rgba(255, 209, 0, 0.05), transparent);
-  border-style: dashed;
-  border-color: rgba(255, 209, 0, 0.4);
+  border-color: rgba(255, 209, 0, 0.28);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 .analytics-view-container.view-active {
   display: flex !important;
@@ -5226,6 +5226,19 @@ body.nav-menu-open {
     padding: 12px;
     min-height: 76px;
   }
+
+  .home-sync-strip {
+    gap: 5px 8px;
+  }
+
+  .home-sync-status {
+    font-size: 12px;
+  }
+
+  .home-sync-meta {
+    font-size: 11px;
+  }
+
   .command-hero-stat-value,
   .hero-band-value {
     font-size: 19px;
@@ -8192,8 +8205,10 @@ body.nav-menu-open {
 .ribbon-right {
   flex: 0.72;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: center;
+  gap: 10px;
   min-height: 98px;
   background: linear-gradient(135deg, rgba(20, 15, 25, 0.8) 0%, rgba(10, 8, 15, 0.95) 100%);
   border: 1px solid rgba(255, 209, 0, 0.15);
@@ -8203,6 +8218,57 @@ body.nav-menu-open {
   box-shadow:
     0 14px 34px rgba(0, 0, 0, 0.82),
     inset 0 0 18px rgba(255, 209, 0, 0.05);
+}
+
+.home-sync-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 209, 0, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 209, 0, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(8, 8, 10, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 8px 16px rgba(0, 0, 0, 0.18);
+  color: rgba(236, 225, 198, 0.9);
+  line-height: 1.45;
+}
+
+.home-sync-strip[data-sync-state="paused"] {
+  border-color: rgba(255, 124, 10, 0.26);
+  background:
+    linear-gradient(180deg, rgba(255, 124, 10, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(12, 8, 8, 0.78);
+}
+
+.home-sync-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffd100;
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.home-sync-status {
+  color: #f5e5b6;
+  font-family: "Cinzel", serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.home-sync-meta {
+  color: rgba(216, 208, 184, 0.82);
+  font-size: 12px;
 }
 
 .monuments-grid {
@@ -8403,6 +8469,10 @@ body.nav-menu-open {
     flex-direction: column;
     gap: 15px;
     margin-bottom: 30px;
+  }
+
+  .home-sync-strip {
+    padding: 11px 12px;
   }
 }
 

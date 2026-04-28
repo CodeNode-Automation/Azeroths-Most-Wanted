@@ -189,7 +189,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     function setTimelineShellHeader({
         kicker = 'Guild Chronicle',
         title = '📜 Guild Recent Activity',
-        subtitle = 'Loot, level gains, and honors from the latest guild scans.',
+        subtitle = 'Recent history from the latest guild scans.',
         meta = 'All guild activity'
     } = {}) {
         if (timelineKicker) timelineKicker.textContent = kicker;
@@ -5166,7 +5166,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             setTimelineShellHeader({
                 kicker: 'Campaign Chronicle',
                 title: '📜 Recent Campaign Activity',
-                subtitle: 'Loot, level gains, and honors from the latest guild scans across Azeroth and Outland.',
+                subtitle: 'Recent history from the latest guild scans across Azeroth and Outland. Current snapshot cards live above.',
                 meta: 'Guild-wide timeline'
             });
             window.currentFilteredChars = null;
