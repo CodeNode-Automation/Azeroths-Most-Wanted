@@ -1,0 +1,20 @@
+# Normalize text files in the repository.
+* text=auto
+
+# Keep source and workflow files LF for cross-platform tooling.
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+
+# Treat common binary assets as binary.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
