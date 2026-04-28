@@ -56,4 +56,24 @@ Heavy payloads, like the thousands of lines of timeline activity, are pre-compil
 
 ---
 
-*Disclaimer: World of Warcraft, Warcraft and Blizzard Entertainment are trademarks or registered trademarks of Blizzard Entertainment, Inc. in the U.S. and/or other countries. This is a portfolio/community project and is not affiliated with, endorsed, or sponsored by Blizzard Entertainment.*
+*Disclaimer: World of Warcraft, Warcraft and Blizzard Entertainment are trademarks or registered trademarks of Blizzard Entertainment, Inc. in the U.S. and/or other countries. This is a portfolio/community project and is not affiliated with, endorsed by, or sponsored by Blizzard Entertainment.*
+
+## Local validation before commit
+
+Run these checks from `D:\projects\Azeroths-Most-Wanted` in PowerShell:
+
+```powershell
+.\venv\Scripts\python.exe -m pip install -r requirements.txt
+.\venv\Scripts\python.exe -m compileall -q main.py wow render tests
+.\venv\Scripts\python.exe -m unittest discover
+git status --short
+```
+
+Required environment variables for the live pipeline:
+
+- `BLIZZARD_CLIENT_ID`
+- `BLIZZARD_CLIENT_SECRET`
+- `TURSO_DATABASE_URL`
+- `TURSO_AUTH_TOKEN`
+
+`python main.py` is credentialed integration/pipeline execution, not the normal offline pre-commit test. It requires the Blizzard and Turso environment variables above, and it may write remote data and regenerate tracked output depending on the current code path. Passing offline validation does not prove live Blizzard/Turso integration is healthy.
