@@ -1,12 +1,32 @@
 import os
+from urllib.parse import urlparse
+
+
+def _resolve_turso_config():
+    """Resolve and validate the Turso endpoint and auth token."""
+    raw_url = os.environ.get("TURSO_DATABASE_URL", "").strip()
+    token = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
+
+    if not raw_url:
+        raise RuntimeError("TURSO_DATABASE_URL is required")
+    if not token:
+        raise RuntimeError("TURSO_AUTH_TOKEN is required")
+
+    parsed = urlparse(raw_url)
+
+    if parsed.scheme == "libsql":
+        normalized_url = raw_url.replace("libsql://", "https://", 1)
+        return normalized_url, token
+
+    if parsed.scheme == "https":
+        return raw_url, token
+
+    raise RuntimeError("Turso database URL must use libsql:// or https://")
 
 
 async def fetch_turso(session, query):
     """Fetches data directly from Turso's HTTP API using an async session."""
-    url = os.environ.get("TURSO_DATABASE_URL", "").replace("libsql://", "https://")
-    token = os.environ.get("TURSO_AUTH_TOKEN", "")
-    if not url or not token:
-        return []
+    url, token = _resolve_turso_config()
 
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     payload = {"statements": [query]}
@@ -34,8 +54,7 @@ async def fetch_turso(session, query):
 
 async def push_turso_batch(session, statements):
     """Pushes an array of dicts to Turso in chunked transactions."""
-    url = os.environ.get("TURSO_DATABASE_URL", "").replace("libsql://", "https://")
-    token = os.environ.get("TURSO_AUTH_TOKEN", "")
+    url, token = _resolve_turso_config()
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     chunk_size = 1500
 
@@ -54,6 +73,7 @@ async def push_turso_batch(session, statements):
 
 async def setup_database(session):
     """Ensures database schema exists via HTTP API."""
+    _resolve_turso_config()
     print("Ensuring Turso schema exists...")
     schema_queries = [
         "CREATE TABLE IF NOT EXISTS characters (name TEXT PRIMARY KEY, class TEXT, race TEXT, faction TEXT, guild TEXT, level INTEGER, equipped_item_level INTEGER, xp INTEGER, xp_max INTEGER, health INTEGER, power INTEGER, last_login_ms INTEGER, portrait_url TEXT, active_spec TEXT, honorable_kills INTEGER, power_type TEXT, strength_base INTEGER, strength_effective INTEGER, agility_base INTEGER, agility_effective INTEGER, intellect_base INTEGER, intellect_effective INTEGER, stamina_base INTEGER, stamina_effective INTEGER, melee_crit_value REAL, melee_haste_value REAL, attack_power INTEGER, main_hand_min REAL, main_hand_max REAL, main_hand_speed REAL, main_hand_dps REAL, off_hand_min REAL, off_hand_max REAL, off_hand_speed REAL, off_hand_dps REAL, spell_power INTEGER, spell_penetration INTEGER, spell_crit_value REAL, mana_regen REAL, mana_regen_combat REAL, armor_base INTEGER, armor_effective INTEGER, dodge REAL, parry REAL, block REAL, ranged_crit REAL, ranged_haste REAL, spell_haste REAL, spirit_base INTEGER, spirit_effective INTEGER, defense_base INTEGER, defense_effective INTEGER, vanguard_badges TEXT, campaign_badges TEXT, pve_champ_count INTEGER, pvp_champ_count INTEGER)",
