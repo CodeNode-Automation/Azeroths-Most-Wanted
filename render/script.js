@@ -5166,7 +5166,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             setTimelineShellHeader({
                 kicker: 'Campaign Chronicle',
                 title: '📜 Recent Campaign Activity',
-                subtitle: 'Recent history from the latest guild scans across Azeroth and Outland. Current snapshot cards live above.',
+                subtitle: 'Recent history from the latest guild scans. Current snapshot cards sit above this feed.',
                 meta: 'Guild-wide timeline'
             });
             window.currentFilteredChars = null;
