@@ -60,13 +60,19 @@ Heavy payloads, like the thousands of lines of timeline activity, are pre-compil
 
 ## Local validation before commit
 
-Run these checks from `D:\projects\Azeroths-Most-Wanted` in PowerShell:
+One-command PowerShell validation:
+
+```powershell
+.\tools\validate-local.ps1
+```
+
+Manual fallback commands from `D:\projects\Azeroths-Most-Wanted` in PowerShell:
 
 ```powershell
 .\venv\Scripts\python.exe -m pip install -r requirements.txt
 .\venv\Scripts\python.exe -m compileall -q main.py wow render tests
 .\venv\Scripts\python.exe -m unittest discover
-git status --short
+git status --short --untracked-files=all
 ```
 
 Required environment variables for the live pipeline:
