@@ -72,55 +72,12 @@ function renderHomeApiStatus(apiStatus = {}) {
     banner.hidden = false;
 }
 
-function renderHomeFreshnessStrip(dashboardConfig = {}, apiStatus = {}) {
-    const ribbon = document.getElementById('weekly-reset-module');
-    if (!ribbon) return;
-
-    const stripId = 'home-sync-strip';
-    let strip = document.getElementById(stripId);
-    if (!strip) {
-        strip = document.createElement('div');
-        strip.id = stripId;
-        strip.className = 'home-sync-strip';
-        strip.setAttribute('role', 'status');
-        ribbon.appendChild(strip);
-    }
-
-    const updatedText = formatHomeApiStatusTime(dashboardConfig.last_updated);
-    const healthy = !apiStatus || apiStatus.ok !== false;
-    const statusText = healthy ? 'Live sync healthy' : 'Live sync paused';
-    const detailText = updatedText
-        ? `${healthy ? 'Last refresh' : 'Last successful sync'}: ${updatedText}`
-        : healthy
-            ? 'Latest snapshot is current.'
-            : 'Waiting on the next successful refresh.';
-
-    strip.textContent = '';
-
-    const kicker = document.createElement('span');
-    kicker.className = 'home-sync-kicker';
-    kicker.textContent = 'Data freshness';
-
-    const status = document.createElement('strong');
-    status.className = 'home-sync-status';
-    status.textContent = statusText;
-
-    const meta = document.createElement('span');
-    meta.className = 'home-sync-meta';
-    meta.textContent = detailText;
-
-    strip.append(kicker, status, meta);
-    ribbon.dataset.syncState = healthy ? 'healthy' : 'paused';
-}
-
 function populateHomeOverview(dashboardConfig = {}) {
     const processedRoster = Array.isArray(rosterData) ? rosterData : [];
     const rawRoster = Array.isArray(rawGuildRoster) ? rawGuildRoster : [];
     const rosterInventory = rawRoster.length > 0 ? rawRoster : processedRoster;
     const rosterInventoryIsRaw = rawRoster.length > 0;
     const mainRoster = filterMainCharacters(processedRoster);
-
-    renderHomeFreshnessStrip(dashboardConfig, window.apiStatus || {});
 
     let mainTotalIlvl = 0;
     let mainLvl70Count = 0;
