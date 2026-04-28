@@ -20,5 +20,11 @@ if (-not $matches) {
 
 foreach ($process in $matches | Sort-Object ProcessId) {
     Write-Host ("Stopping PID {0}: {1}" -f $process.ProcessId, $process.CommandLine)
-    Stop-Process -Id $process.ProcessId -Force
+    try {
+        Stop-Process -Id $process.ProcessId -Force -ErrorAction Stop
+    } catch [System.Management.Automation.ActionPreferenceStopException] {
+        Write-Host ("PID {0} already exited." -f $process.ProcessId)
+    } catch {
+        Write-Host ("PID {0} could not be stopped safely: {1}" -f $process.ProcessId, $_.Exception.Message)
+    }
 }
