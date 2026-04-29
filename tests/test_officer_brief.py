@@ -48,14 +48,28 @@ class OfficerBriefTests(unittest.TestCase):
         )
         self.assertEqual(
             summary["items"][0]["label"],
-            "Activity looks steady across the latest snapshot",
+            "Activity steady: 256 recently active members",
         )
-        self.assertEqual(summary["items"][1]["label"], "Raid readiness is building")
+        self.assertEqual(summary["items"][1]["label"], "Readiness building: 21 raid-ready members tracked")
         self.assertEqual(
             summary["items"][2]["label"],
             "Recent trend is slightly positive",
         )
         self.assertNotIn("Recent changes are being tracked", " ".join(item["label"] for item in summary["items"]))
+
+    def test_activity_and_readiness_fallback_when_counts_are_missing(self):
+        summary = build_officer_brief(
+            roster_summary={
+                "total_members": 24,
+            },
+        )
+
+        self.assertEqual(
+            [item["type"] for item in summary["items"]],
+            ["activity", "readiness"],
+        )
+        self.assertEqual(summary["items"][0]["label"], "Activity is light in the latest snapshot")
+        self.assertEqual(summary["items"][1]["label"], "Raid readiness is still building")
 
     def test_latest_changes_watch_can_raise_status_without_becoming_a_brief_item(self):
         summary = build_officer_brief(
@@ -83,6 +97,8 @@ class OfficerBriefTests(unittest.TestCase):
             [item["type"] for item in summary["items"]],
             ["activity", "readiness"],
         )
+        self.assertEqual(summary["items"][0]["label"], "Activity steady: 256 recently active members")
+        self.assertEqual(summary["items"][1]["label"], "Readiness building: 21 raid-ready members tracked")
         self.assertNotIn("Recent changes are being tracked", " ".join(item["label"] for item in summary["items"]))
 
     def test_departures_trigger_watch_language_without_alarm(self):

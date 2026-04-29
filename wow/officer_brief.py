@@ -118,21 +118,30 @@ def _extract_activity_item(roster_metrics: dict[str, int]) -> list[dict[str, Any
 
     active_ratio = active / total if total > 0 else 0
 
-    if active_ratio >= ACTIVITY_STEADY_RATIO:
+    if active > 0 and active_ratio >= ACTIVITY_STEADY_RATIO:
         return [
             {
                 "type": "activity",
-                "label": "Activity looks steady across the latest snapshot",
+                "label": f"Activity steady: {_format_count(active, 'recently active member', 'recently active members')}",
                 "tone": "positive",
             }
         ]
 
-    if active_ratio >= ACTIVITY_BUILDING_RATIO:
+    if active > 0 and active_ratio >= ACTIVITY_BUILDING_RATIO:
         return [
             {
                 "type": "activity",
-                "label": "Activity is steady, but a little quieter than peak periods",
+                "label": f"Activity building: {_format_count(active, 'recently active member', 'recently active members')}",
                 "tone": "neutral",
+            }
+        ]
+
+    if active > 0:
+        return [
+            {
+                "type": "activity",
+                "label": f"Activity light: {_format_count(active, 'recently active member', 'recently active members')}",
+                "tone": "watch",
             }
         ]
 
@@ -165,11 +174,14 @@ def _extract_readiness_item(roster_metrics: dict[str, int]) -> list[dict[str, An
         ]
 
     ready_ratio = ready / total if total > 0 else 1
-    if ready_ratio >= READY_STEADY_RATIO or avg_ilvl >= RAID_READY_TARGET_ILVL:
-        label = "Raid readiness is holding"
+    if ready > 0 and (ready_ratio >= READY_STEADY_RATIO or avg_ilvl >= RAID_READY_TARGET_ILVL):
+        label = f"Readiness holding: {_format_count(ready, 'raid-ready member tracked', 'raid-ready members tracked')}"
         tone = "positive"
-    elif ready_ratio >= READY_BUILDING_RATIO or avg_ilvl >= RAID_READY_BUILDING_ILVL:
-        label = "Raid readiness is building"
+    elif ready > 0 and (ready_ratio >= READY_BUILDING_RATIO or avg_ilvl >= RAID_READY_BUILDING_ILVL):
+        label = f"Readiness building: {_format_count(ready, 'raid-ready member tracked', 'raid-ready members tracked')}"
+        tone = "neutral"
+    elif ready > 0:
+        label = f"Readiness still building: {_format_count(ready, 'raid-ready member tracked', 'raid-ready members tracked')}"
         tone = "neutral"
     else:
         label = "Raid readiness is still building"
