@@ -184,16 +184,32 @@ def _extract_readiness_item(roster_metrics: dict[str, int]) -> list[dict[str, An
     ]
 
 
-def _extract_latest_changes_item(latest_changes: Any) -> list[dict[str, Any]]:
+def _latest_changes_has_supporting_items(latest_changes: Any) -> bool:
     if not isinstance(latest_changes, dict):
-        return []
+        return False
 
     change_items = latest_changes.get("items")
     if not isinstance(change_items, list):
-        return []
+        return False
 
-    labels = []
-    tone = "neutral"
+    for item in change_items:
+        if not isinstance(item, dict):
+            continue
+
+        item_type = str(item.get("type") or "").strip().lower()
+        if item_type and item_type != "movement":
+            return True
+
+    return False
+
+
+def _latest_changes_has_watch_signal(latest_changes: Any) -> bool:
+    if not isinstance(latest_changes, dict):
+        return False
+
+    change_items = latest_changes.get("items")
+    if not isinstance(change_items, list):
+        return False
 
     for item in change_items:
         if not isinstance(item, dict):
@@ -203,33 +219,10 @@ def _extract_latest_changes_item(latest_changes: Any) -> list[dict[str, Any]]:
         if item_type == "movement":
             continue
 
-        label = str(item.get("label") or "").strip()
-        if not label:
-            continue
+        if str(item.get("tone") or "").strip().lower() == "watch":
+            return True
 
-        labels.append(label)
-        if item.get("tone") == "positive":
-            tone = "positive"
-        elif item.get("tone") == "watch":
-            tone = "watch"
-        if len(labels) >= 2:
-            break
-
-    if not labels:
-        return []
-
-    if len(labels) == 1:
-        label = f"Recent changes are being tracked: {labels[0]}"
-    else:
-        label = f"Recent changes are being tracked: {labels[0]} and {labels[1]}"
-
-    return [
-        {
-            "type": "changes",
-            "label": label,
-            "tone": tone,
-        }
-    ]
+    return False
 
 
 def _extract_trend_item(trend_data: Any) -> list[dict[str, Any]]:
@@ -329,7 +322,7 @@ def _extract_war_effort_item(war_effort: Any) -> list[dict[str, Any]]:
     ]
 
 
-def _pick_summary_and_status(items: list[dict[str, Any]], roster_metrics: dict[str, int], membership_movement: Any) -> tuple[str, str, str]:
+def _pick_summary_and_status(items: list[dict[str, Any]], roster_metrics: dict[str, int], membership_movement: Any, latest_changes: Any) -> tuple[str, str, str]:
     if not items:
         return ("No roster health signals are available yet.", "Unknown", "neutral")
 
@@ -342,7 +335,7 @@ def _pick_summary_and_status(items: list[dict[str, Any]], roster_metrics: dict[s
     ready = roster_metrics["raid_ready_count"]
     active_ratio = active / total if total > 0 else 0
 
-    watch_signals = departed > 0 or any(item["tone"] == "watch" for item in items)
+    watch_signals = departed > 0 or any(item["tone"] == "watch" for item in items) or _latest_changes_has_watch_signal(latest_changes)
     positive_signals = ready > 0 and active_ratio >= ACTIVITY_BUILDING_RATIO and departed == 0
 
     if bootstrap and not watch_signals:
@@ -388,8 +381,16 @@ def build_officer_brief(*, roster_summary=None, membership_movement=None, latest
     items.extend(_extract_membership_item(membership_movement))
     items.extend(_extract_activity_item(roster_metrics))
     items.extend(_extract_readiness_item(roster_metrics))
-    items.extend(_extract_latest_changes_item(latest_changes))
-    items.extend(_extract_trend_item(trend_data))
+    trend_items = _extract_trend_item(trend_data)
+    if trend_items:
+        trend_item = trend_items[0]
+        should_include_trend = (
+            trend_item.get("tone") == "watch"
+            or not _latest_changes_has_supporting_items(latest_changes)
+            or len(items) < 3
+        )
+        if should_include_trend:
+            items.extend(trend_items)
     items.extend(_extract_war_effort_item(war_effort))
 
     try:
@@ -399,7 +400,7 @@ def build_officer_brief(*, roster_summary=None, membership_movement=None, latest
     safe_limit = max(0, safe_limit)
 
     trimmed_items = items[:safe_limit] if safe_limit else []
-    summary, status, tone = _pick_summary_and_status(trimmed_items, roster_metrics, membership_movement)
+    summary, status, tone = _pick_summary_and_status(trimmed_items, roster_metrics, membership_movement, latest_changes)
 
     if not trimmed_items:
         return {

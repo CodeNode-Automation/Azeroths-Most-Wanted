@@ -14,7 +14,7 @@ class OfficerBriefTests(unittest.TestCase):
         self.assertEqual(summary["items"], [])
         self.assertEqual(summary["summary"], "No roster health signals are available yet.")
 
-    def test_stable_snapshot_uses_snapshot_counts_and_latest_changes(self):
+    def test_stable_snapshot_uses_snapshot_counts_without_echoing_latest_changes(self):
         summary = build_officer_brief(
             roster_summary={
                 "total_members": 657,
@@ -30,6 +30,12 @@ class OfficerBriefTests(unittest.TestCase):
                 ],
                 "empty": False,
             },
+            trend_data={
+                "global_trends": {
+                    "trend_active_mains": 1,
+                    "trend_ready_mains": 1,
+                }
+            },
             limit=5,
         )
 
@@ -38,7 +44,7 @@ class OfficerBriefTests(unittest.TestCase):
         self.assertEqual(summary["tone"], "positive")
         self.assertEqual(
             [item["type"] for item in summary["items"]],
-            ["activity", "readiness", "changes"],
+            ["activity", "readiness", "trend"],
         )
         self.assertEqual(
             summary["items"][0]["label"],
@@ -47,8 +53,37 @@ class OfficerBriefTests(unittest.TestCase):
         self.assertEqual(summary["items"][1]["label"], "Raid readiness is building")
         self.assertEqual(
             summary["items"][2]["label"],
-            "Recent changes are being tracked: 1 gear upgrade recorded and 1 award recorded",
+            "Recent trend is slightly positive",
         )
+        self.assertNotIn("Recent changes are being tracked", " ".join(item["label"] for item in summary["items"]))
+
+    def test_latest_changes_watch_can_raise_status_without_becoming_a_brief_item(self):
+        summary = build_officer_brief(
+            roster_summary={
+                "total_members": 657,
+                "active_14_days": 256,
+                "raid_ready_count": 21,
+                "avg_ilvl_70": 107,
+            },
+            latest_changes={
+                "title": "Latest Changes",
+                "items": [
+                    {"type": "item", "label": "1 gear upgrade recorded", "tone": "watch"},
+                    {"type": "badge", "label": "1 award recorded", "tone": "neutral"},
+                ],
+                "empty": False,
+            },
+            limit=5,
+        )
+
+        self.assertFalse(summary["empty"])
+        self.assertEqual(summary["status"], "Watch")
+        self.assertEqual(summary["tone"], "watch")
+        self.assertEqual(
+            [item["type"] for item in summary["items"]],
+            ["activity", "readiness"],
+        )
+        self.assertNotIn("Recent changes are being tracked", " ".join(item["label"] for item in summary["items"]))
 
     def test_departures_trigger_watch_language_without_alarm(self):
         summary = build_officer_brief(
@@ -70,6 +105,13 @@ class OfficerBriefTests(unittest.TestCase):
                     "trend_active_mains": -1,
                     "trend_ready_mains": -2,
                 }
+            },
+            latest_changes={
+                "title": "Latest Changes",
+                "items": [
+                    {"type": "item", "label": "1 gear upgrade recorded", "tone": "positive"},
+                ],
+                "empty": False,
             },
         )
 
