@@ -11,6 +11,11 @@ EVENT_TYPE_PRIORITY = {
 }
 
 KNOWN_STATUSES = {"active", "departed"}
+MEMBERSHIP_EVENT_INSERT_QUERY = """
+    INSERT INTO guild_membership_events
+    (scan_id, character_name, event_type, detected_at, previous_status, current_status)
+    VALUES (?, ?, ?, ?, ?, ?)
+"""
 
 
 def _normalize_name(value: Any) -> str | None:
@@ -134,3 +139,75 @@ def build_membership_movement_events(current_names, previous_status_rows, *, sca
     ))
 
     return events
+
+
+def build_membership_event_insert_statements(events):
+    """Build Turso batch statements for membership movement events."""
+    normalized_events = []
+
+    for event in events or []:
+        if not isinstance(event, dict):
+            continue
+
+        scan_id = str(event.get("scan_id") or "").strip()
+        character_name = str(event.get("character_name") or "").strip()
+        event_type = str(event.get("event_type") or "").strip().lower()
+        detected_at = str(event.get("detected_at") or "").strip()
+        previous_status = event.get("previous_status")
+        current_status = event.get("current_status")
+
+        if not scan_id or not character_name or not event_type or not detected_at:
+            continue
+
+        normalized_events.append(
+            {
+                "scan_id": scan_id,
+                "character_name": character_name,
+                "event_type": event_type,
+                "detected_at": detected_at,
+                "previous_status": previous_status,
+                "current_status": current_status,
+            }
+        )
+
+    normalized_events.sort(key=lambda event: (
+        EVENT_TYPE_PRIORITY.get(event["event_type"], 99),
+        event["character_name"].lower(),
+        event["detected_at"],
+        event["scan_id"],
+    ))
+
+    return [
+        {
+            "q": MEMBERSHIP_EVENT_INSERT_QUERY,
+            "params": [
+                event["scan_id"],
+                event["character_name"],
+                event["event_type"],
+                event["detected_at"],
+                event["previous_status"],
+                event["current_status"],
+            ],
+        }
+        for event in normalized_events
+    ]
+
+
+def build_latest_membership_status_query():
+    return """
+        SELECT character_name, event_type, detected_at, previous_status, current_status
+        FROM (
+            SELECT
+                character_name,
+                event_type,
+                detected_at,
+                previous_status,
+                current_status,
+                ROW_NUMBER() OVER(
+                    PARTITION BY lower(character_name)
+                    ORDER BY detected_at DESC, id DESC
+                ) AS rn
+            FROM guild_membership_events
+        )
+        WHERE rn = 1
+    """
