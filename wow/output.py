@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from render.html_dashboard import generate_html_dashboard
 from wow.change_summary import build_change_summary
 from wow.campaign_archive import build_campaign_archive_payload
+from wow.officer_brief import build_officer_brief
 from wow.membership_movement import build_recent_membership_movement_query
 from wow.membership_movement import summarize_membership_events
 from wow.turso import fetch_turso
@@ -65,6 +66,12 @@ async def finalize_dashboard_output(session, roster_data, realm_data, dashboard_
         trend_data=realm_data or {},
         limit=5,
     )
+    officer_brief = build_officer_brief(
+        roster_summary=realm_data or {},
+        membership_movement=membership_movement,
+        latest_changes=latest_changes,
+        trend_data=realm_data or {},
+    )
 
     generate_html_dashboard(
         roster_data,
@@ -76,4 +83,5 @@ async def finalize_dashboard_output(session, roster_data, realm_data, dashboard_
         campaign_archive,
         membership_movement=membership_movement,
         latest_changes=latest_changes,
+        officer_brief=officer_brief,
     )

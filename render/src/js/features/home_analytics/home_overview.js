@@ -77,6 +77,25 @@ function formatHomeChangeItemType(changeType) {
     }
 }
 
+function formatHomeOfficerBriefItemType(itemType) {
+    switch ((itemType || '').toLowerCase()) {
+        case 'movement':
+            return 'Movement';
+        case 'activity':
+            return 'Activity';
+        case 'readiness':
+            return 'Readiness';
+        case 'changes':
+            return 'Changes';
+        case 'trend':
+            return 'Trend';
+        case 'war_effort':
+            return 'War Effort';
+        default:
+            return 'Update';
+    }
+}
+
 function renderHomeApiStatus(apiStatus = {}) {
     const banner = document.getElementById('home-api-status-banner');
     const titleEl = document.getElementById('home-api-status-title');
@@ -202,6 +221,54 @@ function renderHomeMovementCard(dashboardConfig = {}) {
         : '';
 }
 
+function renderHomeOfficerBriefCard(dashboardConfig = {}) {
+    const officerBrief = dashboardConfig.officer_brief || {};
+    const statusEl = document.getElementById('home-officer-brief-status');
+    const summaryEl = document.getElementById('home-officer-brief-summary');
+    const listEl = document.getElementById('home-officer-brief-list');
+    const cardEl = document.getElementById('home-officer-brief-card');
+
+    if (!statusEl || !summaryEl || !listEl || !cardEl) return;
+
+    const items = Array.isArray(officerBrief.items) ? officerBrief.items : [];
+    const emptyText = officerBrief.empty_text || 'No roster health signals are available yet.';
+    const isEmpty = Boolean(officerBrief.empty) || items.length === 0;
+    const tone = String(officerBrief.tone || 'neutral').toLowerCase();
+
+    cardEl.setAttribute('data-tone', tone);
+    statusEl.setAttribute('data-tone', tone);
+    statusEl.textContent = officerBrief.status || 'Unknown';
+    summaryEl.textContent = isEmpty
+        ? emptyText
+        : officerBrief.summary || emptyText;
+
+    listEl.innerHTML = '';
+    if (isEmpty) {
+        listEl.hidden = true;
+        return;
+    }
+
+    items.slice(0, 5).forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'home-officer-brief-item';
+        li.setAttribute('data-tone', (item.tone || 'neutral').toLowerCase());
+        li.setAttribute('data-brief-type', (item.type || 'update').toLowerCase());
+
+        const label = document.createElement('span');
+        label.className = 'home-officer-brief-label';
+        label.textContent = item.label || 'Update';
+
+        const typeLabel = document.createElement('span');
+        typeLabel.className = 'home-officer-brief-type';
+        typeLabel.textContent = formatHomeOfficerBriefItemType(item.type);
+
+        li.append(label, typeLabel);
+        listEl.appendChild(li);
+    });
+
+    listEl.hidden = false;
+}
+
 function populateHomeOverview(dashboardConfig = {}) {
     const processedRoster = Array.isArray(rosterData) ? rosterData : [];
     const rawRoster = Array.isArray(rawGuildRoster) ? rawGuildRoster : [];
@@ -255,4 +322,5 @@ function populateHomeOverview(dashboardConfig = {}) {
 
     renderHomeMovementCard(dashboardConfig);
     renderHomeLatestChangesCard(dashboardConfig);
+    renderHomeOfficerBriefCard(dashboardConfig);
 }
