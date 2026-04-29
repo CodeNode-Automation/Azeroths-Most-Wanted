@@ -50,6 +50,36 @@ function formatHomeApiStatusTime(isoString) {
     }
 }
 
+function formatHomeMovementTime(isoString) {
+    if (!isoString) return '';
+
+    try {
+        return new Date(isoString).toLocaleString('de-DE', {
+            timeZone: 'Europe/Berlin',
+            day: '2-digit',
+            month: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }) + ' Uhr';
+    } catch (error) {
+        return '';
+    }
+}
+
+function formatHomeMovementEventType(eventType) {
+    switch ((eventType || '').toLowerCase()) {
+        case 'joined':
+            return 'Joined';
+        case 'departed':
+            return 'Departed';
+        case 'rejoined':
+            return 'Rejoined';
+        default:
+            return 'Updated';
+    }
+}
+
 function renderHomeApiStatus(apiStatus = {}) {
     const banner = document.getElementById('home-api-status-banner');
     const titleEl = document.getElementById('home-api-status-title');
@@ -70,6 +100,66 @@ function renderHomeApiStatus(apiStatus = {}) {
     titleEl.textContent = `Blizzard API outage detected${codeText}`;
     messageEl.textContent = updatedText ? `${baseMessage} Last check: ${updatedText}.` : baseMessage;
     banner.hidden = false;
+}
+
+function renderHomeMovementCard(dashboardConfig = {}) {
+    const movement = dashboardConfig.membership_movement || {};
+    const titleEl = document.getElementById('home-movement-title');
+    const summaryEl = document.getElementById('home-movement-summary');
+    const listEl = document.getElementById('home-movement-list');
+    const noteEl = document.getElementById('home-movement-note');
+
+    if (!titleEl || !summaryEl || !listEl || !noteEl) return;
+
+    const joined = getNumericConfigValue(movement, 'joined', 0);
+    const departed = getNumericConfigValue(movement, 'departed', 0);
+    const rejoined = getNumericConfigValue(movement, 'rejoined', 0);
+    const total = getNumericConfigValue(movement, 'total', 0);
+    const recent = Array.isArray(movement.recent) ? movement.recent : [];
+    const bootstrap = Boolean(movement.bootstrap);
+
+    titleEl.textContent = bootstrap ? 'Initial roster capture' : 'Latest roster movement';
+    summaryEl.textContent = total > 0
+        ? bootstrap
+            ? `${total.toLocaleString()} members logged on the first movement scan.`
+            : `+${joined.toLocaleString()} joined / -${departed.toLocaleString()} departed / ↻ ${rejoined.toLocaleString()} rejoined from the latest scan.`
+        : 'No roster movement logged yet.';
+
+    listEl.innerHTML = '';
+    if (recent.length === 0) {
+        listEl.hidden = true;
+    } else {
+        recent.slice(0, 5).forEach(event => {
+            const item = document.createElement('li');
+            item.className = `home-movement-item home-movement-item-${(event.event_type || 'updated').toLowerCase()}`;
+            item.setAttribute('data-event-type', (event.event_type || 'updated').toLowerCase());
+
+            const name = document.createElement('span');
+            name.className = 'home-movement-name';
+            name.textContent = event.character_name || 'Unknown hero';
+
+            const metaWrap = document.createElement('span');
+            metaWrap.className = 'home-movement-meta-wrap';
+
+            const eventLabel = document.createElement('span');
+            eventLabel.className = 'home-movement-event';
+            eventLabel.textContent = formatHomeMovementEventType(event.event_type);
+
+            const timeLabel = document.createElement('span');
+            timeLabel.className = 'home-movement-time';
+            timeLabel.textContent = formatHomeMovementTime(event.detected_at);
+
+            metaWrap.append(eventLabel, timeLabel);
+            item.append(name, metaWrap);
+            listEl.appendChild(item);
+        });
+        listEl.hidden = false;
+    }
+
+    noteEl.hidden = !bootstrap;
+    noteEl.textContent = bootstrap
+        ? 'Initial roster capture from the first movement scan.'
+        : '';
 }
 
 function populateHomeOverview(dashboardConfig = {}) {
@@ -133,4 +223,6 @@ function populateHomeOverview(dashboardConfig = {}) {
     setHomeCardText('home-pulse-raidready', '.home-pulse-meta', `All chars: ${raidReadyAllCount.toLocaleString()} / mains shown first for deployment strength.`);
     setHomeCardText('home-kpi-ilvl', '.home-pulse-label', 'Avg Level 70 iLvl (Mains)');
     setHomeCardText('home-kpi-ilvl', '.home-pulse-meta', 'Mains-only read for capped roster power.');
+
+    renderHomeMovementCard(dashboardConfig);
 }

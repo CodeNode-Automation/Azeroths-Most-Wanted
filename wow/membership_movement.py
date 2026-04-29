@@ -215,6 +215,117 @@ def build_latest_membership_status_query():
     """
 
 
+def build_recent_membership_movement_query(limit=200):
+    try:
+        safe_limit = int(limit)
+    except (TypeError, ValueError):
+        safe_limit = 200
+
+    safe_limit = max(1, safe_limit)
+
+    return f"""
+        SELECT scan_id, character_name, event_type, detected_at, previous_status, current_status
+        FROM guild_membership_events
+        ORDER BY detected_at DESC, id DESC
+        LIMIT {safe_limit}
+    """
+
+
+def _coerce_summary_event_row(row: Any) -> dict[str, Any] | None:
+    if not isinstance(row, dict):
+        return None
+
+    character_name = str(row.get("character_name") or "").strip()
+    event_type = str(row.get("event_type") or "").strip().lower()
+    detected_at = str(row.get("detected_at") or "").strip()
+    scan_id = str(row.get("scan_id") or "").strip()
+
+    if not character_name or not event_type or event_type not in EVENT_TYPE_PRIORITY or not detected_at:
+        return None
+
+    return {
+        "scan_id": scan_id,
+        "character_name": character_name,
+        "event_type": event_type,
+        "detected_at": detected_at,
+        "previous_status": _normalize_status(row.get("previous_status")),
+        "current_status": _normalize_status(row.get("current_status")),
+    }
+
+
+def summarize_membership_events(events, limit=5):
+    """Summarize the most recent membership scan into compact counts and rows.
+
+    The summary is anchored to the most recent scan id / detected_at pair so the
+    rendered card reflects one coherent movement snapshot instead of mixing
+    multiple scans together.
+    """
+    normalized_events = []
+    for event in events or []:
+        normalized = _coerce_summary_event_row(event)
+        if normalized:
+            normalized_events.append(normalized)
+
+    if not normalized_events:
+        return {
+            "joined": 0,
+            "departed": 0,
+            "rejoined": 0,
+            "total": 0,
+            "recent": [],
+            "bootstrap": False,
+            "scan_id": None,
+            "detected_at": None,
+        }
+
+    latest_event = max(
+        normalized_events,
+        key=lambda event: (
+            event["detected_at"],
+            event["scan_id"] or event["detected_at"],
+            event["character_name"].lower(),
+        ),
+    )
+    latest_scan_key = latest_event["scan_id"] or latest_event["detected_at"]
+
+    latest_events = [
+        event
+        for event in normalized_events
+        if (event["scan_id"] or event["detected_at"]) == latest_scan_key
+    ]
+
+    latest_events.sort(key=lambda event: (
+        EVENT_TYPE_PRIORITY.get(event["event_type"], 99),
+        event["character_name"].lower(),
+    ))
+
+    counts = {
+        "joined": sum(1 for event in latest_events if event["event_type"] == "joined"),
+        "departed": sum(1 for event in latest_events if event["event_type"] == "departed"),
+        "rejoined": sum(1 for event in latest_events if event["event_type"] == "rejoined"),
+    }
+    total = len(latest_events)
+    try:
+        safe_limit = int(limit)
+    except (TypeError, ValueError):
+        safe_limit = 0
+    safe_limit = max(0, safe_limit)
+    bootstrap = total > 0 and counts["joined"] == total and all(
+        event["previous_status"] is None for event in latest_events
+    )
+
+    return {
+        "joined": counts["joined"],
+        "departed": counts["departed"],
+        "rejoined": counts["rejoined"],
+        "total": total,
+        "recent": latest_events[:safe_limit],
+        "bootstrap": bootstrap,
+        "scan_id": latest_event["scan_id"] or None,
+        "detected_at": latest_event["detected_at"],
+    }
+
+
 async def persist_membership_movement(
     session,
     current_names,

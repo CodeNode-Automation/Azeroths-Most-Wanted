@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 
 from render.html_dashboard import generate_html_dashboard
 from wow.campaign_archive import build_campaign_archive_payload
+from wow.membership_movement import build_recent_membership_movement_query
+from wow.membership_movement import summarize_membership_events
 from wow.turso import fetch_turso
 
 
@@ -54,6 +56,8 @@ async def finalize_dashboard_output(session, roster_data, realm_data, dashboard_
         ladder_history_rows,
         reigning_champs_history_rows,
     )
+    membership_movement_rows = await fetch_turso(session, build_recent_membership_movement_query())
+    membership_movement = summarize_membership_events(membership_movement_rows)
 
     generate_html_dashboard(
         roster_data,
@@ -63,4 +67,5 @@ async def finalize_dashboard_output(session, roster_data, realm_data, dashboard_
         roster_history,
         prev_mvps,
         campaign_archive,
+        membership_movement=membership_movement,
     )

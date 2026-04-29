@@ -7999,6 +7999,84 @@ body.nav-menu-open {
   line-height: 1.6;
 }
 
+.home-movement-card {
+  max-width: 1240px;
+  margin: 20px auto 0;
+  padding: 18px 20px 20px;
+  border: 1px solid rgba(112, 94, 164, 0.14);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 209, 0, 0.06), transparent 34%),
+    linear-gradient(180deg, rgba(12, 12, 18, 0.98) 0%, rgba(7, 8, 12, 0.99) 100%);
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.5),
+    inset 0 0 22px rgba(120, 86, 33, 0.04);
+}
+
+.home-movement-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.home-movement-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.home-movement-name {
+  color: #fff3c0;
+  font-weight: 700;
+  line-height: 1.35;
+  min-width: 0;
+}
+
+.home-movement-meta-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.home-movement-event {
+  color: rgba(255, 209, 0, 0.88);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.home-movement-item[data-event-type="departed"] .home-movement-event {
+  color: rgba(255, 123, 57, 0.9);
+}
+
+.home-movement-item[data-event-type="rejoined"] .home-movement-event {
+  color: rgba(143, 152, 255, 0.92);
+}
+
+.home-movement-time {
+  color: rgba(198, 190, 167, 0.86);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.home-movement-note {
+  display: block;
+  margin-top: 14px;
+  color: rgba(205, 197, 173, 0.84);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 .home-spark-wrap {
   height: 42px;
   margin-bottom: 12px;
@@ -10258,22 +10336,29 @@ body[data-app-ready="true"] #main-dashboard {
 }
 
 .home-nav-card .home-nav-eyebrow,
-.analytics-route-card .home-nav-eyebrow {
+.analytics-route-card .home-nav-eyebrow,
+.home-movement-card .home-nav-eyebrow {
   display: block;
   margin-bottom: 8px;
 }
 
 .home-nav-card .home-nav-title,
-.analytics-route-card .home-nav-title {
+.analytics-route-card .home-nav-title,
+.home-movement-card .home-nav-title {
   display: block;
   margin-bottom: 8px;
 }
 
 .home-nav-card .home-nav-copy,
-.analytics-route-card .home-nav-copy {
+.analytics-route-card .home-nav-copy,
+.home-movement-card .home-nav-copy {
   display: block;
   color: var(--amw-surface-copy);
   line-height: 1.6;
+}
+
+.home-movement-card .home-nav-copy {
+  max-width: 44ch;
 }
 
 .home-nav-card .home-nav-cta,
@@ -10435,6 +10520,11 @@ body[data-app-ready="true"] #main-dashboard {
     gap: 18px;
   }
 
+  .home-movement-card {
+    margin-top: 18px;
+    padding: 17px 18px 18px;
+  }
+
   .weekly-mvps-wrapper {
     margin-bottom: 24px;
   }
@@ -10506,6 +10596,19 @@ body[data-app-ready="true"] #main-dashboard {
   .hero-band-item,
   .hall-stage-card {
     padding: 16px;
+  }
+
+  .home-movement-card {
+    padding: 16px;
+  }
+
+  .home-movement-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .home-movement-meta-wrap {
+    justify-content: flex-start;
   }
 
   .home-nav-card .home-nav-cta,
