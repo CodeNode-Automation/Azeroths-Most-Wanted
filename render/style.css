@@ -4571,7 +4571,7 @@ body.nav-menu-open {
   border-left-width: 4px;
   border-left-style: solid;
   border-left-color: var(--class-accent, transparent);
-  padding: 8px 12px;
+  padding: 10px 14px;
 }
 
 .leaderboard-row .lb-portrait {
@@ -4605,6 +4605,7 @@ body.nav-menu-open {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 .lb-name {
   font-family: "Cinzel";
@@ -4613,9 +4614,10 @@ body.nav-menu-open {
   text-shadow: 1px 1px 2px #000;
 }
 .lb-spec {
-  color: #aaa;
-  font-size: 10px;
+  color: rgba(216, 208, 184, 0.84);
+  font-size: 11px;
   font-style: italic;
+  line-height: 1.35;
 }
 .lb-score {
   display: flex;
@@ -4631,9 +4633,10 @@ body.nav-menu-open {
   color: #ff4400;
 }
 .lb-score-label {
-  font-size: 10px;
-  color: #888;
-  margin-left: 3px;
+  font-size: 11px;
+  color: rgba(216, 208, 184, 0.72);
+  margin-left: 4px;
+  line-height: 1.2;
 }
 .spec-icon-sm {
   width: 12px;
