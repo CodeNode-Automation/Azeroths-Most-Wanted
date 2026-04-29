@@ -1,5 +1,10 @@
 // Character dossier feature helpers prepended during final JS assembly.
 
+const DOSSIER_RECENT_ACTIVITY_WINDOW_DAYS = 14;
+const DOSSIER_QUIET_ACTIVITY_WINDOW_DAYS = 30;
+const DOSSIER_RAID_READY_ILVL = 110;
+const DOSSIER_STAGING_ILVL = 100;
+
 function getDossierCommendationSnapshot(profile, source = null) {
     if (!profile) return null;
 
@@ -272,5 +277,200 @@ function buildDossierCommendationProfile({ profile, source = null }) {
     shell.appendChild(grid);
     shell.appendChild(footprint);
 
+    return shell;
+}
+
+function normalizeDossierCharacterName(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function getDossierActivitySnapshot(profile, source = null) {
+    const lastSeenRaw = profile?.last_login_timestamp || source?.last_login_ms || source?.equipped?.last_login_ms || 0;
+    const lastSeen = Number(lastSeenRaw);
+
+    if (!Number.isFinite(lastSeen) || lastSeen <= 0) {
+        return { label: 'Activity unknown', meta: '' };
+    }
+
+    const dayMs = 24 * 60 * 60 * 1000;
+    const ageDays = Math.floor(Math.max(0, Date.now() - lastSeen) / dayMs);
+    const ageText = formatLastLoginAge(lastSeen, 'Unknown');
+    const meta = ageText === 'Today' ? 'Last seen today' : `Last seen ${ageText}`;
+
+    if (ageDays <= DOSSIER_RECENT_ACTIVITY_WINDOW_DAYS) {
+        return { label: 'Recently active', meta };
+    }
+    if (ageDays <= DOSSIER_QUIET_ACTIVITY_WINDOW_DAYS) {
+        return { label: 'Quiet lately', meta };
+    }
+    return { label: 'Inactive lately', meta };
+}
+
+function getDossierReadinessSnapshot(profile, source = null) {
+    const level = parseInt(profile?.level || source?.level, 10) || 0;
+    const ilvl = parseInt(profile?.equipped_item_level || source?.equipped_item_level, 10) || 0;
+
+    if (level < 70) {
+        return { label: 'Still advancing', meta: `Level ${level}` };
+    }
+    if (ilvl >= DOSSIER_RAID_READY_ILVL) {
+        return { label: 'Raid ready', meta: `${ilvl} equipped iLvl` };
+    }
+    if (ilvl >= DOSSIER_STAGING_ILVL) {
+        return { label: 'Staging for raid', meta: `${ilvl} equipped iLvl` };
+    }
+    return { label: 'Needs gear', meta: `${ilvl} equipped iLvl` };
+}
+
+function buildDossierRecentChangeItems(characterName, timelineEvents = []) {
+    const counts = { item: 0, level_up: 0, badge: 0 };
+    const normalizedName = normalizeDossierCharacterName(characterName);
+    const cutoffMs = Date.now() - (DOSSIER_RECENT_ACTIVITY_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+    timelineEvents.forEach(event => {
+        if (!event || typeof event !== 'object') return;
+        if (normalizeDossierCharacterName(event.character_name || event.character) !== normalizedName) return;
+
+        const rawTimestamp = event.timestamp ? new Date(String(event.timestamp).replace('Z', '+00:00')).getTime() : NaN;
+        if (!Number.isFinite(rawTimestamp) || rawTimestamp < cutoffMs) return;
+
+        const eventType = String(event.type || event.event_type || '').trim().toLowerCase();
+        if (eventType === 'item' || eventType === 'level_up' || eventType === 'badge') {
+            counts[eventType] += 1;
+        }
+    });
+
+    const items = [];
+    if (counts.item > 0) {
+        items.push({ type: 'item', label: `${counts.item} gear upgrade${counts.item === 1 ? '' : 's'} recorded` });
+    }
+    if (counts.level_up > 0) {
+        items.push({ type: 'level_up', label: `${counts.level_up} level-up${counts.level_up === 1 ? '' : 's'} recorded` });
+    }
+    if (counts.badge > 0) {
+        items.push({ type: 'badge', label: `${counts.badge} award${counts.badge === 1 ? '' : 's'} recorded` });
+    }
+    return items;
+}
+
+function buildDossierRecognitionItems(profile, source = null) {
+    const vanguardBadges = safeParseArray(profile?.vanguard_badges || source?.vanguard_badges);
+    const campaignBadges = safeParseArray(profile?.campaign_badges || source?.campaign_badges);
+    const pveChamp = parseInt(profile?.pve_champ_count || source?.pve_champ_count, 10) || 0;
+    const pvpChamp = parseInt(profile?.pvp_champ_count || source?.pvp_champ_count, 10) || 0;
+
+    const items = [];
+    if (pveChamp > 0 || pvpChamp > 0) {
+        const parts = [];
+        if (pveChamp > 0) parts.push(`PvE MVP x${pveChamp}`);
+        if (pvpChamp > 0) parts.push(`PvP MVP x${pvpChamp}`);
+        items.push({ type: 'mvp', label: parts.join(', ') });
+    }
+    if (vanguardBadges.length > 0) {
+        items.push({ type: 'vanguard', label: `${vanguardBadges.length} vanguard mark${vanguardBadges.length === 1 ? '' : 's'}` });
+    }
+    if (campaignBadges.length > 0) {
+        items.push({ type: 'campaign', label: `${campaignBadges.length} campaign mark${campaignBadges.length === 1 ? '' : 's'}` });
+    }
+
+    return items;
+}
+
+function buildDossierIntelligenceSection({ label, items = [] }) {
+    const section = document.createElement('div');
+    section.className = 'char-card-intelligence-section';
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'char-card-section-label char-card-intelligence-section-label';
+    labelEl.textContent = label;
+    section.appendChild(labelEl);
+
+    const list = document.createElement('div');
+    list.className = 'char-card-intelligence-list';
+
+    items.slice(0, 3).forEach(item => {
+        const pill = document.createElement('div');
+        pill.className = 'char-card-intelligence-pill';
+        pill.textContent = item.label;
+        list.appendChild(pill);
+    });
+
+    section.appendChild(list);
+    return section;
+}
+
+function buildDossierIntelligencePanel({ profile, source = null, timelineEvents = [] }) {
+    if (!profile) return null;
+
+    const shell = document.createElement('section');
+    shell.className = 'char-card-intelligence-layout';
+
+    const header = document.createElement('div');
+    header.className = 'char-card-intelligence-header';
+
+    const kickerEl = document.createElement('span');
+    kickerEl.className = 'char-card-panel-kicker';
+    kickerEl.textContent = 'Character Intelligence';
+
+    const titleEl = document.createElement('h3');
+    titleEl.className = 'char-card-intelligence-title';
+    titleEl.textContent = 'Recent Field Signals';
+
+    const copyEl = document.createElement('p');
+    copyEl.className = 'char-card-intelligence-copy';
+    copyEl.textContent = 'Recent activity, readiness, and earned recognition recorded for this hero.';
+
+    header.appendChild(kickerEl);
+    header.appendChild(titleEl);
+    header.appendChild(copyEl);
+    shell.appendChild(header);
+
+    const activity = getDossierActivitySnapshot(profile, source);
+    const readiness = getDossierReadinessSnapshot(profile, source);
+
+    const summaryGrid = document.createElement('div');
+    summaryGrid.className = 'char-card-intelligence-grid';
+    summaryGrid.appendChild(buildDossierInfoTile({
+        label: 'Activity',
+        value: activity.label,
+        meta: activity.meta,
+        className: 'char-card-intelligence-tile-activity'
+    }));
+    summaryGrid.appendChild(buildDossierInfoTile({
+        label: 'Readiness',
+        value: readiness.label,
+        meta: readiness.meta,
+        className: 'char-card-intelligence-tile-readiness'
+    }));
+    shell.appendChild(summaryGrid);
+
+    const recentItems = buildDossierRecentChangeItems(profile.name, timelineEvents);
+    const recognitionItems = buildDossierRecognitionItems(profile, source);
+
+    if (recentItems.length === 0 && recognitionItems.length === 0) {
+        const emptyEl = document.createElement('p');
+        emptyEl.className = 'char-card-intelligence-empty';
+        emptyEl.textContent = 'No extra intelligence is recorded for this hero yet.';
+        shell.appendChild(emptyEl);
+        return shell;
+    }
+
+    const sections = document.createElement('div');
+    sections.className = 'char-card-intelligence-sections';
+
+    if (recentItems.length > 0) {
+        sections.appendChild(buildDossierIntelligenceSection({
+            label: 'Recent Changes',
+            items: recentItems
+        }));
+    }
+    if (recognitionItems.length > 0) {
+        sections.appendChild(buildDossierIntelligenceSection({
+            label: 'Recognition',
+            items: recognitionItems
+        }));
+    }
+
+    shell.appendChild(sections);
     return shell;
 }

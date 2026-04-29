@@ -75,22 +75,40 @@
     0 12px 28px rgba(0, 0, 0, 0.22);
 }
 
+.char-card-intelligence-shell {
+  border-radius: 20px;
+  padding: 20px;
+  background:
+    linear-gradient(180deg, rgba(141, 199, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    rgba(6, 6, 8, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
 .char-card-commendation-layout,
 .char-card-commendation-header,
-.char-card-commendation-footprint {
+.char-card-commendation-footprint,
+.char-card-intelligence-layout,
+.char-card-intelligence-header,
+.char-card-intelligence-section {
   display: flex;
   flex-direction: column;
 }
 
-.char-card-commendation-layout {
+.char-card-commendation-layout,
+.char-card-intelligence-layout {
   gap: 16px;
 }
 
-.char-card-commendation-header {
+.char-card-commendation-header,
+.char-card-intelligence-header {
   gap: 6px;
 }
 
-.char-card-commendation-title {
+.char-card-commendation-title,
+.char-card-intelligence-title {
   margin: 0;
   font-family: "Cinzel";
   font-size: 24px;
@@ -98,10 +116,56 @@
 }
 
 .char-card-commendation-copy,
-.char-card-commendation-footprint-empty {
+.char-card-commendation-footprint-empty,
+.char-card-intelligence-copy,
+.char-card-intelligence-empty {
   margin: 0;
   color: #d6ceb6;
   line-height: 1.6;
+}
+
+.char-card-intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.char-card-intelligence-tile-activity .char-card-dossier-tile-value {
+  color: #cfe1ff;
+}
+
+.char-card-intelligence-tile-readiness .char-card-dossier-tile-value {
+  color: #8fe388;
+}
+
+.char-card-intelligence-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.char-card-intelligence-section {
+  gap: 8px;
+}
+
+.char-card-intelligence-section-label {
+  margin-bottom: 0;
+}
+
+.char-card-intelligence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.char-card-intelligence-pill {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 10, 12, 0.62);
+  color: #e4d7ba;
+  line-height: 1.45;
 }
 
 .char-card-commendation-grid {
@@ -207,7 +271,9 @@
 
 @media (max-width: 760px) {
   .char-card-deployment-grid,
-  .char-card-commendation-grid {
+  .char-card-commendation-grid,
+  .char-card-intelligence-grid,
+  .char-card-intelligence-sections {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -223,7 +289,9 @@
 @media (max-width: 560px) {
   .char-card-deployment-grid,
   .char-card-commendation-grid,
-  .char-card-commendation-footprint-grid {
+  .char-card-commendation-footprint-grid,
+  .char-card-intelligence-grid,
+  .char-card-intelligence-sections {
     grid-template-columns: 1fr;
   }
 }

@@ -1990,6 +1990,22 @@ window.addEventListener('DOMContentLoaded', async () => {
             deploymentShellEl.remove();
         }
 
+        const intelligenceShellEl = clone.querySelector('.char-card-intelligence-shell');
+        const intelligenceProfileEl = clone.querySelector('.char-card-intelligence-profile');
+        if (intelligenceProfileEl && typeof buildDossierIntelligencePanel === 'function') {
+            intelligenceProfileEl.textContent = '';
+            const intelligenceNode = buildDossierIntelligencePanel({
+                profile: p,
+                source: char,
+                timelineEvents: typeof timelineData !== 'undefined' ? timelineData : []
+            });
+            if (intelligenceNode) {
+                intelligenceProfileEl.appendChild(intelligenceNode);
+            }
+        } else if (intelligenceShellEl) {
+            intelligenceShellEl.remove();
+        }
+
         const commendationShellEl = clone.querySelector('.char-card-commendation-shell');
         const commendationProfileEl = clone.querySelector('.char-card-commendation-profile');
         if (commendationProfileEl && typeof buildDossierCommendationProfile === 'function') {
