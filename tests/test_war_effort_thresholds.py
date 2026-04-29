@@ -22,25 +22,26 @@ class WarEffortThresholdTests(unittest.TestCase):
         self.assertIn("0 / 40 Epics Looted", template_text)
         self.assertIn("0 / 5 New Level 70s", template_text)
 
-        self.assertIn("target: WAR_EFFORT_THRESHOLDS.xp", shell_text)
-        self.assertIn("target: WAR_EFFORT_THRESHOLDS.hk", shell_text)
-        self.assertIn("target: WAR_EFFORT_THRESHOLDS.loot", shell_text)
-        self.assertIn("target: WAR_EFFORT_THRESHOLDS.zenith", shell_text)
+        self.assertIn("window.WAR_EFFORT_THRESHOLDS = window.WAR_EFFORT_THRESHOLDS || Object.freeze({", shell_text)
+        self.assertIn("window.WAR_EFFORT_THRESHOLDS.xp", shell_text)
+        self.assertIn("window.WAR_EFFORT_THRESHOLDS.hk", shell_text)
+        self.assertIn("window.WAR_EFFORT_THRESHOLDS.loot", shell_text)
+        self.assertIn("window.WAR_EFFORT_THRESHOLDS.zenith", shell_text)
 
         self.assertIn(
-            "renderBar('guild-xp-fill', 'guild-xp-text', totalLevels, WAR_EFFORT_THRESHOLDS.xp, 'XP');",
+            "renderBar('guild-xp-fill', 'guild-xp-text', totalLevels, window.WAR_EFFORT_THRESHOLDS.xp, 'XP');",
             script_text,
         )
         self.assertIn(
-            "renderBar('guild-hk-fill', 'guild-hk-text', totalHks, WAR_EFFORT_THRESHOLDS.hk, 'HK');",
+            "renderBar('guild-hk-fill', 'guild-hk-text', totalHks, window.WAR_EFFORT_THRESHOLDS.hk, 'HK');",
             script_text,
         )
         self.assertIn(
-            "renderBar('guild-loot-fill', 'guild-loot-text', totalLoot, WAR_EFFORT_THRESHOLDS.loot, 'LOOT');",
+            "renderBar('guild-loot-fill', 'guild-loot-text', totalLoot, window.WAR_EFFORT_THRESHOLDS.loot, 'LOOT');",
             script_text,
         )
         self.assertIn(
-            "renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, WAR_EFFORT_THRESHOLDS.zenith, 'ZENITH');",
+            "renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, window.WAR_EFFORT_THRESHOLDS.zenith, 'ZENITH');",
             script_text,
         )
 
@@ -48,6 +49,8 @@ class WarEffortThresholdTests(unittest.TestCase):
         self.assertIn("HK_THRESHOLD = 1000", backend_text)
         self.assertIn("LOOT_THRESHOLD = 40", backend_text)
         self.assertIn("ZENITH_THRESHOLD = 5", backend_text)
+        self.assertNotIn("const WAR_EFFORT_THRESHOLDS", shell_text)
+        self.assertNotIn("const WAR_EFFORT_THRESHOLDS", script_text)
 
 
 if __name__ == "__main__":

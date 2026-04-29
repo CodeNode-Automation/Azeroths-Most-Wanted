@@ -1,6 +1,6 @@
 // War-effort shell and config helpers prepended during final JS assembly.
 
-const WAR_EFFORT_THRESHOLDS = Object.freeze({
+window.WAR_EFFORT_THRESHOLDS = window.WAR_EFFORT_THRESHOLDS || Object.freeze({
     xp: 500,
     hk: 1000,
     loot: 40,
@@ -34,7 +34,7 @@ function getWarEffortConfig(type) {
             unitLabel: 'Levels',
             ctaValue: 'Be the first to add levels this week.',
             ctaMeta: 'Turn a blank slate into forward motion and start the march toward the weekly objective.',
-            target: WAR_EFFORT_THRESHOLDS.xp
+            target: window.WAR_EFFORT_THRESHOLDS.xp
         },
         hk: {
             theme: 'hk',
@@ -47,7 +47,7 @@ function getWarEffortConfig(type) {
             unitLabel: 'HKs',
             ctaValue: 'Claim the first HKs of the week.',
             ctaMeta: 'Open the battleground war board and give the guild its first surge of PvP momentum.',
-            target: WAR_EFFORT_THRESHOLDS.hk
+            target: window.WAR_EFFORT_THRESHOLDS.hk
         },
         loot: {
             theme: 'loot',
@@ -60,7 +60,7 @@ function getWarEffortConfig(type) {
             unitLabel: 'Epics',
             ctaValue: 'Loot the first epic of the week.',
             ctaMeta: 'Start the trophy wall with one clean pull and one prize worth remembering.',
-            target: WAR_EFFORT_THRESHOLDS.loot
+            target: window.WAR_EFFORT_THRESHOLDS.loot
         },
         zenith: {
             theme: 'zenith',
@@ -73,7 +73,7 @@ function getWarEffortConfig(type) {
             unitLabel: 'New 70s',
             ctaValue: 'Be the first new level 70.',
             ctaMeta: 'Turn the race board live and claim the first summit position before anyone else.',
-            target: WAR_EFFORT_THRESHOLDS.zenith
+            target: window.WAR_EFFORT_THRESHOLDS.zenith
         }
     };
 
@@ -212,7 +212,7 @@ function buildWarEffortShell(hashUrl, characters = []) {
         : 'Open slots';
     const vanguardMeta = snapshot.lockTime
         ? `Lock recorded ${snapshot.lockTime}`
-        : 'The first three names to set the pace will hold the vanguard line.';
+        : 'The top three contributors hold the vanguard line.';
     const topCardKicker = type === 'zenith' ? 'First to the Summit' : 'Current Front-Runner';
     let topValueMeta = 'Nobody has claimed the opening push yet.';
 

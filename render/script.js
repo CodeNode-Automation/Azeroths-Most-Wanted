@@ -27,7 +27,7 @@ const TBC_XP = {
     51: 153900, 52: 160400, 53: 167100, 54: 173900, 55: 180800, 56: 187900, 57: 195000, 58: 202300, 59: 209800,
     60: 494000, 61: 517000, 62: 550000, 63: 587000, 64: 632000, 65: 684000, 66: 745000, 67: 815000, 68: 895000, 69: 985000
 };
-const WAR_EFFORT_THRESHOLDS = Object.freeze({
+window.WAR_EFFORT_THRESHOLDS = window.WAR_EFFORT_THRESHOLDS || Object.freeze({
     xp: 500,
     hk: 1000,
     loot: 40,
@@ -7336,10 +7336,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        renderBar('guild-xp-fill', 'guild-xp-text', totalLevels, WAR_EFFORT_THRESHOLDS.xp, 'XP');
-        renderBar('guild-hk-fill', 'guild-hk-text', totalHks, WAR_EFFORT_THRESHOLDS.hk, 'HK');
-        renderBar('guild-loot-fill', 'guild-loot-text', totalLoot, WAR_EFFORT_THRESHOLDS.loot, 'LOOT');
-        renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, WAR_EFFORT_THRESHOLDS.zenith, 'ZENITH');
+        renderBar('guild-xp-fill', 'guild-xp-text', totalLevels, window.WAR_EFFORT_THRESHOLDS.xp, 'XP');
+        renderBar('guild-hk-fill', 'guild-hk-text', totalHks, window.WAR_EFFORT_THRESHOLDS.hk, 'HK');
+        renderBar('guild-loot-fill', 'guild-loot-text', totalLoot, window.WAR_EFFORT_THRESHOLDS.loot, 'LOOT');
+        renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, window.WAR_EFFORT_THRESHOLDS.zenith, 'ZENITH');
 
         // Track locked vanguards and milestone monuments for the current war-effort board.
         window.warEffortVanguards = { xp: [], hk: [], loot: [], zenith: [] };
@@ -7358,31 +7358,31 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        if (totalLevels >= WAR_EFFORT_THRESHOLDS.xp) {
+        if (totalLevels >= window.WAR_EFFORT_THRESHOLDS.xp) {
             const topDyn = Object.entries(levelContributors).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0].toLowerCase());
             let fallback = null;
             const sortedXP = timelineData.filter(e => e.type === 'level_up' && new Date((e.timestamp || '').replace('Z', '+00:00')).getTime() >= lastResetMs).sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-            if (sortedXP[WAR_EFFORT_THRESHOLDS.xp - 1]) fallback = { title: "🛡️ Hero's Journey", highlightColor: "#ffd100", highlightText: sortedXP[WAR_EFFORT_THRESHOLDS.xp - 1].character_name, suffixText: ` hit the ${WAR_EFFORT_THRESHOLDS.xp}th level!`, timestamp: sortedXP[WAR_EFFORT_THRESHOLDS.xp - 1].timestamp };
+            if (sortedXP[window.WAR_EFFORT_THRESHOLDS.xp - 1]) fallback = { title: "🛡️ Hero's Journey", highlightColor: "#ffd100", highlightText: sortedXP[window.WAR_EFFORT_THRESHOLDS.xp - 1].character_name, suffixText: ` hit the ${window.WAR_EFFORT_THRESHOLDS.xp}th level!`, timestamp: sortedXP[window.WAR_EFFORT_THRESHOLDS.xp - 1].timestamp };
             applyLockFallback('xp', fallback, topDyn);
         }
 
-        if (totalHks >= WAR_EFFORT_THRESHOLDS.hk) {
+        if (totalHks >= window.WAR_EFFORT_THRESHOLDS.hk) {
             const topPvpers = Object.entries(hkContributors).sort((a,b)=>b[1]-a[1]);
             const topDyn = topPvpers.slice(0,3).map(x=>x[0].toLowerCase());
             let fallback = null;
-            if (topPvpers.length > 0) fallback = { title: "🩸 Blood of the Enemy", highlightColor: "#ff4400", highlightText: topPvpers[0][0].charAt(0).toUpperCase() + topPvpers[0][0].slice(1), suffixText: ` led the ${WAR_EFFORT_THRESHOLDS.hk} HK charge!`, timestamp: new Date().toISOString() };
+            if (topPvpers.length > 0) fallback = { title: "🩸 Blood of the Enemy", highlightColor: "#ff4400", highlightText: topPvpers[0][0].charAt(0).toUpperCase() + topPvpers[0][0].slice(1), suffixText: ` led the ${window.WAR_EFFORT_THRESHOLDS.hk} HK charge!`, timestamp: new Date().toISOString() };
             applyLockFallback('hk', fallback, topDyn);
         }
 
-        if (totalLoot >= WAR_EFFORT_THRESHOLDS.loot) {
+        if (totalLoot >= window.WAR_EFFORT_THRESHOLDS.loot) {
             const topDyn = Object.entries(lootContributors).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0].toLowerCase());
             let fallback = null;
             const sortedLoot = timelineData.filter(e => e.type === 'item' && (e.item_quality === 'EPIC' || e.item_quality === 'LEGENDARY') && new Date((e.timestamp || '').replace('Z', '+00:00')).getTime() >= lastResetMs).sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-            if (sortedLoot[WAR_EFFORT_THRESHOLDS.loot - 1]) fallback = { title: "🐉 Dragon's Hoard", highlightColor: "#a335ee", highlightText: sortedLoot[WAR_EFFORT_THRESHOLDS.loot - 1].character_name, suffixText: ` looted the ${WAR_EFFORT_THRESHOLDS.loot}th Epic!`, timestamp: sortedLoot[WAR_EFFORT_THRESHOLDS.loot - 1].timestamp };
+            if (sortedLoot[window.WAR_EFFORT_THRESHOLDS.loot - 1]) fallback = { title: "🐉 Dragon's Hoard", highlightColor: "#a335ee", highlightText: sortedLoot[window.WAR_EFFORT_THRESHOLDS.loot - 1].character_name, suffixText: ` looted the ${window.WAR_EFFORT_THRESHOLDS.loot}th Epic!`, timestamp: sortedLoot[window.WAR_EFFORT_THRESHOLDS.loot - 1].timestamp };
             applyLockFallback('loot', fallback, topDyn);
         }
 
-        if (totalZenith >= WAR_EFFORT_THRESHOLDS.zenith) {
+        if (totalZenith >= window.WAR_EFFORT_THRESHOLDS.zenith) {
             const sortedZenithAsc = timelineData.filter(e => e.type === 'level_up' && e.level === 70 && new Date((e.timestamp || '').replace('Z', '+00:00')).getTime() >= lastResetMs).sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
             const uniqueZ = [];
             sortedZenithAsc.forEach(e => {
@@ -7392,11 +7392,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             
             const topDyn = uniqueZ.slice(0,3);
             let fallback = null;
-            if (uniqueZ[WAR_EFFORT_THRESHOLDS.zenith - 1]) fallback = { title: "⚡ The Zenith Cohort", highlightColor: "#3FC7EB", highlightText: uniqueZ[WAR_EFFORT_THRESHOLDS.zenith - 1].charAt(0).toUpperCase() + uniqueZ[WAR_EFFORT_THRESHOLDS.zenith - 1].slice(1), suffixText: ` was the ${WAR_EFFORT_THRESHOLDS.zenith}th Level 70!`, timestamp: new Date().toISOString() };
+            if (uniqueZ[window.WAR_EFFORT_THRESHOLDS.zenith - 1]) fallback = { title: "⚡ The Zenith Cohort", highlightColor: "#3FC7EB", highlightText: uniqueZ[window.WAR_EFFORT_THRESHOLDS.zenith - 1].charAt(0).toUpperCase() + uniqueZ[window.WAR_EFFORT_THRESHOLDS.zenith - 1].slice(1), suffixText: ` was the ${window.WAR_EFFORT_THRESHOLDS.zenith}th Level 70!`, timestamp: new Date().toISOString() };
             applyLockFallback('zenith', fallback, topDyn);
         }
 
-        if (totalLevels >= WAR_EFFORT_THRESHOLDS.xp && totalHks >= WAR_EFFORT_THRESHOLDS.hk && totalLoot >= WAR_EFFORT_THRESHOLDS.loot && totalZenith >= WAR_EFFORT_THRESHOLDS.zenith) {
+        if (totalLevels >= window.WAR_EFFORT_THRESHOLDS.xp && totalHks >= window.WAR_EFFORT_THRESHOLDS.hk && totalLoot >= window.WAR_EFFORT_THRESHOLDS.loot && totalZenith >= window.WAR_EFFORT_THRESHOLDS.zenith) {
             const lockTimes = [
                 new Date(window.warEffortLockTimes.xp).getTime(),
                 new Date(window.warEffortLockTimes.hk).getTime(),
@@ -7467,10 +7467,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
 
         window.warEffortSnapshots = {
-            xp: buildWarEffortSnapshot('xp', totalLevels, WAR_EFFORT_THRESHOLDS.xp, levelContributors),
-            hk: buildWarEffortSnapshot('hk', totalHks, WAR_EFFORT_THRESHOLDS.hk, hkContributors),
-            loot: buildWarEffortSnapshot('loot', totalLoot, WAR_EFFORT_THRESHOLDS.loot, lootContributors),
-            zenith: buildWarEffortSnapshot('zenith', totalZenith, WAR_EFFORT_THRESHOLDS.zenith, zenithContributors, {
+            xp: buildWarEffortSnapshot('xp', totalLevels, window.WAR_EFFORT_THRESHOLDS.xp, levelContributors),
+            hk: buildWarEffortSnapshot('hk', totalHks, window.WAR_EFFORT_THRESHOLDS.hk, hkContributors),
+            loot: buildWarEffortSnapshot('loot', totalLoot, window.WAR_EFFORT_THRESHOLDS.loot, lootContributors),
+            zenith: buildWarEffortSnapshot('zenith', totalZenith, window.WAR_EFFORT_THRESHOLDS.zenith, zenithContributors, {
                 topNameOverride: zenithFirstFinisher || (
                     window.warEffortVanguards && window.warEffortVanguards.zenith && window.warEffortVanguards.zenith[0]
                         ? window.warEffortVanguards.zenith[0]

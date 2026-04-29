@@ -3548,8 +3548,8 @@ body.nav-menu-open {
 .war-effort-shell-progress-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 12px;
+  padding: 20px 22px;
   border-radius: 16px;
 }
 
@@ -3563,18 +3563,21 @@ body.nav-menu-open {
 .war-effort-shell-progress-label {
   color: #f8e3a2;
   font-family: "Cinzel";
-  font-size: 15px;
+  font-size: 16px;
+  letter-spacing: 0.04em;
 }
 
 .war-effort-shell-progress-meta {
-  color: #c7bfaa;
-  font-size: 12px;
+  color: #c9c1ae;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .war-effort-shell-progress-track {
   position: relative;
-  height: 34px;
-  border-radius: 14px;
+  height: 36px;
+  border-radius: 15px;
   overflow: hidden;
   background: rgba(4, 4, 8, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -3594,7 +3597,9 @@ body.nav-menu-open {
 }
 
 .war-effort-shell-progress-text {
-  font-size: 14px;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
 }
 
 .war-effort-hero-stat,
@@ -7788,8 +7793,8 @@ body.nav-menu-open {
   margin: 0;
   color: #f9e9b5;
   font-family: "Cinzel", serif;
-  font-size: 20px;
-  line-height: 1.3;
+  font-size: 21px;
+  line-height: 1.22;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
 }
 
@@ -7797,14 +7802,18 @@ body.nav-menu-open {
   margin: 10px 0 16px;
   color: rgba(215, 206, 180, 0.88);
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 .war-effort-home-track {
   position: relative;
   margin-top: auto;
-  height: 32px;
-  border-radius: 12px;
+  height: 36px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 20px rgba(0, 0, 0, 0.18);
 }
 
 .war-effort-home-track .challenge-glare {
@@ -7816,10 +7825,11 @@ body.nav-menu-open {
   text-align: center;
   font-family: "Inter", sans-serif;
   font-weight: 800;
-  font-size: 12px;
-  letter-spacing: 0.03em;
+  font-size: 13px;
+  letter-spacing: 0.045em;
   line-height: 1;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .war-effort-home-track .we-text-values {
@@ -7830,15 +7840,15 @@ body.nav-menu-open {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .war-effort-home-card-leader {
   color: #f2dfaa;
   font-size: 12px;
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
 .war-effort-home-card .challenge-link {
@@ -8711,13 +8721,13 @@ body.nav-menu-open {
   }
 
   .war-effort-home-track {
-    height: 36px;
+    height: 34px;
   }
 
   .war-effort-home-track .challenge-text {
     padding: 0 10px;
-    font-size: 10px;
-    letter-spacing: 0.01em;
+    font-size: 12px;
+    letter-spacing: 0.03em;
   }
 
   .war-effort-home-track .we-text-label {
