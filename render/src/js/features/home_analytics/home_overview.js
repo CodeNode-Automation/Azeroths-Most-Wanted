@@ -121,12 +121,12 @@ function renderHomeMovementCard(dashboardConfig = {}) {
     titleEl.textContent = bootstrap ? 'Initial roster capture' : 'Latest roster movement';
     summaryEl.textContent = total > 0
         ? bootstrap
-            ? `${total.toLocaleString()} members logged on the first movement scan.`
+            ? `${total.toLocaleString()} members recorded as the movement baseline.`
             : `+${joined.toLocaleString()} joined / -${departed.toLocaleString()} departed / ↻ ${rejoined.toLocaleString()} rejoined from the latest scan.`
         : 'No roster movement logged yet.';
 
     listEl.innerHTML = '';
-    if (recent.length === 0) {
+    if (bootstrap || recent.length === 0) {
         listEl.hidden = true;
     } else {
         recent.slice(0, 5).forEach(event => {
@@ -158,7 +158,7 @@ function renderHomeMovementCard(dashboardConfig = {}) {
 
     noteEl.hidden = !bootstrap;
     noteEl.textContent = bootstrap
-        ? 'Initial roster capture from the first movement scan.'
+        ? 'Future joins, departures, and rejoins will appear here.'
         : '';
 }
 

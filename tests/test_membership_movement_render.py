@@ -148,6 +148,8 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('Latest roster movement', template_text)
         self.assertIn('Roster Movement', template_text)
         self.assertIn("renderHomeMovementCard", js_text)
+        self.assertIn("movement baseline", js_text)
+        self.assertIn("Future joins, departures, and rejoins will appear here.", js_text)
 
 
 if __name__ == "__main__":
