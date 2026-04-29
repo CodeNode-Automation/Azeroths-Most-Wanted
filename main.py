@@ -8,7 +8,7 @@ import asyncio
 import aiohttp
 import sys
 import json
-from datetime import timezone
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 from wow.auth import get_access_token
@@ -21,6 +21,7 @@ from wow.badges import (
 )
 from wow.character import fetch_character_data, update_character_state
 from wow.character_persistence import build_character_row_lookup, build_character_write_batch
+from wow.membership_movement import persist_membership_movement
 from wow.history_queries import (
     build_ladder_snapshot_query,
     build_preload_window_context,
@@ -170,6 +171,24 @@ async def main_async():
             return
 
         print(f"👥 Guild: {len(raw_guild_roster)} Total Members. Processing {len(roster_names)} valid characters.")
+
+        movement_scan_id = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        try:
+            movement_events = await persist_membership_movement(
+                session,
+                roster_names,
+                scan_id=movement_scan_id,
+                detected_at=movement_scan_id,
+            )
+            if movement_events:
+                joined_count = sum(1 for event in movement_events if event.get("event_type") == "joined")
+                departed_count = sum(1 for event in movement_events if event.get("event_type") == "departed")
+                rejoined_count = sum(1 for event in movement_events if event.get("event_type") == "rejoined")
+                print(
+                    f"👣 Guild movement detected: +{joined_count} joined / -{departed_count} departed / ↻ {rejoined_count} rejoined"
+                )
+        except Exception as e:
+            print(f"⚠️ Failed to persist guild movement events: {e}")
 
         sem = asyncio.Semaphore(5)
         tasks = [fetch_with_semaphore(sem, session, token, char, history_data) for char in roster_names]

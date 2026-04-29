@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
+from wow.turso import fetch_turso, push_turso_batch
+
 EVENT_TYPE_PRIORITY = {
     "joined": 0,
     "rejoined": 1,
@@ -211,3 +213,28 @@ def build_latest_membership_status_query():
         )
         WHERE rn = 1
     """
+
+
+async def persist_membership_movement(
+    session,
+    current_names,
+    *,
+    scan_id,
+    detected_at,
+    fetch_fn=fetch_turso,
+    push_fn=push_turso_batch,
+):
+    """Fetch the latest membership state, build events, and persist them if needed."""
+    previous_status_rows = await fetch_fn(session, build_latest_membership_status_query())
+    events = build_membership_movement_events(
+        current_names,
+        previous_status_rows,
+        scan_id=scan_id,
+        detected_at=detected_at,
+    )
+    statements = build_membership_event_insert_statements(events)
+
+    if statements:
+        await push_fn(session, statements)
+
+    return events
