@@ -8145,6 +8145,7 @@ body.nav-menu-open {
   padding: 16px 20px 18px;
   border: 1px solid rgba(198, 190, 167, 0.12);
   border-radius: 18px;
+  text-align: center;
   background:
     radial-gradient(circle at top left, rgba(255, 209, 0, 0.06), transparent 34%),
     linear-gradient(180deg, rgba(12, 12, 18, 0.98) 0%, rgba(7, 8, 12, 0.99) 100%);
@@ -8154,10 +8155,15 @@ body.nav-menu-open {
 }
 
 .home-officer-brief-head {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  min-height: 28px;
+}
+
+.home-officer-brief-head .home-nav-eyebrow {
+  margin-bottom: 0;
 }
 
 .home-officer-brief-status {
@@ -8175,6 +8181,9 @@ body.nav-menu-open {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .home-officer-brief-status[data-tone="positive"] {
@@ -8218,6 +8227,7 @@ body.nav-menu-open {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.055);
   background: rgba(255, 255, 255, 0.025);
+  text-align: left;
 }
 
 .home-officer-brief-label {
@@ -8451,8 +8461,14 @@ body.nav-menu-open {
   }
 
   .home-officer-brief-head {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-height: 0;
+  }
+
+  .home-officer-brief-status {
+    position: static;
   }
 
   .home-officer-brief-item {

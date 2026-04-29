@@ -157,6 +157,7 @@ class OfficerBriefRenderTests(unittest.IsolatedAsyncioTestCase):
     def test_template_includes_officer_brief_card_markup_and_hook(self):
         template_text = Path("render/dashboard_template.html").read_text(encoding="utf-8")
         js_text = Path("render/src/js/features/home_analytics/home_overview.js").read_text(encoding="utf-8")
+        style_text = Path("render/style.css").read_text(encoding="utf-8")
 
         self.assertIn('id="home-officer-brief-card"', template_text)
         self.assertIn('id="home-officer-brief-status"', template_text)
@@ -166,6 +167,9 @@ class OfficerBriefRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('No roster health signals are available yet.', template_text)
         self.assertIn('renderHomeOfficerBriefCard', js_text)
         self.assertIn('formatHomeOfficerBriefItemType', js_text)
+        self.assertIn('.home-officer-brief-card {', style_text)
+        self.assertIn('.home-officer-brief-head {', style_text)
+        self.assertIn('.home-officer-brief-status {', style_text)
 
 
 if __name__ == "__main__":
