@@ -71,6 +71,21 @@ class HomepageCleanupTests(unittest.TestCase):
         self.assertIn('Viewing: raid-ready roster. Filter: mains meeting the configured readiness threshold.', shell_text)
         self.assertIn('Character dossier •', script_text)
 
+    def test_search_autocomplete_helpers_are_present(self):
+        script_text = Path("render/script.js").read_text(encoding="utf-8")
+
+        self.assertIn('const CHARACTER_SEARCH_MIN_QUERY_LENGTH = 2;', script_text)
+        self.assertIn('function normalizeCharacterSearchQuery(query)', script_text)
+        self.assertIn('function getCharacterSearchRank(char, normalizedQuery)', script_text)
+        self.assertIn('function clearCharacterSearchPanels({ clearInputs = false } = {})', script_text)
+        self.assertIn('function renderCharacterSearchAutocomplete(targetEl, query, { limit = 6, forceObjectFitCover = false } = {})', script_text)
+        self.assertIn('renderCharacterSearchAutocomplete(heroSearchAutoComplete, e.target.value, { limit: 6 });', script_text)
+        self.assertIn('renderCharacterSearchAutocomplete(searchAutoComplete, e.target.value, { limit: 6, forceObjectFitCover: true });', script_text)
+        self.assertIn('clearCharacterSearchPanels({ clearInputs: true });', script_text)
+        self.assertIn('if (name === normalizedQuery) return 0;', script_text)
+        self.assertIn('if (name.startsWith(normalizedQuery)) return 1;', script_text)
+        self.assertIn('if (name.includes(normalizedQuery)) return 2;', script_text)
+
     def test_character_dossier_timeline_support_remains_intact(self):
         script_text = Path("render/script.js").read_text(encoding="utf-8")
 

@@ -279,15 +279,42 @@ window.addEventListener('DOMContentLoaded', async () => {
         targetEl.appendChild(clone);
     }
 
-    function findCharactersByName(query, limit) {
-        const normalizedQuery = (query || '').toLowerCase().trim();
-        if (normalizedQuery === '') return [];
+    const CHARACTER_SEARCH_MIN_QUERY_LENGTH = 2;
 
-        const matches = rosterData.filter(c =>
-            c.profile &&
-            c.profile.name &&
-            c.profile.name.toLowerCase().includes(normalizedQuery)
-        );
+    function normalizeCharacterSearchQuery(query) {
+        return String(query || '')
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function getCharacterSearchRank(char, normalizedQuery) {
+        const name = normalizeCharacterSearchQuery(char && char.profile ? char.profile.name : '');
+        if (!name || !normalizedQuery) return Number.POSITIVE_INFINITY;
+        if (name === normalizedQuery) return 0;
+        if (name.startsWith(normalizedQuery)) return 1;
+        if (name.includes(normalizedQuery)) return 2;
+        return Number.POSITIVE_INFINITY;
+    }
+
+    function findCharactersByName(query, limit) {
+        const normalizedQuery = normalizeCharacterSearchQuery(query);
+        if (normalizedQuery.length < CHARACTER_SEARCH_MIN_QUERY_LENGTH) return [];
+
+        const matches = rosterData
+            .map((char, index) => ({
+                char,
+                index,
+                rank: getCharacterSearchRank(char, normalizedQuery),
+                name: normalizeCharacterSearchQuery(char && char.profile ? char.profile.name : '')
+            }))
+            .filter(entry => Number.isFinite(entry.rank))
+            .sort((a, b) =>
+                a.rank - b.rank ||
+                a.name.localeCompare(b.name) ||
+                a.index - b.index
+            )
+            .map(entry => entry.char);
 
         return typeof limit === 'number' ? matches.slice(0, limit) : matches;
     }
@@ -295,8 +322,50 @@ window.addEventListener('DOMContentLoaded', async () => {
     function navigateToFirstMatchingCharacter(query) {
         const results = findCharactersByName(query);
         if (results.length > 0) {
-            window.location.hash = results[0].profile.name.toLowerCase();
+            window.selectCharacter(results[0].profile.name.toLowerCase());
         }
+    }
+
+    function clearCharacterSearchPanels({ clearInputs = false } = {}) {
+        [searchAutoComplete, heroSearchAutoComplete].forEach(panel => {
+            if (!panel) return;
+            panel.textContent = '';
+            panel.classList.remove('show');
+        });
+
+        if (clearInputs) {
+            if (searchInput) searchInput.value = '';
+            if (heroSearchInput) heroSearchInput.value = '';
+        }
+    }
+
+    function renderCharacterSearchAutocomplete(targetEl, query, { limit = 6, forceObjectFitCover = false } = {}) {
+        if (!targetEl) return [];
+
+        const normalizedQuery = normalizeCharacterSearchQuery(query);
+        targetEl.textContent = '';
+
+        if (normalizedQuery.length < CHARACTER_SEARCH_MIN_QUERY_LENGTH) {
+            targetEl.classList.remove('show');
+            return [];
+        }
+
+        const results = findCharactersByName(normalizedQuery, limit);
+
+        if (results.length > 0) {
+            results.forEach(char => {
+                appendCharacterSearchResult(targetEl, char, { forceObjectFitCover });
+            });
+            targetEl.classList.add('show');
+            return results;
+        }
+
+        const emptyTemplate = document.getElementById('tpl-ac-empty-state');
+        if (emptyTemplate) {
+            targetEl.appendChild(emptyTemplate.content.cloneNode(true));
+        }
+        targetEl.classList.add('show');
+        return [];
     }
 
     const searchInput = document.getElementById('charSearch');
@@ -307,22 +376,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     if (heroSearchInput) {
         heroSearchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            if (query === '') { heroSearchAutoComplete.classList.remove('show'); return; }
-            const results = findCharactersByName(query, 6);
-            if (results.length > 0) {
-                heroSearchAutoComplete.textContent = '';
-                results.forEach(c => {
-                    appendCharacterSearchResult(heroSearchAutoComplete, c);
-                });
-                heroSearchAutoComplete.classList.add('show');
-            } else {
-                heroSearchAutoComplete.classList.remove('show');
-            }
+            renderCharacterSearchAutocomplete(heroSearchAutoComplete, e.target.value, { limit: 6 });
         });
-        heroSearchInput.addEventListener('keypress', (e) => {
+        heroSearchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 navigateToFirstMatchingCharacter(e.target.value);
+            } else if (e.key === 'Escape') {
+                clearCharacterSearchPanels();
             }
         });
     }
@@ -357,33 +417,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            if (query === '') {
-                searchAutoComplete.classList.remove('show');
-                return;
-            }
-            
-            const results = findCharactersByName(query, 8);
-            
-            if (results.length > 0) {
-                searchAutoComplete.textContent = '';
-                results.forEach(c => {
-                    appendCharacterSearchResult(searchAutoComplete, c, { forceObjectFitCover: true });
-                });
-                searchAutoComplete.classList.add('show');
-            } else {
-                searchAutoComplete.textContent = '';
-                const emptyTemplate = document.getElementById('tpl-ac-empty-state');
-                if (emptyTemplate) {
-                    searchAutoComplete.appendChild(emptyTemplate.content.cloneNode(true));
-                }
-                searchAutoComplete.classList.add('show');
-            }
+            renderCharacterSearchAutocomplete(searchAutoComplete, e.target.value, { limit: 6, forceObjectFitCover: true });
         });
 
-        searchInput.addEventListener('keypress', (e) => {
+        searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 navigateToFirstMatchingCharacter(e.target.value);
+            } else if (e.key === 'Escape') {
+                clearCharacterSearchPanels();
             }
         });
     }
@@ -391,7 +432,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', (e) => {
         if (customOptions) customOptions.classList.remove('show');
         if (customSelect) customSelect.classList.remove('active');
-        if (searchAutoComplete) searchAutoComplete.classList.remove('show');
+        clearCharacterSearchPanels();
 
         const homeRouteTrigger = e.target.closest('[data-home-route]');
         if (homeRouteTrigger) {
@@ -4344,8 +4385,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         fullCardContainer.classList.remove('view-active');
         if (analyticsView) analyticsView.classList.remove('view-active');
         if (architectureView) architectureView.classList.remove('view-active');
-        if (searchInput) searchInput.value = '';
-        if (searchAutoComplete) searchAutoComplete.classList.remove('show');
+        clearCharacterSearchPanels({ clearInputs: true });
         
         // Show nav search by default on sub-pages
         const navSearch = document.querySelector('.navbar .search-container');
@@ -5300,6 +5340,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.selectCharacter = function(charName) {
+        clearCharacterSearchPanels({ clearInputs: true });
         window.location.hash = charName;
     }
 
