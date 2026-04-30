@@ -189,12 +189,13 @@ function renderHomeLatestChangesCard(dashboardConfig = {}) {
 
 function renderHomeMovementCard(dashboardConfig = {}) {
     const movement = dashboardConfig.membership_movement || {};
+    const cardEl = document.getElementById('home-movement-card');
     const titleEl = document.getElementById('home-movement-title');
     const summaryEl = document.getElementById('home-movement-summary');
     const listEl = document.getElementById('home-movement-list');
     const noteEl = document.getElementById('home-movement-note');
 
-    if (!titleEl || !summaryEl || !listEl || !noteEl) return;
+    if (!cardEl || !titleEl || !summaryEl || !listEl || !noteEl) return;
 
     const joined = getNumericConfigValue(movement, 'joined', 0);
     const departed = getNumericConfigValue(movement, 'departed', 0);

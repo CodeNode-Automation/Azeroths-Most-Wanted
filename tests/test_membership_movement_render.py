@@ -263,6 +263,15 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('.home-movement-card[data-movement-state="bootstrap"] .home-nav-copy,', css_text)
         self.assertIn('.home-movement-card[data-movement-state="count-only"] .home-nav-copy,', css_text)
 
+    def test_home_movement_card_declares_root_card_before_setting_state(self):
+        js_text = Path("render/src/js/features/home_analytics/home_overview.js").read_text(encoding="utf-8")
+
+        self.assertIn("function renderHomeMovementCard(dashboardConfig = {}) {", js_text)
+        self.assertIn("const cardEl = document.getElementById('home-movement-card');", js_text)
+        self.assertIn("if (!cardEl || !titleEl || !summaryEl || !listEl || !noteEl) return;", js_text)
+        self.assertIn("cardEl.setAttribute('data-movement-state', movementState);", js_text)
+        self.assertIn('data-movement-state', js_text)
+
     def test_template_includes_latest_changes_card_markup_and_hook(self):
         template_text = Path("render/dashboard_template.html").read_text(encoding="utf-8")
         js_text = Path("render/src/js/features/home_analytics/home_overview.js").read_text(encoding="utf-8")
