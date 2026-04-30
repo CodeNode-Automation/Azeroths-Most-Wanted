@@ -252,8 +252,10 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('Roster Movement', template_text)
         self.assertIn("renderHomeMovementCard", js_text)
         self.assertIn("movement baseline", js_text)
-        self.assertIn("Tracked Characters includes scanned mains and alts, so the totals can differ.", js_text)
-        self.assertIn("Future joins, departures, and rejoins appear after the next comparison scan.", js_text)
+        self.assertIn("Guild roster currently reports", js_text)
+        self.assertIn("detail-eligible characters are processed for profile, gear, activity, and movement intelligence.", js_text)
+        self.assertIn("Very low-level characters may appear in the guild roster count before full profile, equipment, and activity details are available.", js_text)
+        self.assertIn("No processed character departure was identified, likely because the change involved a low-level or detail-limited roster entry.", js_text)
 
     def test_template_includes_latest_changes_card_markup_and_hook(self):
         template_text = Path("render/dashboard_template.html").read_text(encoding="utf-8")
@@ -266,7 +268,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('What changed recently', template_text)
         self.assertIn('renderHomeLatestChangesCard', js_text)
         self.assertIn('No notable changes recorded yet.', js_text)
-        self.assertIn('Recent activity and trend shifts worth noting.', js_text)
+        self.assertIn('Recent activity, trend shifts, and roster count changes worth noting.', js_text)
         self.assertIn(
             'Activity and trend changes will appear after comparison scans detect movement beyond the baseline.',
             helper_text,
@@ -278,7 +280,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         script_text = Path("render/script.js").read_text(encoding="utf-8")
         css_text = Path("render/style.css").read_text(encoding="utf-8")
 
-        self.assertIn('Tracked Characters', template_text)
+        self.assertIn('Guild Roster', template_text)
         self.assertIn('Active Mains', template_text)
         self.assertIn('Raid-Ready Mains', template_text)
         self.assertIn('Avg Level 70 iLvl', template_text)
@@ -288,7 +290,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('id="home-pulse-ilvl-support-a"', template_text)
         self.assertIn("setHomePulseSupport", js_text)
         self.assertIn("setHomeTextVisibility", js_text)
-        self.assertIn("All scanned guild characters", js_text)
+        self.assertIn("Raw guild roster total", js_text)
         self.assertIn("Seen in the last 14 days.", js_text)
         self.assertIn("deployable roster strength", js_text)
         self.assertIn("Average equipped iLvl for level 70 mains.", js_text)

@@ -158,7 +158,7 @@ function renderHomeLatestChangesCard(dashboardConfig = {}) {
     titleEl.textContent = latestChanges.title || 'What changed recently';
     summaryEl.textContent = latestChanges.empty || items.length === 0
         ? emptyText
-        : 'Recent activity and trend shifts worth noting.';
+        : 'Recent activity, trend shifts, and roster count changes worth noting.';
 
     listEl.innerHTML = '';
     if (latestChanges.empty || items.length === 0) {
@@ -187,7 +187,7 @@ function renderHomeLatestChangesCard(dashboardConfig = {}) {
     listEl.hidden = false;
 }
 
-function renderHomeMovementCard(dashboardConfig = {}) {
+function renderHomeMovementCard(dashboardConfig = {}, { processedRosterCount = 0 } = {}) {
     const movement = dashboardConfig.membership_movement || {};
     const titleEl = document.getElementById('home-movement-title');
     const summaryEl = document.getElementById('home-movement-summary');
@@ -202,16 +202,25 @@ function renderHomeMovementCard(dashboardConfig = {}) {
     const total = getNumericConfigValue(movement, 'total', 0);
     const recent = Array.isArray(movement.recent) ? movement.recent : [];
     const bootstrap = Boolean(movement.bootstrap);
+    const rawRosterTrend = getNumericConfigValue((dashboardConfig && dashboardConfig.global_trends) || {}, 'trend_total', 0);
+    const rawRosterTotal = getNumericConfigValue(dashboardConfig, 'total_members', 0);
+    const countOnlyRawDelta = !bootstrap && total === 0 && rawRosterTrend !== 0;
 
-    titleEl.textContent = bootstrap ? 'Initial roster capture' : 'Latest roster movement';
-    summaryEl.textContent = total > 0
-        ? bootstrap
-            ? `${total.toLocaleString()} members recorded as the movement baseline.`
-            : `+${joined.toLocaleString()} joined / -${departed.toLocaleString()} departed / ↻ ${rejoined.toLocaleString()} rejoined from the latest scan.`
-        : 'No roster movement logged yet.';
+    titleEl.textContent = bootstrap
+        ? 'Initial roster capture'
+        : countOnlyRawDelta
+            ? 'Roster count change'
+            : 'Latest roster movement';
+    summaryEl.textContent = bootstrap
+        ? `${total.toLocaleString()} detail-eligible characters recorded as the movement baseline.`
+        : countOnlyRawDelta
+            ? `Guild roster ${rawRosterTrend > 0 ? 'increased' : 'decreased'} by ${Math.abs(rawRosterTrend).toLocaleString()} since the previous scan.`
+            : total > 0
+                ? `+${joined.toLocaleString()} joined / -${departed.toLocaleString()} departed / ↻ ${rejoined.toLocaleString()} rejoined from the latest scan.`
+                : 'No roster movement logged yet.';
 
     listEl.innerHTML = '';
-    if (bootstrap || recent.length === 0) {
+    if (bootstrap || countOnlyRawDelta || recent.length === 0) {
         listEl.hidden = true;
     } else {
         recent.slice(0, 5).forEach(event => {
@@ -241,10 +250,12 @@ function renderHomeMovementCard(dashboardConfig = {}) {
         listEl.hidden = false;
     }
 
-    noteEl.hidden = !bootstrap;
+    noteEl.hidden = !(bootstrap || countOnlyRawDelta);
     noteEl.textContent = bootstrap
-        ? 'Membership baseline tracks guild roster snapshots. Tracked Characters includes scanned mains and alts, so the totals can differ. Future joins, departures, and rejoins appear after the next comparison scan.'
-        : '';
+        ? `Guild roster currently reports ${rawRosterTotal.toLocaleString()} total characters. ${Math.max(0, processedRosterCount).toLocaleString()} detail-eligible characters are processed for profile, gear, activity, and movement intelligence. Very low-level characters may appear in the guild roster count before full profile, equipment, and activity details are available.`
+        : countOnlyRawDelta
+            ? 'No processed character departure was identified, likely because the change involved a low-level or detail-limited roster entry.'
+            : '';
 }
 
 function renderHomeOfficerBriefCard(dashboardConfig = {}) {
@@ -342,13 +353,13 @@ function populateHomeOverview(dashboardConfig = {}) {
     setHomeText('home-pulse-raidready', raidReadyMainCount.toLocaleString());
     setHomeText('home-kpi-ilvl', avgLvl70Ilvl.toLocaleString());
 
-    setHomeCardText('home-pulse-total', '.home-pulse-label', 'Tracked Characters');
-    setHomeCardText('home-pulse-total', '.home-pulse-context', 'All scanned guild characters');
+    setHomeCardText('home-pulse-total', '.home-pulse-label', 'Guild Roster');
+    setHomeCardText('home-pulse-total', '.home-pulse-context', 'Raw guild roster total');
     setHomePulseSupport('home-pulse-total', [
         `${totalMainCount.toLocaleString()} mains`,
         `${totalAltCount.toLocaleString()} alts`
     ]);
-    setHomeCardText('home-pulse-total', '.home-pulse-meta', 'Main-based cards use mains first.');
+    setHomeCardText('home-pulse-total', '.home-pulse-meta', 'Raw roster total from the guild roster endpoint.');
 
     setHomeCardText('home-pulse-active', '.home-pulse-label', 'Active Mains');
     setHomeCardText('home-pulse-active', '.home-pulse-context', '14-day window');
@@ -373,7 +384,7 @@ function populateHomeOverview(dashboardConfig = {}) {
     setHomePulseSupport('home-kpi-ilvl', ['Mains only']);
     setHomeCardText('home-kpi-ilvl', '.home-pulse-meta', 'Average equipped iLvl for level 70 mains.');
 
-    renderHomeMovementCard(dashboardConfig);
+    renderHomeMovementCard(dashboardConfig, { processedRosterCount: processedRoster.length });
     renderHomeLatestChangesCard(dashboardConfig);
     renderHomeOfficerBriefCard(dashboardConfig);
 }

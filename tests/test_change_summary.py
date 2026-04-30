@@ -54,6 +54,28 @@ class ChangeSummaryTests(unittest.TestCase):
         self.assertEqual([item["type"] for item in summary["items"]], ["level_up", "item"])
         self.assertNotIn("movement", [item["type"] for item in summary["items"]])
 
+    def test_raw_roster_delta_is_summarized_when_no_named_movement_exists(self):
+        summary = build_change_summary(
+            membership_movement={},
+            timeline_events=[],
+            trend_data={
+                "global_metrics": {
+                    "total_members": 657,
+                },
+                "global_trends": {
+                    "trend_total": -1,
+                },
+            },
+        )
+
+        self.assertEqual(len(summary["items"]), 1)
+        self.assertEqual(summary["items"][0]["type"], "movement")
+        self.assertEqual(
+            summary["items"][0]["label"],
+            "Guild roster decreased by 1 since the previous scan.",
+        )
+        self.assertEqual(summary["items"][0]["tone"], "neutral")
+
     def test_normal_membership_movement_counts_are_summarized_in_order(self):
         summary = build_change_summary(
             membership_movement={

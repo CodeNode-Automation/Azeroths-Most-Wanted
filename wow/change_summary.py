@@ -64,6 +64,31 @@ def _extract_membership_movement_item(membership_movement: Any) -> list[dict[str
     ]
 
 
+def _extract_raw_roster_delta_item(trend_data: Any, membership_movement: Any, movement_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if movement_items:
+        return []
+
+    if isinstance(membership_movement, dict) and membership_movement.get("bootstrap"):
+        return []
+
+    source = _extract_trend_source(trend_data)
+    if not source:
+        return []
+
+    raw_delta = _clean_int(source.get("trend_total"), 0)
+    if raw_delta == 0:
+        return []
+
+    direction = "increased" if raw_delta > 0 else "decreased"
+    return [
+        {
+            "type": "movement",
+            "label": f"Guild roster {direction} by {abs(raw_delta)} since the previous scan.",
+            "tone": "neutral",
+        }
+    ]
+
+
 def _extract_timeline_items(timeline_events: Any) -> list[dict[str, Any]]:
     counts = Counter()
 
@@ -116,23 +141,34 @@ def _extract_trend_source(trend_data: Any) -> dict[str, Any]:
     return {}
 
 
-def _extract_trend_item(trend_data: Any) -> list[dict[str, Any]]:
+def _extract_trend_item(trend_data: Any, *, allow_total_trend: bool = True) -> list[dict[str, Any]]:
     source = _extract_trend_source(trend_data)
     if not source:
         return []
 
-    preferred_groups = (
+    preferred_groups = [
         (
             ("trend_active_mains", "active mains"),
             ("trend_ready_mains", "raid-ready mains"),
             ("trend_total_mains", "roster mains"),
         ),
-        (
-            ("trend_active", "active"),
-            ("trend_ready", "raid-ready"),
-            ("trend_total", "roster"),
-        ),
-    )
+    ]
+
+    if allow_total_trend:
+        preferred_groups.append(
+            (
+                ("trend_active", "active"),
+                ("trend_ready", "raid-ready"),
+                ("trend_total", "roster"),
+            )
+        )
+    else:
+        preferred_groups.append(
+            (
+                ("trend_active", "active"),
+                ("trend_ready", "raid-ready"),
+            )
+        )
 
     for group in preferred_groups:
         parts = []
@@ -164,9 +200,12 @@ def build_change_summary(*, membership_movement=None, timeline_events=None, tren
       exact scan-to-scan precision
     """
     items = []
-    items.extend(_extract_membership_movement_item(membership_movement))
+    movement_items = _extract_membership_movement_item(membership_movement)
+    items.extend(movement_items)
+    raw_roster_delta_items = _extract_raw_roster_delta_item(trend_data, membership_movement, movement_items)
+    items.extend(raw_roster_delta_items)
     items.extend(_extract_timeline_items(timeline_events))
-    items.extend(_extract_trend_item(trend_data))
+    items.extend(_extract_trend_item(trend_data, allow_total_trend=not raw_roster_delta_items))
 
     try:
         safe_limit = int(limit)
