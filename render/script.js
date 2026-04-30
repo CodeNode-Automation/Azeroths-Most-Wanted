@@ -182,6 +182,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const emptyState = document.getElementById('empty-state');
     const conciseView = document.getElementById('concise-view');
     const conciseViewTitle = document.getElementById('concise-view-title');
+    const conciseViewContext = document.getElementById('concise-view-context');
     const conciseList = document.getElementById('concise-char-list');
     const conciseShellHost = document.getElementById('concise-shell-host');
     const fullCardContainer = document.getElementById('full-card-container');
@@ -476,6 +477,13 @@ window.addEventListener('DOMContentLoaded', async () => {
                 selectValueText.innerHTML = "Select View...";
             }
         }
+    }
+
+    function setConciseViewContext(text) {
+        if (!conciseViewContext) return;
+        const cleanText = String(text || '').trim();
+        conciseViewContext.textContent = cleanText;
+        conciseViewContext.hidden = cleanText === '';
     }
 
     const heatmapGrid = document.getElementById('heatmap-grid');
@@ -5356,6 +5364,26 @@ window.addEventListener('DOMContentLoaded', async () => {
         const isHallOfHeroesHash = hash === 'badges';
         const isWarEffortHash = hash.startsWith('war-effort-');
         const shellHost = document.getElementById('concise-shell-host');
+        let conciseContextText = '';
+
+        if (hash === 'total' || hash === 'all') {
+            conciseContextText = 'Viewing: full roster. Filter: all scanned mains and alts.';
+        } else if (hash === 'active') {
+            conciseContextText = 'Viewing: active roster. Filter: mains seen in the last 14 days.';
+        } else if (hash === 'raidready') {
+            conciseContextText = 'Viewing: raid-ready roster. Filter: mains meeting the configured readiness threshold.';
+        } else if (hash === 'alt-heroes') {
+            conciseContextText = 'Viewing: reserve roster. Filter: tracked alts only.';
+        } else if (hash === 'badges') {
+            conciseContextText = 'Viewing: Hall of Heroes. Filter: decorated characters.';
+        } else if (isAnalyticsDrillHash) {
+            conciseContextText = 'Viewing: filtered roster slice.';
+        } else if (isLadderHash) {
+            conciseContextText = 'Viewing: ladder board.';
+        } else if (isWarEffortHash) {
+            conciseContextText = 'Viewing: War Effort objective board.';
+        }
+        setConciseViewContext(conciseContextText);
 
         conciseShellFilterState = null;
 
@@ -5576,7 +5604,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 kicker: 'Service History',
                 title: `📜 ${formattedName}'s Recent Activity`,
                 subtitle: 'Recent loot drops, level gains, and earned honors recorded for this hero.',
-                meta: `${formattedName} dossier`
+                meta: `Character dossier • ${formattedName}`
             });
             window.currentFilteredChars = [charName.toLowerCase()]; 
             applyTimelineFilters(); 
@@ -5715,11 +5743,11 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const now = Date.now();
                 return (now - lastLogin) <= (14 * 24 * 60 * 60 * 1000);
             });
-            showConciseView(`Active Members Overview (${activeRoster.length})`, activeRoster, false, false, 'ilvl');
+            showConciseView(`Active Roster Overview (${activeRoster.length})`, activeRoster, false, false, 'ilvl');
             updateDropdownLabel('all');
         } else if (hash === 'raidready') {
             const raidReadyRoster = rosterData.filter(c => c.profile && c.profile.level === 70 && (c.profile.equipped_item_level || 0) >= 110);
-            showConciseView(`Raid Ready Overview (${raidReadyRoster.length})`, raidReadyRoster, false, false, 'ilvl');
+            showConciseView(`Raid-Ready Roster Overview (${raidReadyRoster.length})`, raidReadyRoster, false, false, 'ilvl');
             updateDropdownLabel('all');
         } else if (hash === 'alt-heroes') {
             const altRoster = rosterData.filter(c => isAltCharacter(c));
@@ -5727,7 +5755,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             updateDropdownLabel('alt-heroes');
         } else if (hash === 'all') {
             const activeLabel = active14Days > 0 ? `(${active14Days} Active)` : '';
-            showConciseView(`Processed Roster Overview ${activeLabel}`, rosterData, false, true);
+            showConciseView(`Full Roster Overview ${activeLabel}`, rosterData, false, true);
             updateDropdownLabel('all');
         } else if (hash.startsWith('class-')) {
             const className = hash.replace('class-', '');

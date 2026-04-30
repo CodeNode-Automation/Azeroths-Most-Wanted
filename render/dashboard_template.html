@@ -86,7 +86,7 @@
     <template id="tpl-ac-empty-state">
         <div class="ac-empty-state">
             <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_head_murloc_01.jpg" loading="lazy" class="ac-empty-icon">
-            <span class="ac-empty-text">No heroes found. Try a different name.</span>
+            <span class="ac-empty-text">No matching character found. Try a character name or a shorter search.</span>
         </div>
     </template>
 
@@ -1587,7 +1587,11 @@
             </div>
 
             <div id="concise-view">
-                <h2 id="concise-view-title">Guild Overview</h2>
+                <div class="concise-view-header">
+                    <h2 id="concise-view-title">Guild Overview</h2>
+                    <p id="concise-view-context" class="concise-view-context" hidden></p>
+                    <button type="button" id="concise-back-btn" class="concise-back-btn" onclick="returnToHome()">Back to overview</button>
+                </div>
                 <div id="concise-shell-host" class="concise-shell-host"></div>
                 
                 <div id="concise-content-wrapper" class="concise-wrapper">

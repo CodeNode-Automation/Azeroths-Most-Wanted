@@ -129,8 +129,8 @@ function getCommandViewConfig(hashUrl, characters, isRawRoster = false, dashboar
         return {
             overline: 'The Grand Muster Roll',
             title: 'Guild Census & Reinforcement Ledger',
-            description: 'A full census of the guild warband, separating the mainline from the wider bench while showing where level-cap depth, class pressure, and reinforcements actually stand.',
-            ruleText: 'Includes the full scanned guild roster. Use this board to read the mainline beside the wider bench without hiding either count.',
+            description: 'Viewing: full roster. Filter: all scanned mains and alts.',
+            ruleText: 'Use this board when you need the complete census instead of a narrower slice.',
             theme: 'total',
             stats: [
                 { value: totalCountAll.toLocaleString(), label: 'All Characters' },
@@ -156,8 +156,8 @@ function getCommandViewConfig(hashUrl, characters, isRawRoster = false, dashboar
         return {
             overline: 'The Live Muster',
             title: 'Operational Readiness Watch',
-            description: 'A present-tense board for who is still moving, who is still gearing, and whether the active mains core actually looks ready for the next raid week.',
-            ruleText: 'Includes heroes seen within the last 14 days. This board keeps the active mains core primary while preserving the full active slice.',
+            description: 'Viewing: active roster. Filter: mains seen in the last 14 days.',
+            ruleText: 'This board keeps active mains in front while preserving the full recent roster for context.',
             theme: 'active',
             stats: [
                 { value: activeCountMains.toLocaleString(), label: 'Active Mains' },
@@ -178,8 +178,8 @@ function getCommandViewConfig(hashUrl, characters, isRawRoster = false, dashboar
         return {
             overline: 'The Ready Room',
             title: 'Deployment Board',
-            description: 'A tactical board for who can zone in now, where the healing and tank backbone really sits, and how deep the ready roster goes beyond the first pull.',
-            ruleText: 'Includes level 70 heroes with equipped item level 110 or higher. This board keeps ready mains primary while preserving full deployment depth.',
+            description: 'Viewing: raid-ready roster. Filter: mains meeting the configured readiness threshold.',
+            ruleText: 'This board shows who can step in now while preserving the full deployable depth of the guild.',
             theme: 'raidready',
             stats: [
                 { value: raidReadyCountMains.toLocaleString(), label: 'Ready Mains' },

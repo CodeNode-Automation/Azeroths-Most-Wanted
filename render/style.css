@@ -2548,6 +2548,53 @@ body.nav-menu-open {
   margin-bottom: 20px;
   text-shadow: 0 2px 4px #000;
 }
+.concise-view-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 14px;
+}
+.concise-view-context {
+  margin: 0;
+  color: #c9c0ab;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 72ch;
+}
+.concise-back-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 209, 0, 0.28);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 209, 0, 0.12), rgba(255, 128, 0, 0.08));
+  color: #ffd100;
+  font-family: "Cinzel";
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+.concise-back-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 209, 0, 0.48);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.42),
+    0 0 18px rgba(255, 209, 0, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.concise-back-btn:focus-visible {
+  outline: 2px solid rgba(255, 209, 0, 0.95);
+  outline-offset: 3px;
+  box-shadow: var(--amw-surface-focus-ring);
+}
 .concise-shell-host {
   width: 100%;
   min-width: 0;

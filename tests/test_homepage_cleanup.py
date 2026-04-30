@@ -44,6 +44,10 @@ class HomepageCleanupTests(unittest.TestCase):
         self.assertIn('.home-metric-scope-panel {', css_text)
         self.assertIn('.search-box:has(input:focus-visible) {', css_text)
         self.assertIn('.hero-search-box:has(input:focus-visible) {', css_text)
+        self.assertIn('.concise-view-header {', css_text)
+        self.assertIn('.concise-view-context {', css_text)
+        self.assertIn('.concise-back-btn {', css_text)
+        self.assertIn('.concise-back-btn:focus-visible {', css_text)
         self.assertIn('.dashboard-footer {', css_text)
         self.assertIn('.footer-disclaimer {', css_text)
         self.assertNotIn('analytics-intel-section-chronicle', template_text)
@@ -52,6 +56,20 @@ class HomepageCleanupTests(unittest.TestCase):
         self.assertNotIn('Campaign Chronicle', script_text)
         self.assertNotIn('Recent Campaign Activity', script_text)
         self.assertNotIn('applyChronicleCard', cards_text)
+
+    def test_navigation_context_and_return_controls_are_present(self):
+        template_text = Path("render/dashboard_template.html").read_text(encoding="utf-8")
+        script_text = Path("render/script.js").read_text(encoding="utf-8")
+        shell_text = Path("render/src/js/features/command_hall/command_shell.js").read_text(encoding="utf-8")
+
+        self.assertIn('id="concise-view-context"', template_text)
+        self.assertIn('id="concise-back-btn"', template_text)
+        self.assertIn('Back to overview', template_text)
+        self.assertIn('No matching character found. Try a character name or a shorter search.', template_text)
+        self.assertIn('Viewing: full roster. Filter: all scanned mains and alts.', shell_text)
+        self.assertIn('Viewing: active roster. Filter: mains seen in the last 14 days.', shell_text)
+        self.assertIn('Viewing: raid-ready roster. Filter: mains meeting the configured readiness threshold.', shell_text)
+        self.assertIn('Character dossier •', script_text)
 
     def test_character_dossier_timeline_support_remains_intact(self):
         script_text = Path("render/script.js").read_text(encoding="utf-8")
