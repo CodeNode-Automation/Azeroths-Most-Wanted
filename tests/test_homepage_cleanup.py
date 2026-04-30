@@ -26,6 +26,7 @@ class HomepageCleanupTests(unittest.TestCase):
         self.assertIn('Metric Scope', template_text)
         self.assertIn('Guild Roster:</strong> raw guild roster total from the roster endpoint, including mains and alts.', template_text)
         self.assertIn('Roster Movement:</strong> guild membership snapshots used to detect joins, departures, and rejoins, so its baseline can differ from raw roster totals and detail-eligible processed counts.', template_text)
+        self.assertIn('Level Distribution <span class="chart-title-sub">Roster-known Levels</span>', template_text)
         self.assertIn('Movement, recent changes, and officer health from the latest guild snapshot.', template_text)
         self.assertIn('Dashboard built: {{ last_updated_display }}', template_text)
         self.assertIn('class="home-insights-row"', template_text)

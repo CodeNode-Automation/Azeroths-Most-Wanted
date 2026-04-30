@@ -187,7 +187,7 @@ function renderHomeLatestChangesCard(dashboardConfig = {}) {
     listEl.hidden = false;
 }
 
-function renderHomeMovementCard(dashboardConfig = {}, { processedRosterCount = 0 } = {}) {
+function renderHomeMovementCard(dashboardConfig = {}) {
     const movement = dashboardConfig.membership_movement || {};
     const titleEl = document.getElementById('home-movement-title');
     const summaryEl = document.getElementById('home-movement-summary');
@@ -252,9 +252,9 @@ function renderHomeMovementCard(dashboardConfig = {}, { processedRosterCount = 0
 
     noteEl.hidden = !(bootstrap || countOnlyRawDelta);
     noteEl.textContent = bootstrap
-        ? `Guild roster currently reports ${rawRosterTotal.toLocaleString()} total characters. ${Math.max(0, processedRosterCount).toLocaleString()} detail-eligible characters are processed for profile, gear, activity, and movement intelligence. Very low-level characters may appear in the guild roster count before full profile, equipment, and activity details are available.`
+        ? `Guild roster currently reports ${rawRosterTotal.toLocaleString()} total characters. ${total.toLocaleString()} detail-eligible characters are recorded as the movement baseline for profile, gear, activity, and movement intelligence. Very low-level characters and characters with restricted Blizzard profile privacy may appear in the guild roster and level distribution before full profile, equipment, activity, and statistics details are available.`
         : countOnlyRawDelta
-            ? 'No processed character departure was identified, likely because the change involved a low-level or detail-limited roster entry.'
+            ? 'No processed character departure was identified, likely because the change involved a low-level or privacy-restricted roster entry.'
             : '';
 }
 
@@ -384,7 +384,7 @@ function populateHomeOverview(dashboardConfig = {}) {
     setHomePulseSupport('home-kpi-ilvl', ['Mains only']);
     setHomeCardText('home-kpi-ilvl', '.home-pulse-meta', 'Average equipped iLvl for level 70 mains.');
 
-    renderHomeMovementCard(dashboardConfig, { processedRosterCount: processedRoster.length });
+    renderHomeMovementCard(dashboardConfig);
     renderHomeLatestChangesCard(dashboardConfig);
     renderHomeOfficerBriefCard(dashboardConfig);
 }

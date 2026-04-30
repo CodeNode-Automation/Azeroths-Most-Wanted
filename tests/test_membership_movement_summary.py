@@ -3,6 +3,7 @@ import unittest
 from wow.membership_movement import build_latest_membership_movement_query
 from wow.membership_movement import build_recent_membership_movement_query
 from wow.membership_movement import summarize_membership_events
+from wow.trends import process_global_trends
 
 
 class MembershipMovementSummaryTests(unittest.TestCase):
@@ -114,6 +115,43 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         self.assertEqual(summary["joined"], 2)
         self.assertEqual(summary["total"], 2)
         self.assertEqual(len(summary["recent"]), 1)
+
+    def test_process_global_trends_serializes_raw_totals_for_count_only_deltas(self):
+        roster_data = [
+            {
+                "profile": {
+                    "name": "Alpha",
+                    "level": 70,
+                    "equipped_item_level": 120,
+                    "last_login_timestamp": 0,
+                }
+            }
+        ]
+        raw_guild_roster = [
+            {
+                "name": "Alpha",
+                "level": 70,
+                "rank": "Member",
+            }
+        ]
+
+        realm_data, _, _ = process_global_trends(
+            roster_data,
+            raw_guild_roster,
+            {"global_metrics": {}, "global_trends": {}},
+            {
+                "last_total": 658,
+                "last_active": 0,
+                "last_ready": 0,
+                "last_total_mains": 658,
+                "last_active_mains": 0,
+                "last_ready_mains": 0,
+            },
+        )
+
+        self.assertIn("global_trends", realm_data)
+        self.assertEqual(realm_data["global_trends"]["total_members"], 1)
+        self.assertEqual(realm_data["global_trends"]["previous_total_members"], 658)
 
 
 if __name__ == "__main__":

@@ -59,11 +59,9 @@ class ChangeSummaryTests(unittest.TestCase):
             membership_movement={},
             timeline_events=[],
             trend_data={
-                "global_metrics": {
-                    "total_members": 657,
-                },
                 "global_trends": {
-                    "trend_total": -1,
+                    "total_members": 657,
+                    "previous_total_members": 658,
                 },
             },
         )

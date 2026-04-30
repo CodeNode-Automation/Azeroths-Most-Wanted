@@ -253,9 +253,11 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("renderHomeMovementCard", js_text)
         self.assertIn("movement baseline", js_text)
         self.assertIn("Guild roster currently reports", js_text)
-        self.assertIn("detail-eligible characters are processed for profile, gear, activity, and movement intelligence.", js_text)
-        self.assertIn("Very low-level characters may appear in the guild roster count before full profile, equipment, and activity details are available.", js_text)
-        self.assertIn("No processed character departure was identified, likely because the change involved a low-level or detail-limited roster entry.", js_text)
+        self.assertIn("detail-eligible characters are recorded as the movement baseline for profile, gear, activity, and movement intelligence.", js_text)
+        self.assertIn("${total.toLocaleString()} detail-eligible characters are recorded as the movement baseline", js_text)
+        self.assertNotIn("processedRosterCount", js_text)
+        self.assertIn("Very low-level characters and characters with restricted Blizzard profile privacy may appear in the guild roster and level distribution before full profile, equipment, activity, and statistics details are available.", js_text)
+        self.assertIn("No processed character departure was identified, likely because the change involved a low-level or privacy-restricted roster entry.", js_text)
 
     def test_template_includes_latest_changes_card_markup_and_hook(self):
         template_text = Path("render/dashboard_template.html").read_text(encoding="utf-8")

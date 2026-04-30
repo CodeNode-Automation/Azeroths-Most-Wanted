@@ -75,7 +75,14 @@ def _extract_raw_roster_delta_item(trend_data: Any, membership_movement: Any, mo
     if not source:
         return []
 
-    raw_delta = _clean_int(source.get("trend_total"), 0)
+    current_total = _clean_int(source.get("total_members"), 0)
+    previous_total = _clean_int(source.get("previous_total_members"), _clean_int(source.get("last_total"), 0))
+
+    if current_total > 0 and previous_total > 0 and current_total != previous_total:
+        raw_delta = current_total - previous_total
+    else:
+        raw_delta = _clean_int(source.get("trend_total"), 0)
+
     if raw_delta == 0:
         return []
 

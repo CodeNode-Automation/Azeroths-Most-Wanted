@@ -36,6 +36,14 @@ def process_global_trends(roster_data, raw_guild_roster, realm_data, gt_row):
     active_14_days_mains = 0
     raid_ready_count = 0
     raid_ready_count_mains = 0
+    last_total = total_members
+    previous_total_members = total_members
+    last_active = active_14_days
+    last_ready = raid_ready_count
+    last_total_mains = total_members_mains
+    previous_total_members_mains = total_members_mains
+    last_active_mains = active_14_days_mains
+    last_ready_mains = raid_ready_count_mains
     current_time_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
     fourteen_days_ms = 14 * 24 * 60 * 60 * 1000 
     
@@ -75,28 +83,28 @@ def process_global_trends(roster_data, raw_guild_roster, realm_data, gt_row):
     trend_total_mains, trend_active_mains, trend_ready_mains = 0, 0, 0
     
     if gt_row:
-        last_total = gt_row.get('last_total')
+        previous_total_members = gt_row.get('last_total')
         last_active = gt_row.get('last_active')
         last_ready = gt_row.get('last_ready')
-        last_total_mains = gt_row.get('last_total_mains')
+        previous_total_members_mains = gt_row.get('last_total_mains')
         last_active_mains = gt_row.get('last_active_mains')
         last_ready_mains = gt_row.get('last_ready_mains')
 
-        if last_total is None:
-            last_total = total_members
+        if previous_total_members is None:
+            previous_total_members = total_members
         if last_active is None:
             last_active = active_14_days
         if last_ready is None:
             last_ready = raid_ready_count
-        if last_total_mains is None:
-            last_total_mains = total_members_mains
+        if previous_total_members_mains is None:
+            previous_total_members_mains = total_members_mains
         if last_active_mains is None:
             last_active_mains = active_14_days_mains
         if last_ready_mains is None:
             last_ready_mains = raid_ready_count_mains
         
-        if total_members != last_total:
-            trend_total = total_members - last_total
+        if total_members != previous_total_members:
+            trend_total = total_members - previous_total_members
             last_total = total_members
             
         if active_14_days != last_active:
@@ -107,8 +115,8 @@ def process_global_trends(roster_data, raw_guild_roster, realm_data, gt_row):
             trend_ready = raid_ready_count - last_ready
             last_ready = raid_ready_count
 
-        if total_members_mains != last_total_mains:
-            trend_total_mains = total_members_mains - last_total_mains
+        if total_members_mains != previous_total_members_mains:
+            trend_total_mains = total_members_mains - previous_total_members_mains
             last_total_mains = total_members_mains
 
         if active_14_days_mains != last_active_mains:
@@ -171,6 +179,8 @@ def process_global_trends(roster_data, raw_guild_roster, realm_data, gt_row):
         'trend_total_mains': trend_total_mains,
         'trend_active_mains': trend_active_mains,
         'trend_ready_mains': trend_ready_mains,
+        'total_members': total_members,
+        'previous_total_members': previous_total_members,
     }
     realm_data['global_metrics'] = {
         'total_members': total_members,
