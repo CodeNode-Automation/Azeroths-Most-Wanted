@@ -376,7 +376,7 @@ function buildDossierRecognitionItems(profile, source = null) {
     return items;
 }
 
-function buildDossierIntelligenceSection({ label, items = [] }) {
+function buildDossierIntelligenceSection({ label, meta = '', items = [] }) {
     const section = document.createElement('div');
     section.className = 'char-card-intelligence-section';
 
@@ -384,6 +384,13 @@ function buildDossierIntelligenceSection({ label, items = [] }) {
     labelEl.className = 'char-card-section-label char-card-intelligence-section-label';
     labelEl.textContent = label;
     section.appendChild(labelEl);
+
+    if (meta) {
+        const metaEl = document.createElement('p');
+        metaEl.className = 'char-card-intelligence-section-meta';
+        metaEl.textContent = meta;
+        section.appendChild(metaEl);
+    }
 
     const list = document.createElement('div');
     list.className = 'char-card-intelligence-list';
@@ -450,7 +457,7 @@ function buildDossierIntelligencePanel({ profile, source = null, timelineEvents 
     if (recentItems.length === 0 && recognitionItems.length === 0) {
         const emptyEl = document.createElement('p');
         emptyEl.className = 'char-card-intelligence-empty';
-        emptyEl.textContent = 'No extra intelligence is recorded for this hero yet.';
+        emptyEl.textContent = 'No tracked intelligence signals yet. Activity, readiness, recognition, and recent changes will appear as more scans accumulate.';
         shell.appendChild(emptyEl);
         return shell;
     }
@@ -461,12 +468,14 @@ function buildDossierIntelligencePanel({ profile, source = null, timelineEvents 
     if (recentItems.length > 0) {
         sections.appendChild(buildDossierIntelligenceSection({
             label: 'Recent Changes',
+            meta: 'Recent changes from the last 14 days.',
             items: recentItems
         }));
     }
     if (recognitionItems.length > 0) {
         sections.appendChild(buildDossierIntelligenceSection({
             label: 'Recognition',
+            meta: 'Recognition from tracked MVP, vanguard, and campaign signals.',
             items: recognitionItems
         }));
     }
