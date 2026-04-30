@@ -55,6 +55,7 @@ class HomepageCleanupTests(unittest.TestCase):
         self.assertNotIn('Recent Campaign Activity', template_text)
         self.assertNotIn('Campaign Chronicle', script_text)
         self.assertNotIn('Recent Campaign Activity', script_text)
+        self.assertNotIn('analytics-chronicle', css_text)
         self.assertNotIn('applyChronicleCard', cards_text)
 
     def test_navigation_context_and_return_controls_are_present(self):

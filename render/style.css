@@ -1387,8 +1387,7 @@ body.nav-menu-open {
 .analytics-pressure-grid,
 .analytics-pressure-notes,
 .analytics-readiness-grid,
-.analytics-spotlight-grid,
-.analytics-chronicle-grid {
+.analytics-spotlight-grid {
   display: grid;
   gap: 18px;
 }
@@ -1400,8 +1399,7 @@ body.nav-menu-open {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .analytics-readiness-grid,
-.analytics-spotlight-grid,
-.analytics-chronicle-grid {
+.analytics-spotlight-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .analytics-pressure-card,
@@ -1552,8 +1550,7 @@ body.nav-menu-open {
 }
 .analytics-pressure-title,
 .analytics-readiness-name,
-.analytics-spotlight-name,
-.analytics-chronicle-title {
+.analytics-spotlight-name {
   color: #f4ead1;
   font-family: "Cinzel", serif;
   line-height: 1.2;
@@ -1563,16 +1560,14 @@ body.nav-menu-open {
   font-size: 19px;
 }
 .analytics-readiness-name,
-.analytics-spotlight-name,
-.analytics-chronicle-title {
+.analytics-spotlight-name {
   font-size: 20px;
 }
 .analytics-pressure-meta,
 .analytics-pressure-state,
 .analytics-pressure-note-copy,
 .analytics-readiness-meta,
-.analytics-spotlight-meta,
-.analytics-chronicle-meta {
+.analytics-spotlight-meta {
   color: #b6ae9d;
   font-size: 13px;
   line-height: 1.6;
@@ -1582,8 +1577,7 @@ body.nav-menu-open {
 }
 .analytics-pressure-state,
 .analytics-readiness-value,
-.analytics-spotlight-value,
-.analytics-chronicle-value {
+.analytics-spotlight-value {
   margin-top: 6px;
   color: #ffd100;
   font-weight: 700;
@@ -1592,7 +1586,6 @@ body.nav-menu-open {
 .analytics-pressure-cta,
 .analytics-readiness-cta,
 .analytics-spotlight-cta,
-.analytics-chronicle-cta,
 .analytics-route-card .home-nav-cta {
   margin-top: auto;
   padding-top: 16px;
@@ -1652,8 +1645,7 @@ body.nav-menu-open {
   .analytics-pressure-grid,
   .analytics-pressure-notes,
   .analytics-readiness-grid,
-  .analytics-spotlight-grid,
-  .analytics-chronicle-grid {
+  .analytics-spotlight-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1661,8 +1653,7 @@ body.nav-menu-open {
   .analytics-pressure-grid,
   .analytics-pressure-notes,
   .analytics-readiness-grid,
-  .analytics-spotlight-grid,
-  .analytics-chronicle-grid {
+  .analytics-spotlight-grid {
     grid-template-columns: 1fr;
   }
 
@@ -11126,7 +11117,7 @@ body[data-app-ready="true"] #main-dashboard {
   .home-secondary-grid,
   .home-war-table-grid,
   .analytics-pressure-grid,
-  .analytics-chronicle-grid {
+  .analytics-spotlight-grid {
     gap: 18px;
   }
 
@@ -11201,7 +11192,7 @@ body[data-app-ready="true"] #main-dashboard {
   .home-secondary-grid,
   .home-war-table-grid,
   .analytics-pressure-grid,
-  .analytics-chronicle-grid,
+  .analytics-spotlight-grid,
   .mvp-cards-container {
     gap: 14px;
   }
