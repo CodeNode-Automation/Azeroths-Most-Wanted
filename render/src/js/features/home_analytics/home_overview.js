@@ -205,6 +205,15 @@ function renderHomeMovementCard(dashboardConfig = {}) {
     const rawRosterTrend = getNumericConfigValue((dashboardConfig && dashboardConfig.global_trends) || {}, 'trend_total', 0);
     const rawRosterTotal = getNumericConfigValue(dashboardConfig, 'total_members', 0);
     const countOnlyRawDelta = !bootstrap && total === 0 && rawRosterTrend !== 0;
+    const movementState = bootstrap
+        ? 'bootstrap'
+        : countOnlyRawDelta
+            ? 'count-only'
+            : recent.length > 0
+                ? 'events'
+                : 'idle';
+
+    cardEl.setAttribute('data-movement-state', movementState);
 
     titleEl.textContent = bootstrap
         ? 'Initial roster capture'

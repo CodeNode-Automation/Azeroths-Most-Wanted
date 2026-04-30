@@ -5397,6 +5397,16 @@ body.nav-menu-open {
   line-height: 1.6;
 }
 
+.home-movement-card[data-movement-state="bootstrap"] .home-nav-copy,
+.home-movement-card[data-movement-state="count-only"] .home-nav-copy,
+.home-movement-card[data-movement-state="bootstrap"] .home-movement-note,
+.home-movement-card[data-movement-state="count-only"] .home-movement-note {
+  max-width: 58ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
 .home-spark-wrap {
   height: 42px;
   margin-bottom: 12px;
