@@ -172,6 +172,7 @@ def generate_html_dashboard(roster_data, realm_data=None, timeline_data=None, ra
             os.path.join(base_dir, "src", "css", "base", "animations.css"),
             os.path.join(base_dir, "src", "css", "features", "campaign", "archive.css"),
             os.path.join(base_dir, "src", "css", "features", "character", "dossier.css"),
+            os.path.join(base_dir, "src", "css", "features", "search", "autocomplete.css"),
             os.path.join(base_dir, "style.css"),
         ]
         css_chunks = []
