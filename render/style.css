@@ -1408,7 +1408,6 @@ body.nav-menu-open {
 .analytics-pressure-note,
 .analytics-readiness-card,
 .analytics-spotlight-card,
-.analytics-chronicle-card,
 .analytics-route-card {
   position: relative;
   overflow: hidden;
@@ -1425,7 +1424,6 @@ body.nav-menu-open {
 .analytics-pressure-note::before,
 .analytics-readiness-card::before,
 .analytics-spotlight-card::before,
-.analytics-chronicle-card::before,
 .analytics-route-card::before {
   content: "";
   position: absolute;
@@ -1440,7 +1438,6 @@ body.nav-menu-open {
 .analytics-pressure-note:hover,
 .analytics-readiness-card:hover,
 .analytics-spotlight-card:hover,
-.analytics-chronicle-card:hover,
 .analytics-route-card:hover {
   transform: translateY(-4px);
   border-color: rgba(255, 209, 0, 0.32);
@@ -1453,15 +1450,13 @@ body.nav-menu-open {
 .analytics-pressure-note:active,
 .analytics-readiness-card:active,
 .analytics-spotlight-card:active,
-.analytics-chronicle-card:active,
 .analytics-route-card:active {
   transform: translateY(-1px);
 }
 .analytics-pressure-card,
 .analytics-pressure-note,
 .analytics-readiness-card,
-.analytics-spotlight-card,
-.analytics-chronicle-card {
+.analytics-spotlight-card {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -1482,11 +1477,6 @@ body.nav-menu-open {
 .analytics-readiness-card,
 .analytics-spotlight-card {
   min-height: 196px;
-  padding: 18px;
-  background: linear-gradient(180deg, rgba(22, 20, 28, 0.96) 0%, rgba(10, 10, 15, 0.99) 100%);
-}
-.analytics-chronicle-card {
-  min-height: 188px;
   padding: 18px;
   background: linear-gradient(180deg, rgba(22, 20, 28, 0.96) 0%, rgba(10, 10, 15, 0.99) 100%);
 }
@@ -1534,31 +1524,10 @@ body.nav-menu-open {
     radial-gradient(circle at top left, rgba(93, 173, 226, 0.16), transparent 34%),
     linear-gradient(180deg, rgba(14, 22, 32, 0.98) 0%, rgba(8, 10, 14, 0.99) 100%);
 }
-.analytics-chronicle-card-pve {
-  background:
-    radial-gradient(circle at top left, rgba(255, 209, 0, 0.16), transparent 34%),
-    linear-gradient(180deg, rgba(30, 24, 12, 0.98) 0%, rgba(10, 9, 10, 0.99) 100%);
-}
-.analytics-chronicle-card-pvp {
-  background:
-    radial-gradient(circle at top left, rgba(204, 88, 52, 0.18), transparent 34%),
-    linear-gradient(180deg, rgba(26, 16, 14, 0.98) 0%, rgba(10, 8, 10, 0.99) 100%);
-}
-.analytics-chronicle-card-fresh70 {
-  background:
-    radial-gradient(circle at top left, rgba(93, 173, 226, 0.16), transparent 34%),
-    linear-gradient(180deg, rgba(14, 22, 32, 0.98) 0%, rgba(8, 10, 14, 0.99) 100%);
-}
-.analytics-chronicle-card-loot {
-  background:
-    radial-gradient(circle at top left, rgba(163, 53, 238, 0.18), transparent 34%),
-    linear-gradient(180deg, rgba(20, 14, 30, 0.98) 0%, rgba(9, 8, 12, 0.99) 100%);
-}
 .analytics-pressure-kicker,
 .analytics-pressure-note-kicker,
 .analytics-readiness-kicker,
-.analytics-spotlight-kicker,
-.analytics-chronicle-kicker {
+.analytics-spotlight-kicker {
   color: #c9a94f;
   font-family: "Cinzel", serif;
   font-size: 11px;
@@ -1699,8 +1668,7 @@ body.nav-menu-open {
 
   .analytics-pressure-card,
   .analytics-readiness-card,
-  .analytics-spotlight-card,
-  .analytics-chronicle-card {
+  .analytics-spotlight-card {
     min-height: 0;
   }
 
@@ -10388,7 +10356,6 @@ body[data-route="war-effort-hk"] #ember-canvas {
 .analytics-pressure-note,
 .analytics-readiness-card,
 .analytics-spotlight-card,
-.analytics-chronicle-card,
 .analytics-route-card,
 .leaderboard-panel,
 .ladder-hero-stat-card,
@@ -10415,7 +10382,6 @@ body[data-route="war-effort-hk"] #ember-canvas {
 .analytics-pressure-note::after,
 .analytics-readiness-card::after,
 .analytics-spotlight-card::after,
-.analytics-chronicle-card::after,
 .analytics-route-card::after,
 .leaderboard-panel::after,
 .ladder-hero-stat-card::after,
@@ -10442,7 +10408,6 @@ body[data-route="war-effort-hk"] #ember-canvas {
 .analytics-pressure-note:hover::after,
 .analytics-readiness-card:hover::after,
 .analytics-spotlight-card:hover::after,
-.analytics-chronicle-card:hover::after,
 .analytics-route-card:hover::after,
 .leaderboard-panel:hover::after,
 .ladder-hero-stat-card:hover::after,
@@ -10920,7 +10885,6 @@ body[data-route-family="character"] .timeline-container.timeline-character-dossi
   .analytics-pressure-note,
   .analytics-readiness-card,
   .analytics-spotlight-card,
-  .analytics-chronicle-card,
   .analytics-route-card,
   .leaderboard-panel,
   .ladder-hero-stat-card,
@@ -10968,7 +10932,6 @@ body[data-app-ready="true"] #main-dashboard {
 .analytics-pressure-note,
 .analytics-readiness-card,
 .analytics-spotlight-card,
-.analytics-chronicle-card,
 .ladder-hero-stat-card,
 .command-hero-stat,
 .war-effort-shell-progress-card,
@@ -11249,7 +11212,6 @@ body[data-app-ready="true"] #main-dashboard {
   .analytics-pressure-note,
   .analytics-readiness-card,
   .analytics-spotlight-card,
-  .analytics-chronicle-card,
   .leaderboard-panel,
   .ladder-hero-stat-card,
   .command-hero-stat,
@@ -11488,7 +11450,6 @@ body[data-route-family="character"] {
 .analytics-pressure-note,
 .analytics-readiness-card,
 .analytics-spotlight-card,
-.analytics-chronicle-card,
 .ladder-hero-stat-card,
 .command-hero-stat,
 .war-effort-shell-progress-card,
@@ -11519,7 +11480,6 @@ body[data-route-family="character"] {
 .analytics-pressure-note:hover,
 .analytics-readiness-card:hover,
 .analytics-spotlight-card:hover,
-.analytics-chronicle-card:hover,
 .ladder-hero-stat-card:hover,
 .command-hero-stat:hover,
 .war-effort-shell-progress-card:hover,
