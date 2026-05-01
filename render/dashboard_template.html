@@ -1255,27 +1255,28 @@
                     </article>
                 </section>
 
-                <section class="analytics-summary-section">
+                <section id="analytics-honor-section" class="analytics-honor-section">
                     <div class="home-section-heading home-section-heading-compact analytics-heading">
-                        <span class="home-section-kicker">Guild Health Summary</span>
-                        <h3 class="home-section-title">The quickest read on current readiness</h3>
-                        <p class="home-section-subtitle">A compact officer summary before diving into the deeper intelligence boards.</p>
+                        <span class="home-section-kicker">Honor Snapshot</span>
+                        <h3 class="home-section-title">Where PvP momentum is concentrated</h3>
+                        <p id="analytics-honor-summary" class="home-section-subtitle">Honor snapshot data is not available for this snapshot.</p>
                     </div>
 
-                    <div class="stat-box-container analytics-kpi-wrapper">
-                        <div class="stat-box clickable stat-box-kpi-pve" id="kpi-box-pve" title="View Full PvE Ladder">
-                            <span id="kpi-avg-ilvl" class="stat-value kpi-val-pve">0</span>
-                            <span class="stat-label">Avg Level 70 iLvl</span>
+                    <article id="analytics-honor-card" class="analytics-honor-card">
+                        <div class="analytics-honor-copy">
+                            <span class="analytics-honor-kicker">Current snapshot</span>
+                            <p id="analytics-honor-note" class="analytics-honor-note" hidden>Some HK fields are unavailable from the current snapshot.</p>
                         </div>
-                        <div class="stat-box clickable stat-box-kpi-loot" id="kpi-box-ready" title="Open Raid Ready">
-                            <span id="kpi-raid-ready" class="stat-value kpi-val-loot">0</span>
-                            <span class="stat-label">Raid Ready</span>
+                        <div id="analytics-honor-stats" class="analytics-honor-stats" aria-label="Honor snapshot metrics"></div>
+                        <div class="analytics-honor-leaderboard-shell">
+                            <div class="analytics-honor-leaderboard-head">
+                                <span class="analytics-honor-leaderboard-kicker">Top HK Characters</span>
+                                <span class="analytics-honor-leaderboard-hint">Current roster snapshot</span>
+                            </div>
+                            <div id="analytics-honor-leaderboard" class="analytics-honor-leaderboard"></div>
                         </div>
-                        <div class="stat-box clickable stat-box-kpi-pvp" id="kpi-box-pvp" title="View Full PvP Ladder">
-                            <span id="kpi-total-hks" class="stat-value kpi-val-pvp">0</span>
-                            <span class="stat-label">Total Guild HKs</span>
-                        </div>
-                    </div>
+                        <a id="analytics-honor-cta" class="analytics-honor-cta" href="#ladder-pvp">Open PvP Ladder ➔</a>
+                    </article>
                 </section>
 
                 <section class="analytics-intel-section analytics-intel-section-pressure">

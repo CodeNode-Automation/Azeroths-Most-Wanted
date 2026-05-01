@@ -1312,7 +1312,7 @@
     font-size: 11px;
   }
 
-  .analytics-summary-section,
+  .analytics-honor-section,
   .analytics-intel-section {
     margin-top: 44px;
     scroll-margin-top: 88px;
@@ -1329,7 +1329,8 @@
   .analytics-pressure-card,
   .analytics-pressure-note,
   .analytics-readiness-card,
-  .analytics-spotlight-card {
+  .analytics-spotlight-card,
+  .analytics-honor-card {
     padding: 16px;
   }
 
@@ -1350,6 +1351,10 @@
   }
 
   .analytics-readiness-gap-section {
+    margin: 2px auto 30px;
+  }
+
+  .analytics-honor-section {
     margin: 2px auto 30px;
   }
 
@@ -1397,6 +1402,16 @@
   .analytics-readiness-gap-note,
   .analytics-readiness-gap-meter-meta {
     font-size: 13px;
+  }
+
+  .analytics-honor-summary,
+  .analytics-honor-note,
+  .analytics-honor-row-meta {
+    font-size: 13px;
+  }
+
+  .analytics-honor-cta {
+    width: 100%;
   }
 
   .analytics-route-card .home-nav-cta {
@@ -1653,12 +1668,24 @@
     padding: 14px;
   }
 
+  .analytics-honor-card {
+    padding: 14px;
+  }
+
   .analytics-roster-composition-panel {
     padding: 12px 13px;
   }
 
   .analytics-readiness-gap-stat {
     padding: 12px 13px;
+  }
+
+  .analytics-honor-stat {
+    padding: 13px 14px;
+  }
+
+  .analytics-honor-row {
+    padding: 13px 14px 14px;
   }
 
   .analytics-roster-composition-row {
@@ -1673,6 +1700,15 @@
     font-size: 17px;
   }
 
+  .analytics-honor-row-head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .analytics-honor-row-value {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
   .analytics-roster-composition-row-meta {
     font-size: 11px;
   }
@@ -1685,6 +1721,15 @@
 
   .analytics-readiness-gap-value {
     font-size: 17px;
+  }
+
+  .analytics-honor-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-honor-leaderboard-head {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .char-card-summary-grid {
@@ -1801,6 +1846,18 @@
     padding: 11px 12px;
   }
 
+  .analytics-honor-card {
+    padding: 12px;
+  }
+
+  .analytics-honor-stat {
+    padding: 12px;
+  }
+
+  .analytics-honor-row {
+    padding: 12px;
+  }
+
   .controls-wrapper {
     gap: 8px 10px;
   }
@@ -1839,6 +1896,18 @@
 
   .analytics-readiness-gap-stat {
     padding: 10px 11px;
+  }
+
+  .analytics-honor-card {
+    padding: 10px;
+  }
+
+  .analytics-honor-stat {
+    padding: 10px 11px;
+  }
+
+  .analytics-honor-row {
+    padding: 10px 11px 11px;
   }
 
   .home-pulse-value,

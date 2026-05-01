@@ -467,6 +467,138 @@ function renderAnalyticsReadinessGap(gap = {}) {
     cardEl.setAttribute('data-readiness-gap-state', canComputeGap && hasAvgIlvl ? 'populated' : 'partial');
 }
 
+function getAnalyticsRosterHonorKills(entry) {
+    const rawValue = entry && (
+        entry.honorable_kills
+        ?? (entry.profile && entry.profile.honorable_kills)
+        ?? entry.hks
+        ?? 0
+    );
+    const value = Number(rawValue);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function buildAnalyticsHonorSnapshotStat({ label, value, meta, tone = '' }) {
+    const safeValue = value === null || value === undefined || value === ''
+        ? '—'
+        : String(value);
+    const safeMeta = meta || 'Not available from current snapshot';
+
+    return `
+        <div class="analytics-honor-stat" data-tone="${escapeAnalyticsHtml(tone)}">
+            <span class="analytics-honor-stat-label">${escapeAnalyticsHtml(label)}</span>
+            <strong class="analytics-honor-stat-value">${escapeAnalyticsHtml(safeValue)}</strong>
+            <span class="analytics-honor-stat-meta">${escapeAnalyticsHtml(safeMeta)}</span>
+        </div>
+    `;
+}
+
+function buildAnalyticsHonorSnapshotRow({ name, value, meta, share, index }) {
+    const safeShare = Number.isFinite(Number(share)) ? Math.max(0, Math.min(100, Number(share))) : 0;
+    return `
+        <div class="analytics-honor-row" data-rank="${index + 1}">
+            <div class="analytics-honor-row-head">
+                <span class="analytics-honor-row-rank">#${index + 1}</span>
+                <span class="analytics-honor-row-name">${escapeAnalyticsHtml(name)}</span>
+                <strong class="analytics-honor-row-value">${escapeAnalyticsHtml(String(value))}</strong>
+            </div>
+            <div class="analytics-honor-row-meter" aria-hidden="true">
+                <span class="analytics-honor-row-fill" style="width: ${safeShare}%;"></span>
+            </div>
+            <span class="analytics-honor-row-meta">${escapeAnalyticsHtml(meta)}</span>
+        </div>
+    `;
+}
+
+function renderAnalyticsHonorSnapshot(honor = {}) {
+    const cardEl = document.getElementById('analytics-honor-card');
+    if (!cardEl) return;
+
+    const summaryEl = document.getElementById('analytics-honor-summary');
+    const noteEl = document.getElementById('analytics-honor-note');
+    const statsEl = document.getElementById('analytics-honor-stats');
+    const leaderboardEl = document.getElementById('analytics-honor-leaderboard');
+    const ctaEl = document.getElementById('analytics-honor-cta');
+
+    if (!summaryEl || !noteEl || !statsEl || !leaderboardEl || !ctaEl) return;
+
+    const roster = Array.isArray(honor.roster) ? honor.roster : [];
+    const providedTotalHks = Number(honor.totalHks);
+    const fallbackTotalHks = roster.reduce((sum, entry) => sum + getAnalyticsRosterHonorKills(entry), 0);
+    const totalHks = Number.isFinite(providedTotalHks) && providedTotalHks >= 0 ? providedTotalHks : fallbackTotalHks;
+    const hkEntries = roster
+        .map(entry => {
+            const hks = getAnalyticsRosterHonorKills(entry);
+            if (hks <= 0) return null;
+            const name = entry && (entry.name || (entry.profile && entry.profile.name) || 'Unknown');
+            return { name, hks };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.hks - a.hks);
+    const activeCount = hkEntries.length;
+    const avgActiveHks = activeCount > 0 ? Math.round(totalHks / activeCount) : null;
+    const topEntries = hkEntries.slice(0, 3);
+    const hasSnapshotData = !!honor.hasSnapshotData;
+    const hasMeaningfulData = totalHks > 0 || activeCount > 0;
+    const hasPartialData = hasMeaningfulData && topEntries.length < 3;
+
+    ctaEl.setAttribute('href', '#ladder-pvp');
+
+    if (!hasSnapshotData || !hasMeaningfulData) {
+        summaryEl.textContent = 'Honor snapshot data is not available for this snapshot.';
+        noteEl.hidden = true;
+        noteEl.textContent = 'Some HK fields are unavailable from the current snapshot.';
+        statsEl.innerHTML = '';
+        leaderboardEl.innerHTML = '';
+        cardEl.setAttribute('data-honor-state', 'empty');
+        return;
+    }
+
+    const topLeader = topEntries[0];
+    summaryEl.textContent = activeCount > 0
+        ? `${totalHks.toLocaleString()} honorable kills are recorded across ${activeCount.toLocaleString()} HK-active characters.`
+        : `${totalHks.toLocaleString()} honorable kills are recorded in the current snapshot.`;
+
+    statsEl.innerHTML = [
+        buildAnalyticsHonorSnapshotStat({
+            label: 'Total Guild HKs',
+            value: totalHks.toLocaleString(),
+            meta: 'Current roster snapshot',
+            tone: 'total'
+        }),
+        buildAnalyticsHonorSnapshotStat({
+            label: 'HK-active characters',
+            value: activeCount.toLocaleString(),
+            meta: 'Characters with at least one HK',
+            tone: 'active'
+        }),
+        buildAnalyticsHonorSnapshotStat({
+            label: 'Avg HKs / active character',
+            value: avgActiveHks === null ? '—' : avgActiveHks.toLocaleString(),
+            meta: avgActiveHks === null ? 'Not available from current snapshot' : 'Across HK-active characters',
+            tone: 'avg'
+        })
+    ].join('');
+
+    leaderboardEl.innerHTML = topEntries.length > 0 ? topEntries.map((entry, index) => buildAnalyticsHonorSnapshotRow({
+        name: entry.name,
+        value: entry.hks.toLocaleString(),
+        meta: totalHks > 0 ? `${Math.round((entry.hks / totalHks) * 100)}% of total HKs` : 'Current snapshot',
+        share: totalHks > 0 ? (entry.hks / totalHks) * 100 : 0,
+        index
+    })).join('') : '';
+
+    noteEl.hidden = !hasPartialData;
+    noteEl.textContent = 'Some HK fields are unavailable from the current snapshot.';
+    cardEl.setAttribute('data-honor-state', hasPartialData ? 'partial' : 'populated');
+
+    if (topLeader) {
+        ctaEl.textContent = `Open PvP Ladder · ${topLeader.name} leads`;
+    } else {
+        ctaEl.textContent = 'Open PvP Ladder ➔';
+    }
+}
+
 function escapeAnalyticsHtml(value) {
     return String(value ?? '')
         .replace(/&/g, '&amp;')

@@ -4689,17 +4689,19 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        if (typeof renderAnalyticsHonorSnapshot === 'function') {
+            renderAnalyticsHonorSnapshot({
+                hasSnapshotData: hasAnalyticsSnapshotData,
+                roster: Array.isArray(rosterData) ? rosterData : [],
+                totalHks
+            });
+        }
+
         if (typeof renderAnalyticsRosterComposition === 'function') {
             renderAnalyticsRosterComposition({
                 roster: Array.isArray(rawGuildRoster) && rawGuildRoster.length > 0 ? rawGuildRoster : rosterData
             });
         }
-
-        const setKpiLabel = (valueId, text) => {
-            const valueEl = document.getElementById(valueId);
-            const labelEl = valueEl ? valueEl.closest('.stat-box')?.querySelector('.stat-label') : null;
-            if (labelEl) labelEl.textContent = text;
-        };
 
         const setPressureNote = (valueId, valueText, copyText) => {
             const valueEl = document.getElementById(valueId);
@@ -4708,38 +4710,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             const copyEl = valueEl ? valueEl.closest('.analytics-pressure-note')?.querySelector('.analytics-pressure-note-copy') : null;
             if (copyEl) copyEl.textContent = copyText;
         };
-
-        const kpiIlvl = document.getElementById('kpi-avg-ilvl');
-        if (kpiIlvl) kpiIlvl.innerText = mainAvgIlvl;
-        setKpiLabel('kpi-avg-ilvl', 'Avg Level 70 iLvl (Mains)');
-
-        const kpiReady = document.getElementById('kpi-raid-ready');
-        if (kpiReady) kpiReady.innerText = formatDualCount(mainRaidReadyCount, raidReadyCount);
-        setKpiLabel('kpi-raid-ready', 'Raid Ready (Mains / All)');
-
-        const kpiHks = document.getElementById('kpi-total-hks');
-        if (kpiHks) kpiHks.innerText = totalHks >= 1000000 ? (totalHks / 1000000).toFixed(1) + 'M' : totalHks.toLocaleString();
-
-        const kpiBoxReady = document.getElementById('kpi-box-ready');
-        if (kpiBoxReady) {
-            kpiBoxReady.onclick = () => {
-                window.location.hash = 'raidready';
-            };
-        }
-
-        const kpiBoxPvp = document.getElementById('kpi-box-pvp');
-        if (kpiBoxPvp) {
-            kpiBoxPvp.onclick = () => {
-                window.location.hash = 'ladder-pvp';
-            };
-        }
-
-        const kpiBoxPve = document.getElementById('kpi-box-pve');
-        if (kpiBoxPve) {
-            kpiBoxPve.onclick = () => {
-                window.location.hash = 'ladder-pve';
-            };
-        }
 
         const roleCounts = { 'Tank': 0, 'Healer': 0, 'Melee DPS': 0, 'Ranged DPS': 0 };
         mainRoster.forEach(c => {
@@ -6578,7 +6548,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     function initSectionReveals() {
         const targets = document.querySelectorAll(
-            '.home-command-section, .home-pulse-section, .home-war-effort-section, .weekly-mvps-wrapper, .home-ladders-section, .home-secondary-section, .analytics-snapshot-section, .analytics-summary-section, .analytics-intel-section, .leaderboard-panel'
+            '.home-command-section, .home-pulse-section, .home-war-effort-section, .weekly-mvps-wrapper, .home-ladders-section, .home-secondary-section, .analytics-snapshot-section, .analytics-honor-section, .analytics-intel-section, .leaderboard-panel'
         );
 
         if (!targets.length) return;
