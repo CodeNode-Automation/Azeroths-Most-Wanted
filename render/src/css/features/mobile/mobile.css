@@ -742,13 +742,8 @@
     font-size: 12px;
   }
 
-  .analytics-roster-composition-footer {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .analytics-roster-composition-cta {
-    width: 100%;
+  .analytics-roster-composition-footer-note {
+    text-align: left;
   }
 
   .analytics-campaign-history-cta {
@@ -1661,6 +1656,10 @@
 
   .analytics-roster-composition-row-value {
     font-size: 16px;
+  }
+
+  .analytics-roster-composition-footer-note {
+    font-size: 11px;
   }
 
   .command-hero-shell,

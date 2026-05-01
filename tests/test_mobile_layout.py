@@ -113,7 +113,7 @@ class MobileLayoutTests(unittest.TestCase):
         self.assertIn(".analytics-roster-composition-row-head", mobile_css)
         self.assertIn(".analytics-roster-composition-row-value", mobile_css)
         self.assertIn(".analytics-roster-composition-row-meta", mobile_css)
-        self.assertIn(".analytics-roster-composition-cta", mobile_css)
+        self.assertIn(".analytics-roster-composition-footer-note", mobile_css)
         self.assertIn(".char-card-deployment-grid", mobile_css)
         self.assertIn(".timeline-container.timeline-home-board .monuments-grid", mobile_css)
         self.assertIn(".arch-pipeline", mobile_css)

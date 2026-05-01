@@ -631,38 +631,12 @@
   line-height: 1.55;
 }
 
-.analytics-roster-composition-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.analytics-roster-composition-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(93, 173, 226, 0.24);
-  background: linear-gradient(180deg, rgba(20, 24, 33, 0.82) 0%, rgba(10, 11, 16, 0.96) 100%);
-  color: #eef5ff;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-decoration: none;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.analytics-roster-composition-cta:hover,
-.analytics-roster-composition-cta:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(93, 173, 226, 0.42);
-  box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.24),
-    0 0 0 2px rgba(93, 173, 226, 0.12);
+.analytics-roster-composition-footer-note {
+  margin: 0;
+  color: #9fb0c1;
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: right;
 }
 
 .analytics-heading {

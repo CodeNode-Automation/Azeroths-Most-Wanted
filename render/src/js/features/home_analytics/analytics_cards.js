@@ -401,9 +401,8 @@ function renderAnalyticsRosterComposition(composition = {}) {
     const typesEl = document.getElementById('analytics-roster-composition-types');
     const classesEl = document.getElementById('analytics-roster-composition-classes');
     const levelsEl = document.getElementById('analytics-roster-composition-levels');
-    const ctaEl = document.getElementById('analytics-roster-composition-cta');
 
-    if (!summaryEl || !noteEl || !typesEl || !classesEl || !levelsEl || !ctaEl) return;
+    if (!summaryEl || !noteEl || !typesEl || !classesEl || !levelsEl) return;
 
     const roster = Array.isArray(composition.roster) ? composition.roster.filter(Boolean) : [];
     const totalRoster = roster.length;
@@ -417,7 +416,6 @@ function renderAnalyticsRosterComposition(composition = {}) {
         summaryEl.textContent = emptyCopy;
         noteEl.hidden = true;
         noteEl.textContent = partialCopy;
-        ctaEl.setAttribute('href', '#analytics-composition-charts');
         cardEl.setAttribute('data-composition-state', 'empty');
         return;
     }
@@ -509,7 +507,6 @@ function renderAnalyticsRosterComposition(composition = {}) {
     noteEl.hidden = !hasMissingCompositionFields;
     noteEl.textContent = partialCopy;
     cardEl.setAttribute('data-composition-state', hasMissingCompositionFields ? 'partial' : 'populated');
-    ctaEl.setAttribute('href', '#analytics-composition-charts');
 }
 
 function getPressureState(count, role) {
