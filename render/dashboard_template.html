@@ -1415,25 +1415,37 @@
                         <p class="analytics-roster-composition-footer-note">Detailed composition charts appear below in this Analytics section.</p>
                     </article>
 
-                    <div id="analytics-composition-charts" class="analytics-card-grid analytics-card-grid-three">
-                        <div class="heatmap-wrapper analytics-card analytics-card-composition">
-                            <div class="analytics-card-head">
-                                <h3 class="heatmap-title chart-title-center">📊 Class Distribution <span class="chart-title-sub">Scanned Roster</span></h3>
-                                <span class="analytics-card-hint">Click a class to inspect those characters</span>
-                            </div>
-                            <div class="chart-canvas-wrapper">
-                                <canvas id="analyticsClassChart"></canvas>
-                            </div>
+                    <div id="analytics-composition-charts" class="analytics-distribution-section">
+                        <div class="home-section-heading home-section-heading-compact analytics-heading analytics-distribution-heading">
+                            <span class="home-section-kicker">Roster Distribution</span>
+                            <h3 class="home-section-title">How the scanned roster breaks down</h3>
+                            <p class="home-section-subtitle">Class is the primary comparison. Race is a lighter secondary snapshot. Click any bar to inspect that slice.</p>
+                            <span class="analytics-distribution-scope">Scanned roster</span>
                         </div>
+                        <p id="analytics-distribution-note" class="analytics-distribution-note" hidden>Some roster distribution fields are unavailable from the current snapshot.</p>
 
-                        <div class="heatmap-wrapper analytics-card analytics-card-composition">
-                            <div class="analytics-card-head">
-                                <h3 class="heatmap-title chart-title-center">🧬 Race Distribution <span class="chart-title-sub">Scanned Roster</span></h3>
-                                <span class="analytics-card-hint">Lower priority flavor data with roster drill-down</span>
-                            </div>
-                            <div class="chart-canvas-wrapper">
-                                <canvas id="raceDistChart"></canvas>
-                            </div>
+                        <div class="analytics-card-grid analytics-card-grid-two analytics-distribution-grid">
+                            <article id="analytics-class-distribution-card" class="analytics-card analytics-card-composition analytics-distribution-card">
+                                <div class="analytics-distribution-head">
+                                    <div class="analytics-distribution-head-copy">
+                                        <span class="analytics-distribution-kicker">Class Distribution</span>
+                                        <h4 class="analytics-distribution-title">Represented Classes</h4>
+                                    </div>
+                                    <span class="analytics-card-hint">Click a bar to inspect those characters</span>
+                                </div>
+                                <div id="analytics-class-distribution-list" class="analytics-distribution-list" aria-label="Class distribution roster"></div>
+                            </article>
+
+                            <article id="analytics-race-distribution-card" class="analytics-card analytics-card-composition analytics-distribution-card analytics-distribution-card-secondary">
+                                <div class="analytics-distribution-head">
+                                    <div class="analytics-distribution-head-copy">
+                                        <span class="analytics-distribution-kicker">Race Distribution</span>
+                                        <h4 class="analytics-distribution-title">Secondary Flavor View</h4>
+                                    </div>
+                                    <span class="analytics-card-hint">Lower-priority flavor data with roster drill-down</span>
+                                </div>
+                                <div id="analytics-race-distribution-list" class="analytics-distribution-list" aria-label="Race distribution roster"></div>
+                            </article>
                         </div>
                     </div>
                 </section>

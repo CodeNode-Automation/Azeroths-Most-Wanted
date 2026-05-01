@@ -1036,6 +1036,198 @@
   text-align: right;
 }
 
+.analytics-distribution-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.analytics-distribution-heading {
+  margin-bottom: 0;
+}
+
+.analytics-distribution-scope {
+  align-self: flex-start;
+  color: #d5e8ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(93, 173, 226, 0.12);
+  border: 1px solid rgba(93, 173, 226, 0.15);
+}
+
+.analytics-distribution-note {
+  margin: 0;
+  color: #9fb0c1;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.analytics-distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.analytics-distribution-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(18, 23, 31, 0.94) 0%, rgba(11, 13, 18, 0.96) 100%);
+  border: 1px solid rgba(93, 173, 226, 0.12);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.02),
+    0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+.analytics-distribution-card-secondary {
+  border-color: rgba(163, 53, 238, 0.12);
+}
+
+.analytics-distribution-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.analytics-distribution-head-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.analytics-distribution-kicker {
+  color: #9fd2ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.analytics-distribution-title {
+  margin: 0;
+  color: #eef5ff;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.analytics-distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.analytics-distribution-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 14px 14px;
+  text-align: left;
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  background: linear-gradient(180deg, rgba(20, 24, 33, 0.76) 0%, rgba(13, 15, 20, 0.92) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 13px;
+  color: inherit;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+
+.analytics-distribution-item:hover,
+.analytics-distribution-item:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(93, 173, 226, 0.34);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  outline: none;
+}
+
+.analytics-distribution-item.is-static {
+  cursor: default;
+}
+
+.analytics-distribution-item-secondary:hover,
+.analytics-distribution-item-secondary:focus-visible {
+  border-color: rgba(163, 53, 238, 0.3);
+}
+
+.analytics-distribution-item-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.analytics-distribution-item-label {
+  color: #eef5ff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.analytics-distribution-item-value {
+  color: #f7e7b0;
+  font-family: "Cinzel", serif;
+  font-size: 18px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.analytics-distribution-meter {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.analytics-distribution-fill {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(93, 173, 226, 0.92) 0%, rgba(168, 222, 255, 0.92) 100%);
+  box-shadow: 0 0 14px rgba(93, 173, 226, 0.18);
+}
+
+.analytics-distribution-item[data-tone="race"] .analytics-distribution-fill {
+  background: linear-gradient(90deg, rgba(163, 53, 238, 0.92) 0%, rgba(205, 145, 255, 0.92) 100%);
+  box-shadow: 0 0 14px rgba(163, 53, 238, 0.18);
+}
+
+.analytics-distribution-item-meta {
+  color: #9fb0c1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.analytics-distribution-empty-state {
+  padding: 14px;
+  color: #9fb0c1;
+  font-size: 12px;
+  line-height: 1.55;
+  border-radius: 12px;
+  border: 1px dashed rgba(159, 176, 193, 0.18);
+  background: rgba(10, 11, 15, 0.55);
+}
+
 .analytics-heading {
   margin-bottom: 18px;
 }

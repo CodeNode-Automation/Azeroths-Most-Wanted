@@ -45,6 +45,7 @@ class MobileLayoutTests(unittest.TestCase):
             "Global mobile shell, nav, drawer, selector, and search",
             "Phone layouts: home, roster cards, archive, analytics, dossier",
             "Compact phone stats and metric scopes",
+            "Roster distribution bars and cards",
             "Narrow-phone root alignment",
             "Very narrow phones and bottom-browser chrome",
         ):
@@ -107,6 +108,14 @@ class MobileLayoutTests(unittest.TestCase):
         self.assertIn(".analytics-campaign-history-footer", mobile_css)
         self.assertIn(".analytics-readiness-funnel-stages", mobile_css)
         self.assertIn(".analytics-readiness-funnel-card", mobile_css)
+        self.assertIn(".analytics-distribution-grid", mobile_css)
+        self.assertIn(".analytics-distribution-card", mobile_css)
+        self.assertIn(".analytics-distribution-head", mobile_css)
+        self.assertIn(".analytics-distribution-item", mobile_css)
+        self.assertIn(".analytics-distribution-item-head", mobile_css)
+        self.assertIn(".analytics-distribution-item-value", mobile_css)
+        self.assertIn(".analytics-distribution-item-meta", mobile_css)
+        self.assertIn(".analytics-distribution-note", mobile_css)
         self.assertIn(".analytics-readiness-gap-section", mobile_css)
         self.assertIn(".analytics-readiness-gap-card", mobile_css)
         self.assertIn(".analytics-readiness-gap-stats", mobile_css)

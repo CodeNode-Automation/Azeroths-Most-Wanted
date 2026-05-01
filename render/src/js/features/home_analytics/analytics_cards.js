@@ -626,6 +626,17 @@ function getAnalyticsRosterClass(entry) {
     return className || 'Unknown';
 }
 
+function getAnalyticsRosterRace(entry) {
+    const rawRace = entry && (entry.race || entry.character_race || entry.playable_race || (entry.profile && entry.profile.race && entry.profile.race.name));
+    const raceName = typeof rawRace === 'string'
+        ? rawRace
+        : rawRace && typeof rawRace === 'object'
+            ? (rawRace.en_US || rawRace.name || rawRace.english || rawRace.value || 'Unknown')
+            : 'Unknown';
+    const cleanRaceName = String(raceName || 'Unknown').trim();
+    return cleanRaceName || 'Unknown';
+}
+
 function getAnalyticsRosterLevel(entry) {
     const rawLevel = entry && (entry.level ?? entry.current_level ?? (entry.profile && entry.profile.level));
     const level = Number(rawLevel);
@@ -649,6 +660,33 @@ function buildAnalyticsCompositionRow({ label, count, total, meta, tone = '' }) 
             </div>
             <span class="analytics-roster-composition-row-meta">${escapeAnalyticsHtml(safeMeta)}</span>
         </div>
+    `;
+}
+
+function buildAnalyticsDistributionItem({ label, count, total, meta, tone = '', route = '', secondary = false }) {
+    const share = formatAnalyticsSnapshotShare(count, total);
+    const safeCount = Number.isFinite(Number(count)) ? Number(count).toLocaleString() : '—';
+    const safeMeta = meta || (share === null ? 'Not available from current snapshot' : `${share}% of roster`);
+    const fillPercent = Number.isFinite(share) ? Math.max(0, Math.min(100, share)) : 0;
+    const routeAttr = route ? ` data-home-route="${escapeAnalyticsHtml(route)}"` : '';
+    const labelText = escapeAnalyticsHtml(label);
+    const sharedClass = secondary
+        ? ' analytics-distribution-item-secondary'
+        : '';
+    const interactiveClass = route ? '' : ' is-static';
+    const tagName = route ? 'button type="button"' : 'div';
+
+    return `
+        <${tagName} class="analytics-distribution-item${sharedClass}${interactiveClass}" data-tone="${escapeAnalyticsHtml(tone)}"${routeAttr} aria-label="Inspect ${labelText}">
+            <div class="analytics-distribution-item-head">
+                <span class="analytics-distribution-item-label">${labelText}</span>
+                <strong class="analytics-distribution-item-value">${safeCount}</strong>
+            </div>
+            <div class="analytics-distribution-meter" aria-hidden="true">
+                <span class="analytics-distribution-fill" style="width: ${fillPercent > 0 ? Math.max(6, fillPercent) : 0}%;"></span>
+            </div>
+            <span class="analytics-distribution-item-meta">${escapeAnalyticsHtml(safeMeta)}</span>
+        </${route ? 'button' : 'div'}>
     `;
 }
 
@@ -767,6 +805,84 @@ function renderAnalyticsRosterComposition(composition = {}) {
     noteEl.hidden = !hasMissingCompositionFields;
     noteEl.textContent = partialCopy;
     cardEl.setAttribute('data-composition-state', hasMissingCompositionFields ? 'partial' : 'populated');
+}
+
+function renderAnalyticsRosterDistribution(distribution = {}) {
+    const cardEl = document.getElementById('analytics-composition-charts');
+    if (!cardEl) return;
+
+    const noteEl = document.getElementById('analytics-distribution-note');
+    const classListEl = document.getElementById('analytics-class-distribution-list');
+    const raceListEl = document.getElementById('analytics-race-distribution-list');
+
+    if (!noteEl || !classListEl || !raceListEl) return;
+
+    const roster = Array.isArray(distribution.roster) ? distribution.roster.filter(Boolean) : [];
+    const emptyCopy = 'Roster distribution data is not available for this snapshot.';
+    const partialCopy = 'Some roster distribution fields are unavailable from the current snapshot.';
+
+    if (!roster.length) {
+        classListEl.innerHTML = `<div class="analytics-distribution-empty-state">${escapeAnalyticsHtml(emptyCopy)}</div>`;
+        raceListEl.innerHTML = `<div class="analytics-distribution-empty-state">${escapeAnalyticsHtml(emptyCopy)}</div>`;
+        noteEl.hidden = false;
+        noteEl.textContent = emptyCopy;
+        cardEl.setAttribute('data-distribution-state', 'empty');
+        return;
+    }
+
+    const classCounts = new Map();
+    const raceCounts = new Map();
+    let knownClassCount = 0;
+    let knownRaceCount = 0;
+
+    roster.forEach(entry => {
+        if (!entry) return;
+
+        const className = getAnalyticsRosterClass(entry);
+        classCounts.set(className, (classCounts.get(className) || 0) + 1);
+        if (className !== 'Unknown') knownClassCount++;
+
+        const raceName = getAnalyticsRosterRace(entry);
+        raceCounts.set(raceName, (raceCounts.get(raceName) || 0) + 1);
+        if (raceName !== 'Unknown') knownRaceCount++;
+    });
+
+    const sortCounts = entries => entries.sort((a, b) => {
+        if (b[1] !== a[1]) return b[1] - a[1];
+        return String(a[0]).localeCompare(String(b[0]));
+    });
+
+    const classEntries = sortCounts([...classCounts.entries()]);
+    const raceEntries = sortCounts([...raceCounts.entries()]);
+    const totalRoster = roster.length;
+    const hasPartialData = knownClassCount < totalRoster || knownRaceCount < totalRoster;
+
+    classListEl.innerHTML = classEntries.length > 0
+        ? classEntries.map(([label, count]) => buildAnalyticsDistributionItem({
+            label,
+            count,
+            total: totalRoster,
+            meta: formatAnalyticsSnapshotShareText(count, totalRoster),
+            tone: 'class',
+            route: label === 'Unknown' ? '' : `class-${label.toLowerCase()}`
+        })).join('')
+        : `<div class="analytics-distribution-empty-state">No class data available from this snapshot.</div>`;
+
+    raceListEl.innerHTML = raceEntries.length > 0
+        ? raceEntries.map(([label, count]) => buildAnalyticsDistributionItem({
+            label,
+            count,
+            total: totalRoster,
+            meta: formatAnalyticsSnapshotShareText(count, totalRoster),
+            tone: 'race',
+            route: label === 'Unknown' ? '' : `filter-race-${label.toLowerCase()}`,
+            secondary: true
+        })).join('')
+        : `<div class="analytics-distribution-empty-state">No race data available from this snapshot.</div>`;
+
+    noteEl.hidden = !hasPartialData;
+    noteEl.textContent = hasPartialData ? partialCopy : '';
+    cardEl.setAttribute('data-distribution-state', hasPartialData ? 'partial' : 'populated');
 }
 
 function getPressureState(count, role) {

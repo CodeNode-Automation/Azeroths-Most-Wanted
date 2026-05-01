@@ -723,6 +723,42 @@
     grid-template-columns: 1fr;
   }
 
+  /* Roster distribution bars and cards */
+  .analytics-distribution-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-distribution-card {
+    padding: 16px;
+  }
+
+  .analytics-distribution-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .analytics-distribution-item-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .analytics-distribution-item-value {
+    white-space: normal;
+  }
+
+  .analytics-distribution-item {
+    padding: 12px 13px 13px;
+  }
+
+  .analytics-distribution-note {
+    font-size: 13px;
+  }
+
+  .analytics-distribution-item-meta {
+    font-size: 12px;
+  }
+
   .analytics-roster-composition-panel {
     padding: 13px 14px;
   }
@@ -1664,6 +1700,10 @@
     padding: 14px;
   }
 
+  .analytics-distribution-card {
+    padding: 14px;
+  }
+
   .analytics-readiness-gap-card {
     padding: 14px;
   }
@@ -1698,6 +1738,22 @@
 
   .analytics-roster-composition-row-value {
     font-size: 17px;
+  }
+
+  .analytics-distribution-item {
+    padding: 11px 12px 12px;
+  }
+
+  .analytics-distribution-item-label {
+    font-size: 11px;
+  }
+
+  .analytics-distribution-item-value {
+    font-size: 17px;
+  }
+
+  .analytics-distribution-item-meta {
+    font-size: 11px;
   }
 
   .analytics-honor-row-head {
@@ -1752,6 +1808,10 @@
   }
 
   .analytics-readiness-gap-card {
+    padding: 12px;
+  }
+
+  .analytics-distribution-card {
     padding: 12px;
   }
 
@@ -1858,6 +1918,27 @@
     padding: 12px;
   }
 
+  .analytics-distribution-item {
+    gap: 6px;
+    padding: 10px 11px 11px;
+  }
+
+  .analytics-distribution-item-head {
+    gap: 3px;
+  }
+
+  .analytics-distribution-title {
+    font-size: 15px;
+  }
+
+  .analytics-distribution-scope {
+    font-size: 10px;
+  }
+
+  .analytics-distribution-note {
+    font-size: 12px;
+  }
+
   .controls-wrapper {
     gap: 8px 10px;
   }
@@ -1894,6 +1975,10 @@
     padding: 10px;
   }
 
+  .analytics-distribution-card {
+    padding: 10px;
+  }
+
   .analytics-readiness-gap-stat {
     padding: 10px 11px;
   }
@@ -1908,6 +1993,18 @@
 
   .analytics-honor-row {
     padding: 10px 11px 11px;
+  }
+
+  .analytics-distribution-item {
+    padding: 9px 10px 10px;
+  }
+
+  .analytics-distribution-item-value {
+    font-size: 16px;
+  }
+
+  .analytics-distribution-item-meta {
+    font-size: 11px;
   }
 
   .home-pulse-value,

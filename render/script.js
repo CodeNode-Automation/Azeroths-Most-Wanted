@@ -169,9 +169,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     let conciseDonutChartInstance = null;
     let levelChartInstance = null;
     let ilvlChartInstance = null;
-    let raceChartInstance = null;
     let analyticsActivityChartInst = null;
-    let analyticsClassChartInst = null;
     window.roleChartInstance = null;
     const analyticsView = document.getElementById('analytics-view');   
     const architectureView = document.getElementById('architecture-view');
@@ -4697,9 +4695,17 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        const analyticsRosterSnapshot = Array.isArray(rawGuildRoster) && rawGuildRoster.length > 0 ? rawGuildRoster : rosterData;
+
         if (typeof renderAnalyticsRosterComposition === 'function') {
             renderAnalyticsRosterComposition({
-                roster: Array.isArray(rawGuildRoster) && rawGuildRoster.length > 0 ? rawGuildRoster : rosterData
+                roster: analyticsRosterSnapshot
+            });
+        }
+
+        if (typeof renderAnalyticsRosterDistribution === 'function') {
+            renderAnalyticsRosterDistribution({
+                roster: analyticsRosterSnapshot
             });
         }
 
@@ -4937,139 +4943,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             alt: 'Leveling placeholder',
             cta: 'Inspect 60-69 bracket ➔'
         });
-
-        const roleChartCard = document.getElementById('roleDonutChart')?.closest('.analytics-card');
-        const roleChartSub = roleChartCard ? roleChartCard.querySelector('.chart-title-sub') : null;
-        const roleChartHint = roleChartCard ? roleChartCard.querySelector('.analytics-card-hint') : null;
-        if (roleChartSub) roleChartSub.textContent = 'Known Specs / Mains';
-        if (roleChartHint) roleChartHint.textContent = 'Mains-only deployment view. Click a slice to inspect matching heroes.';
-
-        if (window.roleChartInstance) window.roleChartInstance.destroy();
-        window.roleChartInstance = drawRoleChart('roleDonutChart', mainRoster, false);
-
-        const levelLabels = ['1-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70'];
-        const levelData = [0, 0, 0, 0, 0, 0, 0, 0];
-        rawGuildRoster.forEach(c => {
-            const lvl = c.level || 0;
-            if (lvl >= 70) levelData[7]++;
-            else if (lvl >= 60) levelData[6]++;
-            else if (lvl >= 50) levelData[5]++;
-            else if (lvl >= 40) levelData[4]++;
-            else if (lvl >= 30) levelData[3]++;
-            else if (lvl >= 20) levelData[2]++;
-            else if (lvl >= 10) levelData[1]++;
-            else levelData[0]++;
-        });
-
-        const lvlCanvas = document.getElementById('levelDistChart');
-        if (lvlCanvas) {
-            const lvlCtx = lvlCanvas.getContext('2d');
-            const lvlGradient = lvlCtx.createLinearGradient(0, 0, 0, 400);
-            lvlGradient.addColorStop(0, 'rgba(255, 209, 0, 0.8)');
-            lvlGradient.addColorStop(1, 'rgba(255, 209, 0, 0.1)');
-
-            if (levelChartInstance) levelChartInstance.destroy();
-            levelChartInstance = new Chart(lvlCtx, {
-                type: 'bar',
-                data: {
-                    labels: levelLabels,
-                    datasets: [{ label: 'Characters', data: levelData, backgroundColor: lvlGradient, borderColor: '#ffd100', borderWidth: 1, borderRadius: 4 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, layout: { padding: { top: 30 } }, plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
-                        x: { grid: { display: false }, ticks: { color: '#888', font: { family: 'Cinzel' } } }
-                    },
-                    onClick: (event, elements, chart) => {
-                        if (elements.length > 0) {
-                            window.location.hash = 'filter-level-' + chart.data.labels[elements[0].index];
-                        }
-                    },
-                    onHover: (event, elements) => { event.native.target.style.cursor = elements.length ? 'pointer' : 'default'; }
-                },
-                plugins: [barLabelPlugin]
-            });
-        }
-
-        const ilvlLabels = ['<100', '100-109', '110-119', '120-129', '130+'];
-        const ilvlData = [0, 0, 0, 0, 0];
-        rosterData.forEach(c => {
-            const p = c.profile;
-            if (p && p.level >= 70) {
-                const ilvl = p.equipped_item_level || 0;
-                if (ilvl >= 130) ilvlData[4]++;
-                else if (ilvl >= 120) ilvlData[3]++;
-                else if (ilvl >= 110) ilvlData[2]++;
-                else if (ilvl >= 100) ilvlData[1]++;
-                else ilvlData[0]++;
-            }
-        });
-
-        const ilvlCanvas = document.getElementById('ilvlDistChart');
-        if (ilvlCanvas) {
-            const ilvlCtx = ilvlCanvas.getContext('2d');
-            const ilvlGradient = ilvlCtx.createLinearGradient(0, 0, 0, 400);
-            ilvlGradient.addColorStop(0, 'rgba(255, 128, 0, 0.8)');
-            ilvlGradient.addColorStop(1, 'rgba(255, 128, 0, 0.1)');
-
-            if (ilvlChartInstance) ilvlChartInstance.destroy();
-            ilvlChartInstance = new Chart(ilvlCtx, {
-                type: 'bar',
-                data: {
-                    labels: ilvlLabels,
-                    datasets: [{ label: 'Level 70 Characters', data: ilvlData, backgroundColor: ilvlGradient, borderColor: '#ff8000', borderWidth: 1, borderRadius: 4 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, layout: { padding: { top: 30 } }, plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
-                        x: { grid: { display: false }, ticks: { color: '#888', font: { family: 'Cinzel' } } }
-                    },
-                    onClick: (event, elements, chart) => {
-                        if (elements.length > 0) window.location.hash = 'filter-ilvl-' + chart.data.labels[elements[0].index];
-                    },
-                    onHover: (event, elements) => { event.native.target.style.cursor = elements.length ? 'pointer' : 'default'; }
-                },
-                plugins: [barLabelPlugin]
-            });
-        }
-
-        const raceCounts = {};
-        rosterData.forEach(c => {
-            const p = c.profile;
-            if (p && p.race && p.race.name) {
-                const raceName = typeof p.race.name === 'string' ? p.race.name : (p.race.name.en_US || 'Unknown');
-                raceCounts[raceName] = (raceCounts[raceName] || 0) + 1;
-            }
-        });
-
-        const RACE_COLORS = {
-            'Human': '#0033aa', 'Draenei': '#ba55d3', 'Dwarf': '#8B4513', 'Night Elf': '#800080',
-            'Gnome': '#FF69B4', 'Orc': '#8B0000', 'Undead': '#556B2F', 'Tauren': '#D2B48C',
-            'Troll': '#008B8B', 'Blood Elf': '#DC143C', 'Unknown': '#888'
-        };
-
-        if (raceChartInstance) raceChartInstance.destroy();
-        raceChartInstance = new Chart(document.getElementById('raceDistChart'), {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(raceCounts),
-                datasets: [{ data: Object.values(raceCounts), backgroundColor: Object.keys(raceCounts).map(r => RACE_COLORS[r] || '#555'), borderColor: '#111', borderWidth: 2 }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false, cutout: '55%', layout: { padding: { top: 20, bottom: 20, right: 20, left: 20 } },
-                plugins: { legend: { position: 'right', labels: { color: '#bbb', font: { family: 'Cinzel' } } } },
-                onClick: (event, elements, chart) => {
-                    if (elements.length > 0) window.location.hash = 'filter-race-' + chart.data.labels[elements[0].index].toLowerCase();
-                },
-                onHover: (event, elements) => { event.native.target.style.cursor = elements.length ? 'pointer' : 'default'; }
-            },
-            plugins: [createPieOverlayPlugin()]
-        });
-
-        if (analyticsClassChartInst) analyticsClassChartInst.destroy();
-        analyticsClassChartInst = createDonutChart('analyticsClassChart', rosterData, false);
 
         const actCtx = document.getElementById('analyticsActivityChart');
         if (actCtx && heatmapData && heatmapData.length > 0) {
