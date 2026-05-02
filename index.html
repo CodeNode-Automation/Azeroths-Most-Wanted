@@ -6236,6 +6236,306 @@ body[data-route="war-effort-zenith"]::before {
   height: 260px;
 }
 
+.analytics-intel-section-tempo {
+  border-bottom: 3px solid rgba(95, 170, 255, 0.28);
+}
+
+.analytics-intel-section-tempo .analytics-card-wide {
+  background:
+    radial-gradient(circle at top left, rgba(95, 170, 255, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(15, 24, 34, 0.62) 0%, rgba(9, 10, 15, 0.8) 100%);
+  border-bottom: 3px solid rgba(95, 170, 255, 0.22);
+}
+
+.analytics-intel-section-tempo .analytics-card-side {
+  background:
+    radial-gradient(circle at top left, rgba(111, 255, 194, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(11, 24, 22, 0.6) 0%, rgba(9, 10, 15, 0.8) 100%);
+  border-bottom: 3px solid rgba(111, 255, 194, 0.18);
+}
+
+.analytics-tempo-card,
+.analytics-tempo-role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.analytics-tempo-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.analytics-tempo-summary {
+  margin: 0;
+  color: #efe4cb;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.analytics-tempo-note {
+  margin: 0;
+  color: #a79d8d;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.analytics-tempo-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.analytics-tempo-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 12px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 36%),
+    linear-gradient(180deg, rgba(14, 15, 19, 0.96) 0%, rgba(10, 10, 14, 0.99) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.analytics-tempo-stat[data-tone="tempo"] {
+  background:
+    radial-gradient(circle at top left, rgba(95, 170, 255, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(14, 20, 31, 0.96) 0%, rgba(10, 10, 14, 0.99) 100%);
+}
+
+.analytics-tempo-stat[data-tone="loot"] {
+  background:
+    radial-gradient(circle at top left, rgba(163, 53, 238, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(20, 13, 29, 0.96) 0%, rgba(10, 10, 14, 0.99) 100%);
+}
+
+.analytics-tempo-stat[data-tone="levels"] {
+  background:
+    radial-gradient(circle at top left, rgba(255, 209, 0, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(24, 21, 12, 0.96) 0%, rgba(10, 10, 14, 0.99) 100%);
+}
+
+.analytics-tempo-stat[data-tone="average"] {
+  background:
+    radial-gradient(circle at top left, rgba(255, 135, 59, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(25, 17, 12, 0.96) 0%, rgba(10, 10, 14, 0.99) 100%);
+}
+
+.analytics-tempo-stat-label {
+  color: #c9a94f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.analytics-tempo-stat-value {
+  color: #f7e7b0;
+  font-family: "Cinzel", serif;
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1;
+  text-shadow: 0 4px 16px rgba(255, 209, 0, 0.1);
+}
+
+.analytics-tempo-stat-meta {
+  color: #a79d8d;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.analytics-tempo-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.analytics-tempo-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 13px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top left, rgba(95, 170, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(14, 18, 26, 0.96) 0%, rgba(10, 10, 14, 0.99) 100%);
+}
+
+.analytics-tempo-row.is-peak {
+  border-color: rgba(255, 209, 0, 0.22);
+}
+
+.analytics-tempo-row[data-tone="peak"] {
+  background:
+    radial-gradient(circle at top left, rgba(255, 209, 0, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(24, 21, 12, 0.96) 0%, rgba(10, 10, 14, 0.99) 100%);
+}
+
+.analytics-tempo-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.analytics-tempo-row-label {
+  color: #efe4cb;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.analytics-tempo-row-value {
+  color: #f7e7b0;
+  font-family: "Cinzel", serif;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.analytics-tempo-meter {
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.analytics-tempo-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5faaff 0%, #6fffc2 100%);
+}
+
+.analytics-tempo-row[data-tone="peak"] .analytics-tempo-fill {
+  background: linear-gradient(90deg, #ffe08f 0%, #ffb274 100%);
+}
+
+.analytics-tempo-row-meta {
+  color: #a79d8d;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.analytics-tempo-empty {
+  color: #9f9582;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.analytics-role-snapshot-list {
+  display: grid;
+  gap: 10px;
+}
+
+.analytics-role-snapshot-row {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px 13px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  background:
+    radial-gradient(circle at top left, rgba(95, 170, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(14, 18, 26, 0.96) 0%, rgba(10, 10, 14, 0.99) 100%);
+}
+
+.analytics-role-snapshot-row[type="button"] {
+  cursor: pointer;
+}
+
+.analytics-role-snapshot-row:hover {
+  border-color: rgba(255, 209, 0, 0.22);
+}
+
+.analytics-role-snapshot-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.analytics-role-snapshot-row-label {
+  color: #efe4cb;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.analytics-role-snapshot-row-value {
+  color: #f7e7b0;
+  font-family: "Cinzel", serif;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.analytics-role-snapshot-meter {
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.analytics-role-snapshot-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5faaff 0%, #6fffc2 100%);
+}
+
+.analytics-role-snapshot-row[data-tone="tank"] .analytics-role-snapshot-fill {
+  background: linear-gradient(90deg, #5faaff 0%, #9ed0ff 100%);
+}
+
+.analytics-role-snapshot-row[data-tone="healer"] .analytics-role-snapshot-fill {
+  background: linear-gradient(90deg, #2ecc71 0%, #6fffc2 100%);
+}
+
+.analytics-role-snapshot-row[data-tone="melee"] .analytics-role-snapshot-fill {
+  background: linear-gradient(90deg, #ff8f5a 0%, #ffb274 100%);
+}
+
+.analytics-role-snapshot-row[data-tone="ranged"] .analytics-role-snapshot-fill {
+  background: linear-gradient(90deg, #a335ee 0%, #d4a5ff 100%);
+}
+
+.analytics-role-snapshot-row[data-tone="unknown"] .analytics-role-snapshot-fill {
+  background: linear-gradient(90deg, #7d8794 0%, #a8b1bc 100%);
+}
+
+.analytics-role-snapshot-row-meta {
+  color: #a79d8d;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.analytics-role-snapshot-empty-state {
+  color: #9f9582;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .analytics-intel-section-composition .analytics-card:first-child {
   background:
     radial-gradient(circle at top left, rgba(93, 173, 226, 0.12), transparent 34%),
@@ -14389,6 +14689,10 @@ body[data-route-family="character"] {
     height: 210px;
   }
 
+  .analytics-tempo-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .analytics-progression-readiness-section {
     margin: 2px auto 30px;
   }
@@ -15157,6 +15461,36 @@ body[data-route-family="character"] {
   .analytics-readiness-funnel-note,
   .analytics-readiness-funnel-empty {
     font-size: 13px;
+  }
+
+  /* Campaign tempo and raid role snapshot cards */
+
+  .analytics-tempo-card,
+  .analytics-tempo-role-card {
+    padding: 16px;
+  }
+
+  .analytics-tempo-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-tempo-summary,
+  .analytics-tempo-note,
+  .analytics-tempo-row-meta,
+  .analytics-role-snapshot-row-meta {
+    font-size: 12px;
+  }
+
+  .analytics-tempo-row-head,
+  .analytics-role-snapshot-row-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .analytics-tempo-row-value,
+  .analytics-role-snapshot-row-value {
+    white-space: normal;
   }
 
   .analytics-readiness-gap-card {
@@ -16709,7 +17043,7 @@ body[data-route-family="character"] {
                     <div class="home-section-heading home-section-heading-compact home-roster-intelligence-heading">
                         <h3 class="home-section-title">Roster Intelligence</h3>
                         <p class="home-section-subtitle">Movement, recent changes, and officer health from the latest guild snapshot.</p>
-                        <p id="home-roster-intelligence-sync" class="home-roster-intelligence-sync">Dashboard built: 02.05.2026 09:01 Uhr (CET/CEST)</p>
+                        <p id="home-roster-intelligence-sync" class="home-roster-intelligence-sync">Dashboard built: 02.05.2026 09:24 Uhr (CET/CEST)</p>
                     </div>
 
                     <div id="home-movement-card" class="home-movement-card" role="note" aria-labelledby="home-movement-title">
@@ -17168,29 +17502,36 @@ body[data-route-family="character"] {
                     <div class="home-section-heading home-section-heading-compact analytics-heading">
                         <span class="home-section-kicker">Campaign Tempo</span>
                         <h3 class="home-section-title">How the guild moved during the last seven days</h3>
-                        <p class="home-section-subtitle">Loot, level-ups, total roster size, and active roster movement in one command view.</p>
+                        <p class="home-section-subtitle">Loot, level-ups, roster movement, and raid-role coverage in a compact snapshot.</p>
                     </div>
 
                     <div class="analytics-primary-grid">
-                        <div class="heatmap-wrapper analytics-card analytics-card-wide">
+                        <article id="analytics-campaign-tempo-card" class="analytics-card analytics-card-wide analytics-tempo-card">
                             <div class="analytics-card-head">
-                                <h3 class="heatmap-title">🔥 Guild Activity (Last 7 Days)</h3>
-                                <span class="analytics-card-hint">Tracks loot, level-ups, total roster, and active roster</span>
+                                <h3 class="heatmap-title">🔥 7-Day Tempo Snapshot</h3>
+                                <span class="analytics-card-hint">Summarises the last seven days of timeline activity.</span>
                             </div>
-                            <div class="chart-canvas-wrapper">
-                                <canvas id="analyticsActivityChart"></canvas>
+                            <div class="analytics-tempo-copy">
+                                <p id="analytics-campaign-tempo-summary" class="analytics-tempo-summary">Campaign tempo data is not available for this snapshot.</p>
+                                <p id="analytics-campaign-tempo-note" class="analytics-tempo-note" hidden>Some campaign tempo fields are unavailable from the current snapshot.</p>
                             </div>
-                        </div>
+                            <div id="analytics-campaign-tempo-stats" class="analytics-tempo-stats" aria-label="Campaign tempo snapshot"></div>
+                            <div id="analytics-campaign-tempo-bars" class="analytics-tempo-bars" aria-label="Campaign tempo by day"></div>
+                            <div id="analytics-campaign-tempo-empty" class="analytics-tempo-empty" hidden>Campaign tempo data is not available for this snapshot.</div>
+                        </article>
 
-                        <div class="heatmap-wrapper analytics-card analytics-card-side">
+                        <article id="analytics-role-snapshot-card" class="analytics-card analytics-card-side analytics-tempo-card analytics-tempo-role-card">
                             <div class="analytics-card-head">
-                                <h3 class="heatmap-title chart-title-center">🛡️ Raid Roles <span class="chart-title-sub">Known Specs</span></h3>
-                                <span class="analytics-card-hint">Click a slice to filter matching heroes</span>
+                                <h3 class="heatmap-title chart-title-center">🛡️ Raid Role Snapshot</h3>
+                                <span class="analytics-card-hint">Known specs among mains, mapped to raid roles.</span>
                             </div>
-                            <div class="chart-canvas-wrapper flex-center">
-                                <canvas id="roleDonutChart"></canvas>
+                            <div class="analytics-tempo-copy">
+                                <p id="analytics-role-snapshot-summary" class="analytics-tempo-summary">Raid role data is not available for this snapshot.</p>
+                                <p id="analytics-role-snapshot-note" class="analytics-tempo-note" hidden>Some role fields are unavailable from the current snapshot.</p>
                             </div>
-                        </div>
+                            <div id="analytics-role-snapshot-list" class="analytics-role-snapshot-list" aria-label="Raid role snapshot"></div>
+                            <div id="analytics-role-snapshot-empty" class="analytics-tempo-empty" hidden>Raid role data is not available for this snapshot.</div>
+                        </article>
                     </div>
                 </section>
 
@@ -17876,10 +18217,10 @@ body[data-route-family="character"] {
     </div>
 
     <script id="dashboard-config" type="application/json">
-        {"last_updated": "2026-05-02T07:01:29.343636Z", "total_members": 660, "total_members_mains": 628, "active_14_days": 263, "active_14_days_mains": 250, "raid_ready_count": 21, "raid_ready_count_mains": 21, "avg_ilvl_70": 107, "avg_ilvl_70_mains": 107, "global_trends": {"trend_total": 0, "trend_active": 0, "trend_ready": 0, "trend_total_mains": 0, "trend_active_mains": 0, "trend_ready_mains": 0, "total_members": 660, "previous_total_members": 660}, "prev_mvps": {"pve": {"name": "shambeenie", "score": 25}, "pvp": {"name": "romisterio", "score": 352}}, "campaign_archive": {"weeks": [{"week_anchor": "2026-04-28", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["bellfast", "juliannape\u00f1a", "matechile", "maikle", "matsumu", "sikapala", "rinette", "sikasham", "elroq", "prska", "sildow", "ethreel", "tovanier", "ayuri", "slid\u00e9", "lathinus", "gnom\u00e9o", "mumpithz", "chikay", "kaivelle", "anantios", "yeyeayeah", "shambeenie", "baldurinus", "alhanna", "abete", "manalover", "midser", "christah", "trhorn", "gofuko", "schurgee", "cennoreth", "redforkbeard", "jeslana", "vanbaer", "pearicetea", "waaldrin", "huglada", "greatives", "pur\u00eety", "veelilah", "claycassius", "cyrithis", "avotear", "gylletanken", "saphiaa", "beligucimane", "moonola", "cursedface", "n\u00e9rolas", "sousedka", "frauwd", "j\u00e0ckaustin", "unclesmilk", "praxeos", "eliseraf", "cairlecus", "roastpiglet", "ardonus", "corrwin", "swaarley", "shingles", "felixyung", "labanta", "besquinn", "kr\u00e9me", "conpin", "onslo", "sleipnerr", "tamegmed", "r\u00f6m\u00ef", "robinthefox", "hanselaura", "arm\u00e3kuni"], "participant_count": 75}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": [], "participants": ["unslopable", "moonola", "tovanier", "chikay", "kaivelle"], "participant_count": 5}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["anklecleaver", "anantios", "unslopable", "baldurinus", "jogonwar", "aregos", "gnomusblasus", "visucius", "mikaelion", "matechile"], "participant_count": 10}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["juliannape\u00f1a", "bellfast"], "participant_count": 2}], "reigning_titles": [], "ladder": {"pve": [], "pvp": []}, "war_effort_entry_count": 4, "ladder_entry_count": 0, "reigning_entry_count": 0}, {"week_anchor": "2026-04-21", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["beligucimane", "sildow", "dragansaban", "veelilah", "anakius", "arm\u00e3kuni", "conpin", "chikay", "anantios", "n\u00e9rolas", "huglada", "hanselaura", "moonola", "roastpiglet", "besquinn", "unslopable", "yeyeayeah", "kinila", "ironminer", "bonkonyou", "tamegmed", "schurgee", "abete", "majky", "cyrithis", "vzh", "felixyung", "labanta", "baddock", "rinette", "eliseraf", "maikle", "cositank", "sikasham", "christah", "cennoreth", "elroq", "lautna", "slid\u00e9", "cursedface", "mageius", "maius", "ethreel", "misstemult", "becrux", "heavendot", "sparr\u00f4w", "candressa", "lowelheim", "drazei", "tovanier", "baldurinus", "gnom\u00e9o", "j\u00e0ckaustin", "saphiaa", "lathinus", "midser", "sleipnerr", "bellfast", "varkie", "spacemedic", "trhorn", "kaivelle", "pointiear", "smallpea", "heterjaglnur", "praxeos", "pearicetea", "greatives", "ziraknar\u00e2g", "tankpan", "firnessa", "onslo", "kr\u00e9me", "kl\u00e9ryk", "mescalito", "herrencrem\u00e9", "shambeenie", "kkohkris", "creepew", "jacquie", "silzard", "cairlecus", "corrwin", "murderrose", "neolyte", "neoflayme", "robinthefox", "marfic", "chim\u00e1y", "geilgeilgeil", "unclesmilk", "juliannape\u00f1a", "gr\u00e9giud", "dugallis", "rensen", "el\u00f8mer", "alhanna", "bigchill", "ardiano", "k\u00eengmemos", "kohkris", "sikapala", "matechile", "r\u00fcg", "narshal", "portalpan", "asheess", "elfelya", "redforkbeard", "authlas", "aregos", "prska", "gylletanken", "mavverick", "ravas", "elunida", "frauwd"], "participant_count": 118}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["romisterio", "lockro"], "participants": ["aregos", "romisterio", "lockro", "murphii", "gnomusblasus", "anklecleaver", "culoloco", "ironminer", "moonola", "conpin"], "participant_count": 10}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["veelilah", "whitefight", "romisterio", "tovanier", "chim\u00e1y", "petruzkii", "jogonwar", "murphii", "lockro", "lennier", "baldurinus", "anklecleaver", "kultapoju", "mikaelion", "jalozin", "gnomusblasus", "gnokedli", "culoloco", "aregos", "moonola"], "participant_count": 20}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["aregos", "authlas", "elfelya", "chim\u00e1y", "mescalito", "smallpea", "unslopable"], "participant_count": 7}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "shambeenie", "score": 25}, {"category": "pvp", "label": "PvP", "champion": "romisterio", "score": 352}], "ladder": {"pve": [{"rank": 1, "champion": "culoloco", "score": 116}, {"rank": 2, "champion": "pipogya", "score": 116}, {"rank": 3, "champion": "jalozin", "score": 115}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 6, "reigning_entry_count": 2}, {"week_anchor": "2026-04-14", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["neolyte", "matechile", "moonola", "corrwin", "yeyeayeah", "tamegmed", "vzh", "hawksy", "kr\u00e9me", "veelilah", "neoflayme", "mescalito", "sildow", "anakius", "n\u00e9rolas", "mageius", "asheess", "elunida", "baddock", "hanselaura", "portalpan", "kaivelle", "muthapharma", "visucius", "sikasham", "heterjaglnur", "j\u00e0ckaustin", "aregos", "felixyung", "labanta", "authlas", "narshal", "bigchill", "majky", "vanbaer", "tanaqui", "murderrose", "el\u00f8mer", "shambeenie", "silzard", "sleipnerr", "geilgeilgeil", "ethreel", "conpin", "mord\u00e1k", "besquinn", "cyrithis", "rinette", "varkie", "ziraknar\u00e2g", "slid\u00e9", "lathinus", "synthhr", "unslopable", "pewtah", "marl\u00e4n", "tovanier", "huglada", "varallion", "drazei", "saphiaa", "marfic", "schurgee", "midser", "shelidoni", "erenyah", "shingles", "lautna", "ravas", "unclesmilk", "elfelya", "nacht\u00f6lfin", "thorrison", "weck\u00f8", "herrencrem\u00e9", "uncleurkle", "chikay", "mauldarth", "claycassius", "onslo", "beeravergina", "wetmetter", "zorciah", "redforkbeard", "elroq", "romisterio", "ironminer", "sousedka", "murphii", "alhanna", "bonkonyou", "cursedface", "yd\u00fara", "kohnina", "ir\u00falan", "creepew", "cairlecus", "cosimendes", "gnom\u00e9o", "jeslana", "dialectic", "mavverick", "jackspicer", "dugallis", "takadoss", "sikapala", "spacemedic", "kelliahs", "anwy", "cennoreth", "r\u00e5uger", "de\u00e4deater", "histarael", "candressa", "cocobear", "allze", "bellfast", "azylum", "fulldverg", "christah", "ayuri", "peytr", "eliseraf"], "participant_count": 123}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["lockro", "murphii"], "participants": ["aregos", "romisterio", "lockro", "murphii", "lautna", "de\u00e4deater", "ravas", "gnomusblasus", "marfic", "culoloco", "uncleurkle", "dialectic", "sousedka", "ironminer", "unslopable", "moonola"], "participant_count": 16}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["whitefight", "matechile", "romisterio", "jalozin", "sedrev", "kultapoju", "kr\u00e9me", "pipogya", "aregos", "gnomusblasus", "culoloco", "mikaelion", "elunida", "gabbriello"], "participant_count": 14}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["cocobear", "dialectic", "cosimendes", "murphii", "romisterio", "uncleurkle", "marl\u00e4n", "visucius"], "participant_count": 8}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "claycassius", "score": 40}, {"category": "pvp", "label": "PvP", "champion": "lockro", "score": 257}], "ladder": {"pve": [{"rank": 1, "champion": "culoloco", "score": 116}, {"rank": 2, "champion": "pipogya", "score": 116}, {"rank": 3, "champion": "gnomusblasus", "score": 113}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 6, "reigning_entry_count": 2}, {"week_anchor": "2026-04-07", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["shambeenie", "moonola", "allze", "candressa", "cairlecus", "el\u00f8mer", "romisterio", "histarael", "tovanier", "matechile", "dugallis", "aodheriel", "slid\u00e9", "synthhie", "varallion", "kaivelle", "ethreel", "marl\u00e4n", "veelilah", "baddock", "sousedka", "elfelya", "vanbaer", "drazei", "wetmetter", "anakius", "shelidoni", "juliannape\u00f1a", "ayuri", "heavenleigh", "narshal", "besquinn", "cyrithis", "avotear", "bigchill", "onslo", "yeyeayeah", "heavenlo", "lathinus", "authlas", "midser", "silzard", "murderrose", "uncleurkle", "elunida", "cennoreth", "creepew", "corrwin", "herrencrem\u00e9", "visucius", "mavverick", "rensen", "mageius", "asheess", "peytr", "ziraknar\u00e2g", "elroq", "aregos", "sikapala", "frauwd", "heterjaglnur", "chikay", "unslopable", "christah", "kr\u00e9me", "cocobear", "tamegmed", "schurgee", "majky", "de\u00e4deater", "schnapsbarti", "goyathlay", "claycassius", "dialectic", "lautna", "saadnuga", "shinuko", "geilgeilgeil", "shazahm", "lockro", "becrux", "manalover", "varkie", "tankpan", "akhiles", "zorciah", "kohninah", "sikasham", "malifrizider", "kkohkris", "ironminer", "kultapoju", "pearicetea", "greatives", "padussy", "rinette", "murphii", "weck\u00f8", "neolyte", "neoflayme", "gongles", "saphiaa", "conpin", "bellfast", "ir\u00falan", "huglada", "takadoss", "alhanna", "griee", "conviction", "marfic", "svimen", "mescalito", "huntpan", "swaarley", "r\u00e5uger", "ardiano", "solrye", "arm\u00e3kuni", "ravas", "gnom\u00e9o", "hawksy", "soales", "primadonnali", "anwy", "funniermonke", "emrian", "elsberg", "firnessa", "nieznanys", "mikaelion", "j\u00e0ckaustin", "jackspicer", "eliseraf", "rayr", "huunterz", "lotomba", "yd\u00fara", "vzh", "roastpiglet", "pur\u00eety", "kelliahs", "mord\u00e1k", "veelock", "steverwin", "n\u00e9rolas", "portalpan", "missrog", "rapyz", "cursedface", "sikagnome", "praxeos", "nacht\u00f6lfin", "mauldarth", "raindropplet", "jacquie", "robinthefox"], "participant_count": 157}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["nelfas"], "participants": ["aregos", "slid\u00e9", "svimen", "de\u00e4deater", "nelfas", "ravas", "elroq", "elsberg", "culoloco", "elfelya", "candressa", "unslopable", "conpin", "anakius", "rayr", "jackspicer"], "participant_count": 16}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["culoloco", "jalozin", "aregos", "pipogya", "petruzkii", "lennier", "gnomusblasus", "nelfas", "dugallis", "ahzrael", "whitefight"], "participant_count": 11}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": ["missrog", "steverwin"], "participants": ["missrog", "steverwin", "mikaelion", "kultapoju", "lockro", "shinuko", "heavenlo", "heavenleigh", "synthhie"], "participant_count": 9}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "kultapoju", "score": 81}], "ladder": {"pve": [{"rank": 2, "champion": "culoloco", "score": 115}, {"rank": 3, "champion": "pipogya", "score": 115}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 5, "reigning_entry_count": 1}, {"week_anchor": "2026-03-31", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": ["arm\u00e3kuni", "shambeenie"], "participants": ["avotear", "padussy", "toxeris", "vzh", "vanbaer", "pearicetea", "dugallis", "sqishy", "r\u00e5uger", "murderrose", "varallion", "mageius", "cennoreth", "ethreel", "rayr", "besquinn", "ironminer", "marl\u00e4n", "jaade", "patogoat", "lotomba", "shelidoni", "saadnuga", "claycassius", "yd\u00fara", "drazei", "ir\u00falan", "chikay", "creepew", "bigchill", "midser", "elunida", "romisterio", "roastpiglet", "yeyeayeah", "jackspicer", "j\u00e0ckaustin", "veelock", "marfic", "weck\u00f8", "herrencrem\u00e9", "anakius", "onslo", "robinthefox", "griee", "paisioss", "elsberg", "murphii", "firnessa", "varkie", "tamegmed", "duckmanpet", "peytr", "asheess", "shambeenie", "silzard", "zyphari", "portalpan", "christah", "histarael", "cairlecus", "visucius", "noordraak", "unslopable", "sikagnome", "gofuko", "emrian", "erenyah", "lautna", "swaarley", "takadoss", "malifrizider", "steverwin", "mikaelion", "allze", "eliseraf", "elfelya", "ziraknar\u00e2g", "el\u00f8mer", "kelliahs", "ardiano", "spacemedic", "heterjaglnur", "rinette", "sedrev", "huntpan", "matechile", "frauwd", "lockro", "lathinus", "huglada", "tovanier", "saphiaa", "majky", "candressa", "missrog", "cursedface", "arm\u00e3kuni", "lowelheim", "nacht\u00f6lfin", "conpin", "rubyone", "heavenlo", "mavverick", "raindropplet", "myrathine", "tankpan", "aregos", "corrwin", "whatheals", "sousedka", "mescalito", "hanselaura", "ravas", "rapyz", "iwannabe", "pentzalon", "elroq", "starbeast", "heavenleigh", "de\u00e4deater", "orgodon", "cyrithis", "kultapoju", "n\u00e9rolas", "drez", "anwy", "moonola", "jeslana", "belujar", "evilbeard", "bellelissa", "huunterz", "aedankhan", "wurim", "thyhorn", "cocobear", "goyathlay", "solrye", "rensen", "narshal", "schurgee", "idashealer", "hulie", "uncleurkle", "roosterqt", "ar\u00f8wyn", "funniermonke", "abete", "alhanna", "deathofexile", "crueldreki", "zorciah", "shingles", "pur\u00eety", "shinuko", "manareach", "svimen", "karrage", "l\u00f6tk\u00f6", "oskosh", "thert", "antist", "jacquie", "anantios", "slid\u00e9", "praxeos", "trhorn", "shazahm", "fenderart", "beeravergina", "sleipnerr", "q\u00e1mmar", "felixyung", "philmccraken", "schnapsbarti", "labanta", "toxicx", "bellfast", "primadonnali", "gnom\u00e9o", "tanaqui", "dialectic", "missbubbles"], "participant_count": 184}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["nelfas", "unslopable", "anklecleaver"], "participants": ["ragoutto", "aregos", "cursedface", "ahzrael", "thert", "pentzalon", "talamear", "starbeast", "deathofexile", "nelfas", "anklecleaver", "reyman", "herrencrem\u00e9", "sikagnome", "belujar", "unslopable", "roosterqt", "huunterz"], "participant_count": 18}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["karismo", "gnomusblasus", "gnokedli", "cresia", "ahzrael", "sedrev", "nelfas", "whitefight", "pentzalon", "shootrmcgvin", "pipogya", "nadhi", "goyathlay", "roosterqt", "fenderart", "raindropplet"], "participant_count": 16}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["roosterqt", "starbeast", "rubyone", "sedrev", "noordraak", "zyphari"], "participant_count": 6}], "reigning_titles": [{"category": "pvp", "label": "PvP", "champion": "nelfas", "score": 376}], "ladder": {"pve": [{"rank": 1, "champion": "pipogya", "score": 115}, {"rank": 3, "champion": "crowlyy", "score": 112}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 5, "reigning_entry_count": 1}, {"week_anchor": "2026-03-24", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": ["narshal", "karrage", "visucius"], "participants": ["mikaelion", "mavverick", "de\u00e4deater", "toxeris", "allze", "aedankhan", "patogoat", "roosterqt", "shelidoni", "starbeast", "huunterz", "rensen", "varallion", "malifrizider", "narshal", "padussy", "abete", "sedrev", "tamegmed", "gongles", "erenyah", "pearicetea", "r\u00e5uger", "mageius", "yeyeayeah", "unslopable", "corrwin", "toxicx", "greatives", "gnom\u00e9o", "steverwin", "robinthefox", "j\u00e0ckaustin", "arm\u00e3kuni", "wurim", "elfelya", "romisterio", "christah", "jackspicer", "ir\u00falan", "shambeenie", "anwy", "saadnuga", "driesmertens", "karrage", "anantios", "heterjaglnur", "shinuko", "manalover", "manareach", "q\u00e1mmar", "noordraak", "primadonnali", "cursedface", "lautna", "takadoss", "rapyz", "thert", "hanselaura", "jaade", "creepew", "belujar", "yd\u00fara", "visucius", "raindropplet", "missbubbles", "sikagnome", "mino\u00e4h", "bigchill", "ziraknar\u00e2g", "lowelheim", "idashealer", "ardiano", "elsberg", "peytr", "oskosh", "philmccraken", "draengheit", "pur\u00eety", "orgodon", "ragoutto", "sousedka", "mundaa", "zyphari", "synthhie", "marl\u00e4n", "bellelissa", "ar\u00f8wyn", "huntpan", "nieznanys", "mauldarth", "fenderart", "drez", "marfic", "gofuko", "zorciah", "seralyph", "angmarien", "raelenna", "confusmax", "nacht\u00f6lfin", "roastpiglet", "murphii", "\u00e6doar", "lockro", "lathinus", "beeravergina", "majky", "rinette", "antist", "drazei", "dugallis", "sqishy", "ironmaidon", "bellfast", "slid\u00e9", "solidshort", "griee", "murderrose", "vanbaer", "twezz", "ironminer", "dustaclaud", "rudolfonso", "lagerka", "muktu", "alvyyn", "schurgee", "elunida", "funniermonke", "veelock", "avotear", "trhorn", "lilidani", "thalamear", "goyathlay", "magekopie", "alhanna", "jogonwar", "waaldrin", "rubyone", "joestawr", "kinila", "valanths", "herendahr", "duckmanpet", "tiefk\u00fchlware", "swaarley", "onslo", "dialectic", "shingles", "gurdats", "fulldverg", "pointiear", "angsironfist", "eliseraf", "hulie", "saphiaa", "tovanier", "emrian", "huglada", "praxeos", "myrathine", "besquinn", "l\u00f6tk\u00f6", "yetogaben", "juliannape\u00f1a", "moonola", "johnlocky", "alexitron", "tankpan", "dizzydudess", "shazahm", "kelliahs", "anklecleaver", "n\u00e2zg\u00fal", "asheess", "tomsaft", "raeghar", "paisioss", "redriding", "elroq", "herrencrem\u00e9", "mord\u00e1k", "yeldor", "ostobad", "jacquie", "raaiinzl", "uncleurkle", "candressa", "frauwd", "engywooktbc", "aregos", "chim\u00e1y", "mechoka", "vzh", "gelkin", "thaiwan", "firnessa", "alduriaf", "toxocto", "conviction", "sveinar", "inciter", "pytah", "ravas", "aeghtelius", "schnapsbarti", "caerci", "gnokedli", "arcanik", "cresia"], "participant_count": 212}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["crowlyy", "thert"], "participants": ["anwy", "authlas", "thert", "lockro", "whitefight", "murphii", "anklecleaver", "crowlyy", "uncleurkle", "pointiear", "ziraknar\u00e2g", "reyman", "yetogaben", "thalamear", "dialectic", "elfelya", "rudolfonso"], "participant_count": 17}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": ["gnokedli", "whitefight", "karismo"], "participants": ["gnokedli", "whitefight", "karismo", "cresia", "wrynnin", "pipogya", "reyman", "hehealer", "idashealer", "fenderart", "ahzrael", "shinuko", "crowlyy", "culoloco", "antist"], "participant_count": 15}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": ["cresia", "gnokedli"], "participants": ["cresia", "gnokedli", "gelkin", "raeghar", "anklecleaver", "valanths", "jogonwar", "muktu", "ragoutto"], "participant_count": 9}], "reigning_titles": [{"category": "pvp", "label": "PvP", "champion": "crowlyy", "score": 279}], "ladder": {"pve": [{"rank": 2, "champion": "pipogya", "score": 113}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 3, "champion": "heavenlo", "score": 2121}]}, "war_effort_entry_count": 4, "ladder_entry_count": 3, "reigning_entry_count": 1}, {"week_anchor": "2026-03-17", "war_effort": [], "reigning_titles": [], "ladder": {"pve": [], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "pupicus", "score": 1187}, {"rank": 3, "champion": "paples", "score": 683}]}, "war_effort_entry_count": 0, "ladder_entry_count": 3, "reigning_entry_count": 0}], "latest_week": "2026-04-28", "archived_weeks": 7, "total_campaign_entries": 52, "reigning_titles_logged": 7}, "membership_movement": {"joined": 2, "departed": 1, "rejoined": 0, "total": 3, "recent": [{"scan_id": "2026-05-01T20:30:41.926262Z", "character_name": "Elmosco", "event_type": "joined", "detected_at": "2026-05-01T20:30:41.926262Z", "previous_status": null, "current_status": "active"}, {"scan_id": "2026-05-01T20:30:41.926262Z", "character_name": "Matsumu", "event_type": "joined", "detected_at": "2026-05-01T20:30:41.926262Z", "previous_status": null, "current_status": "active"}, {"scan_id": "2026-05-01T20:30:41.926262Z", "character_name": "Kittysims", "event_type": "departed", "detected_at": "2026-05-01T20:30:41.926262Z", "previous_status": "active", "current_status": "departed"}], "bootstrap": false, "scan_id": "2026-05-01T20:30:41.926262Z", "detected_at": "2026-05-01T20:30:41.926262Z"}, "latest_changes": {"title": "Latest Changes", "items": [{"type": "movement", "label": "2 joined, 1 departed", "tone": "neutral"}, {"type": "level_up", "label": "12 level-ups recorded", "tone": "positive"}, {"type": "item", "label": "38 gear upgrades recorded", "tone": "positive"}], "empty": false, "empty_text": "No notable changes recorded yet."}, "officer_brief": {"title": "Officer Brief", "status": "Watch", "tone": "watch", "summary": "Roster health needs a watch, but the guild remains active.", "items": [{"type": "movement", "label": "Latest movement scan recorded 2 joined, 1 departed", "tone": "watch"}, {"type": "activity", "label": "Activity steady: 263 recently active members", "tone": "positive"}, {"type": "readiness", "label": "Readiness building: 21 raid-ready members tracked", "tone": "neutral"}], "empty": false, "empty_text": "No roster health signals are available yet."}}
+        {"last_updated": "2026-05-02T07:24:41.024134Z", "total_members": 660, "total_members_mains": 628, "active_14_days": 263, "active_14_days_mains": 250, "raid_ready_count": 21, "raid_ready_count_mains": 21, "avg_ilvl_70": 107, "avg_ilvl_70_mains": 107, "global_trends": {"trend_total": 0, "trend_active": 0, "trend_ready": 0, "trend_total_mains": 0, "trend_active_mains": 0, "trend_ready_mains": 0, "total_members": 660, "previous_total_members": 660}, "prev_mvps": {"pve": {"name": "shambeenie", "score": 25}, "pvp": {"name": "romisterio", "score": 352}}, "campaign_archive": {"weeks": [{"week_anchor": "2026-04-28", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["bellfast", "juliannape\u00f1a", "matechile", "maikle", "matsumu", "sikapala", "rinette", "sikasham", "elroq", "prska", "sildow", "ethreel", "tovanier", "ayuri", "slid\u00e9", "lathinus", "gnom\u00e9o", "mumpithz", "chikay", "kaivelle", "anantios", "yeyeayeah", "shambeenie", "baldurinus", "alhanna", "abete", "manalover", "midser", "christah", "trhorn", "gofuko", "schurgee", "cennoreth", "redforkbeard", "jeslana", "vanbaer", "pearicetea", "waaldrin", "huglada", "greatives", "pur\u00eety", "veelilah", "claycassius", "cyrithis", "avotear", "gylletanken", "saphiaa", "beligucimane", "moonola", "cursedface", "n\u00e9rolas", "sousedka", "frauwd", "j\u00e0ckaustin", "unclesmilk", "praxeos", "eliseraf", "cairlecus", "roastpiglet", "ardonus", "corrwin", "swaarley", "shingles", "felixyung", "labanta", "besquinn", "kr\u00e9me", "conpin", "onslo", "sleipnerr", "tamegmed", "r\u00f6m\u00ef", "robinthefox", "hanselaura", "arm\u00e3kuni"], "participant_count": 75}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": [], "participants": ["unslopable", "moonola", "tovanier", "chikay", "kaivelle"], "participant_count": 5}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["anklecleaver", "anantios", "unslopable", "baldurinus", "jogonwar", "aregos", "gnomusblasus", "visucius", "mikaelion", "matechile"], "participant_count": 10}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["juliannape\u00f1a", "bellfast"], "participant_count": 2}], "reigning_titles": [], "ladder": {"pve": [], "pvp": []}, "war_effort_entry_count": 4, "ladder_entry_count": 0, "reigning_entry_count": 0}, {"week_anchor": "2026-04-21", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["beligucimane", "sildow", "dragansaban", "veelilah", "anakius", "arm\u00e3kuni", "conpin", "chikay", "anantios", "n\u00e9rolas", "huglada", "hanselaura", "moonola", "roastpiglet", "besquinn", "unslopable", "yeyeayeah", "kinila", "ironminer", "bonkonyou", "tamegmed", "schurgee", "abete", "majky", "cyrithis", "vzh", "felixyung", "labanta", "baddock", "rinette", "eliseraf", "maikle", "cositank", "sikasham", "christah", "cennoreth", "elroq", "lautna", "slid\u00e9", "cursedface", "mageius", "maius", "ethreel", "misstemult", "becrux", "heavendot", "sparr\u00f4w", "candressa", "lowelheim", "drazei", "tovanier", "baldurinus", "gnom\u00e9o", "j\u00e0ckaustin", "saphiaa", "lathinus", "midser", "sleipnerr", "bellfast", "varkie", "spacemedic", "trhorn", "kaivelle", "pointiear", "smallpea", "heterjaglnur", "praxeos", "pearicetea", "greatives", "ziraknar\u00e2g", "tankpan", "firnessa", "onslo", "kr\u00e9me", "kl\u00e9ryk", "mescalito", "herrencrem\u00e9", "shambeenie", "kkohkris", "creepew", "jacquie", "silzard", "cairlecus", "corrwin", "murderrose", "neolyte", "neoflayme", "robinthefox", "marfic", "chim\u00e1y", "geilgeilgeil", "unclesmilk", "juliannape\u00f1a", "gr\u00e9giud", "dugallis", "rensen", "el\u00f8mer", "alhanna", "bigchill", "ardiano", "k\u00eengmemos", "kohkris", "sikapala", "matechile", "r\u00fcg", "narshal", "portalpan", "asheess", "elfelya", "redforkbeard", "authlas", "aregos", "prska", "gylletanken", "mavverick", "ravas", "elunida", "frauwd"], "participant_count": 118}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["romisterio", "lockro"], "participants": ["aregos", "romisterio", "lockro", "murphii", "gnomusblasus", "anklecleaver", "culoloco", "ironminer", "moonola", "conpin"], "participant_count": 10}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["veelilah", "whitefight", "romisterio", "tovanier", "chim\u00e1y", "petruzkii", "jogonwar", "murphii", "lockro", "lennier", "baldurinus", "anklecleaver", "kultapoju", "mikaelion", "jalozin", "gnomusblasus", "gnokedli", "culoloco", "aregos", "moonola"], "participant_count": 20}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["aregos", "authlas", "elfelya", "chim\u00e1y", "mescalito", "smallpea", "unslopable"], "participant_count": 7}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "shambeenie", "score": 25}, {"category": "pvp", "label": "PvP", "champion": "romisterio", "score": 352}], "ladder": {"pve": [{"rank": 1, "champion": "culoloco", "score": 116}, {"rank": 2, "champion": "pipogya", "score": 116}, {"rank": 3, "champion": "jalozin", "score": 115}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 6, "reigning_entry_count": 2}, {"week_anchor": "2026-04-14", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["neolyte", "matechile", "moonola", "corrwin", "yeyeayeah", "tamegmed", "vzh", "hawksy", "kr\u00e9me", "veelilah", "neoflayme", "mescalito", "sildow", "anakius", "n\u00e9rolas", "mageius", "asheess", "elunida", "baddock", "hanselaura", "portalpan", "kaivelle", "muthapharma", "visucius", "sikasham", "heterjaglnur", "j\u00e0ckaustin", "aregos", "felixyung", "labanta", "authlas", "narshal", "bigchill", "majky", "vanbaer", "tanaqui", "murderrose", "el\u00f8mer", "shambeenie", "silzard", "sleipnerr", "geilgeilgeil", "ethreel", "conpin", "mord\u00e1k", "besquinn", "cyrithis", "rinette", "varkie", "ziraknar\u00e2g", "slid\u00e9", "lathinus", "synthhr", "unslopable", "pewtah", "marl\u00e4n", "tovanier", "huglada", "varallion", "drazei", "saphiaa", "marfic", "schurgee", "midser", "shelidoni", "erenyah", "shingles", "lautna", "ravas", "unclesmilk", "elfelya", "nacht\u00f6lfin", "thorrison", "weck\u00f8", "herrencrem\u00e9", "uncleurkle", "chikay", "mauldarth", "claycassius", "onslo", "beeravergina", "wetmetter", "zorciah", "redforkbeard", "elroq", "romisterio", "ironminer", "sousedka", "murphii", "alhanna", "bonkonyou", "cursedface", "yd\u00fara", "kohnina", "ir\u00falan", "creepew", "cairlecus", "cosimendes", "gnom\u00e9o", "jeslana", "dialectic", "mavverick", "jackspicer", "dugallis", "takadoss", "sikapala", "spacemedic", "kelliahs", "anwy", "cennoreth", "r\u00e5uger", "de\u00e4deater", "histarael", "candressa", "cocobear", "allze", "bellfast", "azylum", "fulldverg", "christah", "ayuri", "peytr", "eliseraf"], "participant_count": 123}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["lockro", "murphii"], "participants": ["aregos", "romisterio", "lockro", "murphii", "lautna", "de\u00e4deater", "ravas", "gnomusblasus", "marfic", "culoloco", "uncleurkle", "dialectic", "sousedka", "ironminer", "unslopable", "moonola"], "participant_count": 16}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["whitefight", "matechile", "romisterio", "jalozin", "sedrev", "kultapoju", "kr\u00e9me", "pipogya", "aregos", "gnomusblasus", "culoloco", "mikaelion", "elunida", "gabbriello"], "participant_count": 14}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["cocobear", "dialectic", "cosimendes", "murphii", "romisterio", "uncleurkle", "marl\u00e4n", "visucius"], "participant_count": 8}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "claycassius", "score": 40}, {"category": "pvp", "label": "PvP", "champion": "lockro", "score": 257}], "ladder": {"pve": [{"rank": 1, "champion": "culoloco", "score": 116}, {"rank": 2, "champion": "pipogya", "score": 116}, {"rank": 3, "champion": "gnomusblasus", "score": 113}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 6, "reigning_entry_count": 2}, {"week_anchor": "2026-04-07", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["shambeenie", "moonola", "allze", "candressa", "cairlecus", "el\u00f8mer", "romisterio", "histarael", "tovanier", "matechile", "dugallis", "aodheriel", "slid\u00e9", "synthhie", "varallion", "kaivelle", "ethreel", "marl\u00e4n", "veelilah", "baddock", "sousedka", "elfelya", "vanbaer", "drazei", "wetmetter", "anakius", "shelidoni", "juliannape\u00f1a", "ayuri", "heavenleigh", "narshal", "besquinn", "cyrithis", "avotear", "bigchill", "onslo", "yeyeayeah", "heavenlo", "lathinus", "authlas", "midser", "silzard", "murderrose", "uncleurkle", "elunida", "cennoreth", "creepew", "corrwin", "herrencrem\u00e9", "visucius", "mavverick", "rensen", "mageius", "asheess", "peytr", "ziraknar\u00e2g", "elroq", "aregos", "sikapala", "frauwd", "heterjaglnur", "chikay", "unslopable", "christah", "kr\u00e9me", "cocobear", "tamegmed", "schurgee", "majky", "de\u00e4deater", "schnapsbarti", "goyathlay", "claycassius", "dialectic", "lautna", "saadnuga", "shinuko", "geilgeilgeil", "shazahm", "lockro", "becrux", "manalover", "varkie", "tankpan", "akhiles", "zorciah", "kohninah", "sikasham", "malifrizider", "kkohkris", "ironminer", "kultapoju", "pearicetea", "greatives", "padussy", "rinette", "murphii", "weck\u00f8", "neolyte", "neoflayme", "gongles", "saphiaa", "conpin", "bellfast", "ir\u00falan", "huglada", "takadoss", "alhanna", "griee", "conviction", "marfic", "svimen", "mescalito", "huntpan", "swaarley", "r\u00e5uger", "ardiano", "solrye", "arm\u00e3kuni", "ravas", "gnom\u00e9o", "hawksy", "soales", "primadonnali", "anwy", "funniermonke", "emrian", "elsberg", "firnessa", "nieznanys", "mikaelion", "j\u00e0ckaustin", "jackspicer", "eliseraf", "rayr", "huunterz", "lotomba", "yd\u00fara", "vzh", "roastpiglet", "pur\u00eety", "kelliahs", "mord\u00e1k", "veelock", "steverwin", "n\u00e9rolas", "portalpan", "missrog", "rapyz", "cursedface", "sikagnome", "praxeos", "nacht\u00f6lfin", "mauldarth", "raindropplet", "jacquie", "robinthefox"], "participant_count": 157}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["nelfas"], "participants": ["aregos", "slid\u00e9", "svimen", "de\u00e4deater", "nelfas", "ravas", "elroq", "elsberg", "culoloco", "elfelya", "candressa", "unslopable", "conpin", "anakius", "rayr", "jackspicer"], "participant_count": 16}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["culoloco", "jalozin", "aregos", "pipogya", "petruzkii", "lennier", "gnomusblasus", "nelfas", "dugallis", "ahzrael", "whitefight"], "participant_count": 11}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": ["missrog", "steverwin"], "participants": ["missrog", "steverwin", "mikaelion", "kultapoju", "lockro", "shinuko", "heavenlo", "heavenleigh", "synthhie"], "participant_count": 9}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "kultapoju", "score": 81}], "ladder": {"pve": [{"rank": 2, "champion": "culoloco", "score": 115}, {"rank": 3, "champion": "pipogya", "score": 115}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 5, "reigning_entry_count": 1}, {"week_anchor": "2026-03-31", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": ["arm\u00e3kuni", "shambeenie"], "participants": ["avotear", "padussy", "toxeris", "vzh", "vanbaer", "pearicetea", "dugallis", "sqishy", "r\u00e5uger", "murderrose", "varallion", "mageius", "cennoreth", "ethreel", "rayr", "besquinn", "ironminer", "marl\u00e4n", "jaade", "patogoat", "lotomba", "shelidoni", "saadnuga", "claycassius", "yd\u00fara", "drazei", "ir\u00falan", "chikay", "creepew", "bigchill", "midser", "elunida", "romisterio", "roastpiglet", "yeyeayeah", "jackspicer", "j\u00e0ckaustin", "veelock", "marfic", "weck\u00f8", "herrencrem\u00e9", "anakius", "onslo", "robinthefox", "griee", "paisioss", "elsberg", "murphii", "firnessa", "varkie", "tamegmed", "duckmanpet", "peytr", "asheess", "shambeenie", "silzard", "zyphari", "portalpan", "christah", "histarael", "cairlecus", "visucius", "noordraak", "unslopable", "sikagnome", "gofuko", "emrian", "erenyah", "lautna", "swaarley", "takadoss", "malifrizider", "steverwin", "mikaelion", "allze", "eliseraf", "elfelya", "ziraknar\u00e2g", "el\u00f8mer", "kelliahs", "ardiano", "spacemedic", "heterjaglnur", "rinette", "sedrev", "huntpan", "matechile", "frauwd", "lockro", "lathinus", "huglada", "tovanier", "saphiaa", "majky", "candressa", "missrog", "cursedface", "arm\u00e3kuni", "lowelheim", "nacht\u00f6lfin", "conpin", "rubyone", "heavenlo", "mavverick", "raindropplet", "myrathine", "tankpan", "aregos", "corrwin", "whatheals", "sousedka", "mescalito", "hanselaura", "ravas", "rapyz", "iwannabe", "pentzalon", "elroq", "starbeast", "heavenleigh", "de\u00e4deater", "orgodon", "cyrithis", "kultapoju", "n\u00e9rolas", "drez", "anwy", "moonola", "jeslana", "belujar", "evilbeard", "bellelissa", "huunterz", "aedankhan", "wurim", "thyhorn", "cocobear", "goyathlay", "solrye", "rensen", "narshal", "schurgee", "idashealer", "hulie", "uncleurkle", "roosterqt", "ar\u00f8wyn", "funniermonke", "abete", "alhanna", "deathofexile", "crueldreki", "zorciah", "shingles", "pur\u00eety", "shinuko", "manareach", "svimen", "karrage", "l\u00f6tk\u00f6", "oskosh", "thert", "antist", "jacquie", "anantios", "slid\u00e9", "praxeos", "trhorn", "shazahm", "fenderart", "beeravergina", "sleipnerr", "q\u00e1mmar", "felixyung", "philmccraken", "schnapsbarti", "labanta", "toxicx", "bellfast", "primadonnali", "gnom\u00e9o", "tanaqui", "dialectic", "missbubbles"], "participant_count": 184}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["nelfas", "unslopable", "anklecleaver"], "participants": ["ragoutto", "aregos", "cursedface", "ahzrael", "thert", "pentzalon", "talamear", "starbeast", "deathofexile", "nelfas", "anklecleaver", "reyman", "herrencrem\u00e9", "sikagnome", "belujar", "unslopable", "roosterqt", "huunterz"], "participant_count": 18}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["karismo", "gnomusblasus", "gnokedli", "cresia", "ahzrael", "sedrev", "nelfas", "whitefight", "pentzalon", "shootrmcgvin", "pipogya", "nadhi", "goyathlay", "roosterqt", "fenderart", "raindropplet"], "participant_count": 16}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["roosterqt", "starbeast", "rubyone", "sedrev", "noordraak", "zyphari"], "participant_count": 6}], "reigning_titles": [{"category": "pvp", "label": "PvP", "champion": "nelfas", "score": 376}], "ladder": {"pve": [{"rank": 1, "champion": "pipogya", "score": 115}, {"rank": 3, "champion": "crowlyy", "score": 112}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 5, "reigning_entry_count": 1}, {"week_anchor": "2026-03-24", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": ["narshal", "karrage", "visucius"], "participants": ["mikaelion", "mavverick", "de\u00e4deater", "toxeris", "allze", "aedankhan", "patogoat", "roosterqt", "shelidoni", "starbeast", "huunterz", "rensen", "varallion", "malifrizider", "narshal", "padussy", "abete", "sedrev", "tamegmed", "gongles", "erenyah", "pearicetea", "r\u00e5uger", "mageius", "yeyeayeah", "unslopable", "corrwin", "toxicx", "greatives", "gnom\u00e9o", "steverwin", "robinthefox", "j\u00e0ckaustin", "arm\u00e3kuni", "wurim", "elfelya", "romisterio", "christah", "jackspicer", "ir\u00falan", "shambeenie", "anwy", "saadnuga", "driesmertens", "karrage", "anantios", "heterjaglnur", "shinuko", "manalover", "manareach", "q\u00e1mmar", "noordraak", "primadonnali", "cursedface", "lautna", "takadoss", "rapyz", "thert", "hanselaura", "jaade", "creepew", "belujar", "yd\u00fara", "visucius", "raindropplet", "missbubbles", "sikagnome", "mino\u00e4h", "bigchill", "ziraknar\u00e2g", "lowelheim", "idashealer", "ardiano", "elsberg", "peytr", "oskosh", "philmccraken", "draengheit", "pur\u00eety", "orgodon", "ragoutto", "sousedka", "mundaa", "zyphari", "synthhie", "marl\u00e4n", "bellelissa", "ar\u00f8wyn", "huntpan", "nieznanys", "mauldarth", "fenderart", "drez", "marfic", "gofuko", "zorciah", "seralyph", "angmarien", "raelenna", "confusmax", "nacht\u00f6lfin", "roastpiglet", "murphii", "\u00e6doar", "lockro", "lathinus", "beeravergina", "majky", "rinette", "antist", "drazei", "dugallis", "sqishy", "ironmaidon", "bellfast", "slid\u00e9", "solidshort", "griee", "murderrose", "vanbaer", "twezz", "ironminer", "dustaclaud", "rudolfonso", "lagerka", "muktu", "alvyyn", "schurgee", "elunida", "funniermonke", "veelock", "avotear", "trhorn", "lilidani", "thalamear", "goyathlay", "magekopie", "alhanna", "jogonwar", "waaldrin", "rubyone", "joestawr", "kinila", "valanths", "herendahr", "duckmanpet", "tiefk\u00fchlware", "swaarley", "onslo", "dialectic", "shingles", "gurdats", "fulldverg", "pointiear", "angsironfist", "eliseraf", "hulie", "saphiaa", "tovanier", "emrian", "huglada", "praxeos", "myrathine", "besquinn", "l\u00f6tk\u00f6", "yetogaben", "juliannape\u00f1a", "moonola", "johnlocky", "alexitron", "tankpan", "dizzydudess", "shazahm", "kelliahs", "anklecleaver", "n\u00e2zg\u00fal", "asheess", "tomsaft", "raeghar", "paisioss", "redriding", "elroq", "herrencrem\u00e9", "mord\u00e1k", "yeldor", "ostobad", "jacquie", "raaiinzl", "uncleurkle", "candressa", "frauwd", "engywooktbc", "aregos", "chim\u00e1y", "mechoka", "vzh", "gelkin", "thaiwan", "firnessa", "alduriaf", "toxocto", "conviction", "sveinar", "inciter", "pytah", "ravas", "aeghtelius", "schnapsbarti", "caerci", "gnokedli", "arcanik", "cresia"], "participant_count": 212}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["crowlyy", "thert"], "participants": ["anwy", "authlas", "thert", "lockro", "whitefight", "murphii", "anklecleaver", "crowlyy", "uncleurkle", "pointiear", "ziraknar\u00e2g", "reyman", "yetogaben", "thalamear", "dialectic", "elfelya", "rudolfonso"], "participant_count": 17}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": ["gnokedli", "whitefight", "karismo"], "participants": ["gnokedli", "whitefight", "karismo", "cresia", "wrynnin", "pipogya", "reyman", "hehealer", "idashealer", "fenderart", "ahzrael", "shinuko", "crowlyy", "culoloco", "antist"], "participant_count": 15}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": ["cresia", "gnokedli"], "participants": ["cresia", "gnokedli", "gelkin", "raeghar", "anklecleaver", "valanths", "jogonwar", "muktu", "ragoutto"], "participant_count": 9}], "reigning_titles": [{"category": "pvp", "label": "PvP", "champion": "crowlyy", "score": 279}], "ladder": {"pve": [{"rank": 2, "champion": "pipogya", "score": 113}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 3, "champion": "heavenlo", "score": 2121}]}, "war_effort_entry_count": 4, "ladder_entry_count": 3, "reigning_entry_count": 1}, {"week_anchor": "2026-03-17", "war_effort": [], "reigning_titles": [], "ladder": {"pve": [], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "pupicus", "score": 1187}, {"rank": 3, "champion": "paples", "score": 683}]}, "war_effort_entry_count": 0, "ladder_entry_count": 3, "reigning_entry_count": 0}], "latest_week": "2026-04-28", "archived_weeks": 7, "total_campaign_entries": 52, "reigning_titles_logged": 7}, "membership_movement": {"joined": 2, "departed": 1, "rejoined": 0, "total": 3, "recent": [{"scan_id": "2026-05-01T20:30:41.926262Z", "character_name": "Elmosco", "event_type": "joined", "detected_at": "2026-05-01T20:30:41.926262Z", "previous_status": null, "current_status": "active"}, {"scan_id": "2026-05-01T20:30:41.926262Z", "character_name": "Matsumu", "event_type": "joined", "detected_at": "2026-05-01T20:30:41.926262Z", "previous_status": null, "current_status": "active"}, {"scan_id": "2026-05-01T20:30:41.926262Z", "character_name": "Kittysims", "event_type": "departed", "detected_at": "2026-05-01T20:30:41.926262Z", "previous_status": "active", "current_status": "departed"}], "bootstrap": false, "scan_id": "2026-05-01T20:30:41.926262Z", "detected_at": "2026-05-01T20:30:41.926262Z"}, "latest_changes": {"title": "Latest Changes", "items": [{"type": "movement", "label": "2 joined, 1 departed", "tone": "neutral"}, {"type": "level_up", "label": "12 level-ups recorded", "tone": "positive"}, {"type": "item", "label": "38 gear upgrades recorded", "tone": "positive"}], "empty": false, "empty_text": "No notable changes recorded yet."}, "officer_brief": {"title": "Officer Brief", "status": "Watch", "tone": "watch", "summary": "Roster health needs a watch, but the guild remains active.", "items": [{"type": "movement", "label": "Latest movement scan recorded 2 joined, 1 departed", "tone": "watch"}, {"type": "activity", "label": "Activity steady: 263 recently active members", "tone": "positive"}, {"type": "readiness", "label": "Readiness building: 21 raid-ready members tracked", "tone": "neutral"}], "empty": false, "empty_text": "No roster health signals are available yet."}}
     </script>
     <script id="heatmap-data" type="application/json">
-        [{"date": "2026-04-26", "day_name": "Sun", "count": 190, "loot": 148, "levels": 42, "total_roster": 662, "total_roster_mains": 630, "active_roster": 281, "active_roster_mains": 266}, {"date": "2026-04-27", "day_name": "Mon", "count": 174, "loot": 132, "levels": 42, "total_roster": 661, "total_roster_mains": 629, "active_roster": 277, "active_roster_mains": 263}, {"date": "2026-04-28", "day_name": "Tue", "count": 154, "loot": 123, "levels": 31, "total_roster": 657, "total_roster_mains": 625, "active_roster": 272, "active_roster_mains": 258}, {"date": "2026-04-29", "day_name": "Wed", "count": 144, "loot": 104, "levels": 40, "total_roster": 658, "total_roster_mains": 626, "active_roster": 265, "active_roster_mains": 252}, {"date": "2026-04-30", "day_name": "Thu", "count": 139, "loot": 92, "levels": 47, "total_roster": 657, "total_roster_mains": 625, "active_roster": 266, "active_roster_mains": 253}, {"date": "2026-05-01", "day_name": "Fri", "count": 175, "loot": 128, "levels": 47, "total_roster": 660, "total_roster_mains": 628, "active_roster": 264, "active_roster_mains": 251}, {"date": "2026-05-02", "day_name": "Sat", "count": 50, "loot": 38, "levels": 12, "total_roster": 660, "total_roster_mains": 628, "active_roster": 263, "active_roster_mains": 250}]
+        [{"date": "2026-04-26", "day_name": "Sun", "count": 190, "loot": 148, "levels": 42, "total_roster": 662, "total_roster_mains": 630, "active_roster": 281, "active_roster_mains": 266}, {"date": "2026-04-27", "day_name": "Mon", "count": 174, "loot": 132, "levels": 42, "total_roster": 661, "total_roster_mains": 629, "active_roster": 277, "active_roster_mains": 263}, {"date": "2026-04-28", "day_name": "Tue", "count": 154, "loot": 123, "levels": 31, "total_roster": 657, "total_roster_mains": 625, "active_roster": 272, "active_roster_mains": 258}, {"date": "2026-04-29", "day_name": "Wed", "count": 144, "loot": 104, "levels": 40, "total_roster": 658, "total_roster_mains": 626, "active_roster": 265, "active_roster_mains": 252}, {"date": "2026-04-30", "day_name": "Thu", "count": 139, "loot": 92, "levels": 47, "total_roster": 657, "total_roster_mains": 625, "active_roster": 266, "active_roster_mains": 253}, {"date": "2026-05-01", "day_name": "Fri", "count": 175, "loot": 128, "levels": 47, "total_roster": 660, "total_roster_mains": 628, "active_roster": 264, "active_roster_mains": 251}, {"date": "2026-05-02", "day_name": "Sat", "count": 51, "loot": 39, "levels": 12, "total_roster": 660, "total_roster_mains": 628, "active_roster": 263, "active_roster_mains": 250}]
     </script>
 
     <script>
@@ -20948,6 +21289,283 @@ function renderAnalyticsReadinessGap(gap = {}) {
     cardEl.setAttribute('data-readiness-gap-state', canComputeGap && hasAvgIlvl ? 'populated' : 'partial');
 }
 
+function formatAnalyticsTempoDayStamp(day = {}) {
+    const dayName = String(day.day_name || '').trim();
+    const rawDate = String(day.date || '').trim();
+    if (!rawDate) return dayName || 'Unknown day';
+
+    const parsedDate = new Date(rawDate);
+    if (Number.isNaN(parsedDate.getTime())) {
+        return dayName ? `${dayName} · ${rawDate}` : rawDate;
+    }
+
+    const formattedDate = parsedDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+    });
+
+    return dayName ? `${dayName} · ${formattedDate}` : formattedDate;
+}
+
+function formatAnalyticsSignedDelta(value) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue) || numericValue === 0) return null;
+    return numericValue > 0
+        ? `+${Math.abs(numericValue).toLocaleString()}`
+        : `-${Math.abs(numericValue).toLocaleString()}`;
+}
+
+function buildAnalyticsTempoStat({ label, value, meta, tone = '' }) {
+    const safeValue = value === null || value === undefined || value === ''
+        ? '—'
+        : String(value);
+    const safeMeta = meta || 'Not available from current snapshot';
+
+    return `
+        <div class="analytics-tempo-stat" data-tone="${escapeAnalyticsHtml(tone)}">
+            <span class="analytics-tempo-stat-label">${escapeAnalyticsHtml(label)}</span>
+            <strong class="analytics-tempo-stat-value">${escapeAnalyticsHtml(safeValue)}</strong>
+            <span class="analytics-tempo-stat-meta">${escapeAnalyticsHtml(safeMeta)}</span>
+        </div>
+    `;
+}
+
+function buildAnalyticsTempoRow({ label, count, total, meta, tone = '' }) {
+    const share = formatAnalyticsSnapshotShare(count, total);
+    const safeCount = Number.isFinite(Number(count)) ? Number(count).toLocaleString() : '—';
+    const safeMeta = meta || (share === null ? 'Not available from current snapshot' : `${share}% of tempo`);
+    const fillPercent = Number.isFinite(share) ? Math.max(0, Math.min(100, share)) : 0;
+
+    return `
+        <div class="analytics-tempo-row" data-tone="${escapeAnalyticsHtml(tone)}">
+            <div class="analytics-tempo-row-head">
+                <span class="analytics-tempo-row-label">${escapeAnalyticsHtml(label)}</span>
+                <strong class="analytics-tempo-row-value">${safeCount}</strong>
+            </div>
+            <div class="analytics-tempo-meter" aria-hidden="true">
+                <span class="analytics-tempo-fill" style="width: ${fillPercent > 0 ? Math.max(6, fillPercent) : 0}%;"></span>
+            </div>
+            <span class="analytics-tempo-row-meta">${escapeAnalyticsHtml(safeMeta)}</span>
+        </div>
+    `;
+}
+
+function renderAnalyticsCampaignTempo(tempo = {}) {
+    const sectionEl = document.getElementById('analytics-activity-section');
+    if (!sectionEl) return;
+
+    const summaryEl = document.getElementById('analytics-campaign-tempo-summary');
+    const noteEl = document.getElementById('analytics-campaign-tempo-note');
+    const statsEl = document.getElementById('analytics-campaign-tempo-stats');
+    const barsEl = document.getElementById('analytics-campaign-tempo-bars');
+    const emptyEl = document.getElementById('analytics-campaign-tempo-empty');
+
+    if (!summaryEl || !noteEl || !statsEl || !barsEl || !emptyEl) return;
+
+    const heatmap = Array.isArray(tempo.heatmap) ? tempo.heatmap.filter(Boolean) : [];
+    const emptyCopy = 'Campaign tempo data is not available for this snapshot.';
+    const partialCopy = 'Some campaign tempo fields are unavailable from the current snapshot.';
+
+    if (!heatmap.length) {
+        statsEl.innerHTML = '';
+        barsEl.innerHTML = '';
+        summaryEl.textContent = emptyCopy;
+        noteEl.hidden = true;
+        noteEl.textContent = partialCopy;
+        emptyEl.hidden = false;
+        sectionEl.setAttribute('data-tempo-state', 'empty');
+        return;
+    }
+
+    const totalTempo = heatmap.reduce((sum, day) => sum + Number(day.count || 0), 0);
+    const lootDrops = heatmap.reduce((sum, day) => sum + Number(day.loot || 0), 0);
+    const levelUps = heatmap.reduce((sum, day) => sum + Number(day.levels || 0), 0);
+    const averageTempo = heatmap.length > 0 ? Math.round(totalTempo / heatmap.length) : 0;
+    const busiestDay = heatmap.reduce((best, day) => {
+        const currentCount = Number(day.count || 0);
+        if (!best || currentCount > Number(best.count || 0)) return day;
+        return best;
+    }, null);
+    const latestDay = heatmap[heatmap.length - 1];
+    const firstRosterPoint = [...heatmap].find(day => Number.isFinite(Number(day.total_roster)));
+    const lastRosterPoint = [...heatmap].reverse().find(day => Number.isFinite(Number(day.total_roster)));
+    const firstActivePoint = [...heatmap].find(day => Number.isFinite(Number(day.active_roster)));
+    const lastActivePoint = [...heatmap].reverse().find(day => Number.isFinite(Number(day.active_roster)));
+    const rosterDelta = firstRosterPoint && lastRosterPoint
+        ? Number(lastRosterPoint.total_roster) - Number(firstRosterPoint.total_roster)
+        : null;
+    const activeDelta = firstActivePoint && lastActivePoint
+        ? Number(lastActivePoint.active_roster) - Number(firstActivePoint.active_roster)
+        : null;
+    const maxTempo = Math.max(...heatmap.map(day => Number(day.count || 0)), 1);
+    const hasPartialData = heatmap.some(day => day.total_roster === null || day.total_roster === undefined || day.active_roster === null || day.active_roster === undefined);
+
+    summaryEl.textContent = 'The last seven days of timeline activity, highlighting loot drops, level-ups, and roster movement snapshots.';
+    const tempoNoteText = [
+        busiestDay ? `Busiest day: ${formatAnalyticsTempoDayStamp(busiestDay)} (${Number(busiestDay.count || 0).toLocaleString()} actions)` : '',
+        latestDay ? `Latest day: ${formatAnalyticsTempoDayStamp(latestDay)}` : '',
+        rosterDelta !== null ? `Total roster Δ ${formatAnalyticsSignedDelta(rosterDelta)}` : '',
+        activeDelta !== null ? `Active mains Δ ${formatAnalyticsSignedDelta(activeDelta)}` : ''
+    ].filter(Boolean).join(' · ') || partialCopy;
+    noteEl.textContent = hasPartialData && tempoNoteText !== partialCopy
+        ? `${tempoNoteText} · ${partialCopy}`
+        : tempoNoteText;
+    noteEl.hidden = false;
+
+    statsEl.innerHTML = [
+        buildAnalyticsTempoStat({
+            label: 'Tempo Total',
+            value: totalTempo.toLocaleString(),
+            meta: `${heatmap.length.toLocaleString()} days recorded`,
+            tone: 'tempo'
+        }),
+        buildAnalyticsTempoStat({
+            label: 'Loot Drops',
+            value: lootDrops.toLocaleString(),
+            meta: 'Item events recorded',
+            tone: 'loot'
+        }),
+        buildAnalyticsTempoStat({
+            label: 'Level Ups',
+            value: levelUps.toLocaleString(),
+            meta: 'Level-up events recorded',
+            tone: 'levels'
+        }),
+        buildAnalyticsTempoStat({
+            label: 'Avg / Day',
+            value: averageTempo.toLocaleString(),
+            meta: 'Across the last seven days',
+            tone: 'average'
+        })
+    ].join('');
+
+    barsEl.innerHTML = heatmap.map(day => {
+        const dailyCount = Number(day.count || 0);
+        const dailyLoot = Number(day.loot || 0);
+        const dailyLevels = Number(day.levels || 0);
+        const fillPercent = Math.max(0, Math.min(100, Math.round((dailyCount / maxTempo) * 100)));
+
+        return `
+            <div class="analytics-tempo-row${busiestDay === day ? ' is-peak' : ''}" data-tone="${busiestDay === day ? 'peak' : 'tempo'}">
+                <div class="analytics-tempo-row-head">
+                    <span class="analytics-tempo-row-label">${escapeAnalyticsHtml(formatAnalyticsTempoDayStamp(day))}</span>
+                    <strong class="analytics-tempo-row-value">${dailyCount.toLocaleString()}</strong>
+                </div>
+                <div class="analytics-tempo-meter" aria-hidden="true">
+                    <span class="analytics-tempo-fill" style="width: ${fillPercent > 0 ? Math.max(6, fillPercent) : 0}%;"></span>
+                </div>
+                <span class="analytics-tempo-row-meta">${escapeAnalyticsHtml(`${dailyLoot} loot · ${dailyLevels} level-ups`)}</span>
+            </div>
+        `;
+    }).join('');
+
+    emptyEl.hidden = true;
+    sectionEl.setAttribute('data-tempo-state', hasPartialData ? 'partial' : 'populated');
+}
+
+function buildAnalyticsRoleSnapshotRow({ label, count, total, meta, tone = '', route = '' }) {
+    const share = formatAnalyticsSnapshotShare(count, total);
+    const safeCount = Number.isFinite(Number(count)) ? Number(count).toLocaleString() : '—';
+    const safeMeta = meta || (share === null ? 'Not available from current snapshot' : `${share}% of mains`);
+    const fillPercent = Number.isFinite(share) ? Math.max(0, Math.min(100, share)) : 0;
+    const routeAttr = route ? ` data-home-route="${escapeAnalyticsHtml(route)}"` : '';
+    const labelText = escapeAnalyticsHtml(label);
+    const interactiveClass = route ? '' : ' is-static';
+    const tagName = route ? 'button type="button"' : 'div';
+
+    return `
+        <${tagName} class="analytics-role-snapshot-row${interactiveClass}" data-tone="${escapeAnalyticsHtml(tone)}"${routeAttr}${route ? ` aria-label="Inspect ${labelText}"` : ''}>
+            <div class="analytics-role-snapshot-row-head">
+                <span class="analytics-role-snapshot-row-label">${labelText}</span>
+                <strong class="analytics-role-snapshot-row-value">${safeCount}</strong>
+            </div>
+            <div class="analytics-role-snapshot-meter" aria-hidden="true">
+                <span class="analytics-role-snapshot-fill" style="width: ${fillPercent > 0 ? Math.max(6, fillPercent) : 0}%;"></span>
+            </div>
+            <span class="analytics-role-snapshot-row-meta">${escapeAnalyticsHtml(safeMeta)}</span>
+        </${route ? 'button' : 'div'}>
+    `;
+}
+
+function renderAnalyticsRoleSnapshot(snapshot = {}) {
+    const cardEl = document.getElementById('analytics-role-snapshot-card');
+    if (!cardEl) return;
+
+    const summaryEl = document.getElementById('analytics-role-snapshot-summary');
+    const noteEl = document.getElementById('analytics-role-snapshot-note');
+    const listEl = document.getElementById('analytics-role-snapshot-list');
+    const emptyEl = document.getElementById('analytics-role-snapshot-empty');
+
+    if (!summaryEl || !noteEl || !listEl || !emptyEl) return;
+
+    const roster = Array.isArray(snapshot.roster) ? snapshot.roster.filter(Boolean) : [];
+    const emptyCopy = 'Raid role data is not available for this snapshot.';
+    const partialCopy = 'Some role fields are unavailable from the current snapshot.';
+
+    if (!roster.length) {
+        listEl.innerHTML = '';
+        summaryEl.textContent = emptyCopy;
+        noteEl.hidden = true;
+        noteEl.textContent = partialCopy;
+        emptyEl.hidden = false;
+        cardEl.setAttribute('data-role-snapshot-state', 'empty');
+        return;
+    }
+
+    const roleCounts = new Map();
+    let unknownRoleCount = 0;
+
+    roster.forEach(entry => {
+        const className = getCharClass(entry);
+        const roleName = getCharacterRole(className, entry?.profile?.active_spec || '') || 'Unknown';
+        roleCounts.set(roleName, (roleCounts.get(roleName) || 0) + 1);
+        if (roleName === 'Unknown') unknownRoleCount++;
+    });
+
+    const roleOrder = {
+        'Tank': 0,
+        'Healer': 1,
+        'Melee DPS': 2,
+        'Ranged DPS': 3,
+        'Unknown': 4
+    };
+    const roleToneByLabel = {
+        'Tank': { route: 'filter-role-tank', tone: 'tank' },
+        'Healer': { route: 'filter-role-healer', tone: 'healer' },
+        'Melee DPS': { route: 'filter-role-melee-dps', tone: 'melee' },
+        'Ranged DPS': { route: 'filter-role-ranged-dps', tone: 'ranged' },
+        'Unknown': { route: '', tone: 'unknown' }
+    };
+
+    const roleRows = [...roleCounts.entries()]
+        .filter(([, count]) => count > 0)
+        .map(([label, count]) => ({
+            label,
+            count,
+            ...(roleToneByLabel[label] || { route: '', tone: '' })
+        }))
+        .sort((a, b) => (roleOrder[a.label] ?? 99) - (roleOrder[b.label] ?? 99));
+
+    listEl.innerHTML = roleRows.length > 0
+        ? roleRows.map(row => buildAnalyticsRoleSnapshotRow({
+            label: row.label,
+            count: row.count,
+            total: roster.length,
+            meta: formatAnalyticsSnapshotShareText(row.count, roster.length),
+            tone: row.tone,
+            route: row.route
+        })).join('')
+        : `<div class="analytics-role-snapshot-empty-state">No raid role data available from this snapshot.</div>`;
+
+    summaryEl.textContent = 'Known specs among mains, mapped into the app’s current tank, healer, melee, and ranged role buckets.';
+    noteEl.hidden = !unknownRoleCount;
+    noteEl.textContent = unknownRoleCount > 0
+        ? `${unknownRoleCount.toLocaleString()} mains are missing an active spec and are shown as Unknown.`
+        : 'Click a role to filter the roster.';
+    emptyEl.hidden = true;
+    cardEl.setAttribute('data-role-snapshot-state', unknownRoleCount > 0 ? 'partial' : 'populated');
+}
+
 function getAnalyticsRosterHonorKills(entry) {
     const rawValue = entry && (
         entry.honorable_kills
@@ -21229,6 +21847,7 @@ function renderAnalyticsProgressionReadiness(progression = {}) {
     if (!noteEl || !levelCardEl || !levelListEl || !ilvlCardEl || !ilvlListEl) return;
 
     const roster = Array.isArray(progression.roster) ? progression.roster.filter(Boolean) : [];
+    const ilvlRoster = Array.isArray(progression.ilvlRoster) ? progression.ilvlRoster.filter(Boolean) : roster;
     const emptyLevelCopy = 'Level distribution data is not available for this snapshot.';
     const emptyIlvlCopy = 'Item-level spread data is not available for this snapshot.';
     const partialCopy = 'Some progression readiness fields are unavailable from the current snapshot.';
@@ -21272,29 +21891,6 @@ function renderAnalyticsProgressionReadiness(progression = {}) {
         const existingLevelCount = levelCounts.get(levelLabel) || 0;
         levelCounts.set(levelLabel, existingLevelCount + 1);
 
-        if (level >= 70) {
-            const ilvl = getAnalyticsRosterIlvl(entry);
-            if (ilvl === null) {
-                unknownIlvlCount++;
-                return;
-            }
-
-            let ilvlLabel = '';
-            if (ilvl >= 130) {
-                ilvlLabel = '130+';
-            } else if (ilvl >= 120) {
-                ilvlLabel = '120-129';
-            } else if (ilvl >= 110) {
-                ilvlLabel = '110-119';
-            } else if (ilvl >= 100) {
-                ilvlLabel = '100-109';
-            } else {
-                ilvlLabel = '<100';
-            }
-
-            const existingIlvlCount = ilvlCounts.get(ilvlLabel) || 0;
-            ilvlCounts.set(ilvlLabel, existingIlvlCount + 1);
-        }
     });
 
     const levelTotal = roster.length;
@@ -21327,27 +21923,8 @@ function renderAnalyticsProgressionReadiness(progression = {}) {
     const levelRows = [...knownLevelEntries];
     if (levelUnknown) levelRows.push(levelUnknown);
 
-    const ilvlBandOrder = { '130+': 0, '120-129': 1, '110-119': 2, '100-109': 3, '<100': 4 };
-    const ilvlToneByLabel = {
-        '130+': { route: 'filter-ilvl-130+', tone: 'prime' },
-        '120-129': { route: 'filter-ilvl-120-129', tone: 'high' },
-        '110-119': { route: 'filter-ilvl-110-119', tone: 'steady' },
-        '100-109': { route: 'filter-ilvl-100-109', tone: 'rising' },
-        '<100': { route: 'filter-ilvl-<100', tone: 'under' }
-    };
-    const ilvlKnownRows = [...ilvlCounts.entries()]
-        .map(([label, count]) => ({
-            label,
-            count,
-            ...(ilvlToneByLabel[label] || { route: '', tone: '' })
-        }))
-        .sort((a, b) => (ilvlBandOrder[a.label] ?? 99) - (ilvlBandOrder[b.label] ?? 99));
-
     const levelHasPartialData = unknownLevelCount > 0;
     const levelHasKnownData = levelRows.some(row => row.label !== 'Unknown');
-    const ilvlHasPartialData = unknownIlvlCount > 0;
-    const ilvlHasKnownData = ilvlKnownRows.length > 0;
-    const hasPartialData = levelHasPartialData || ilvlHasPartialData;
 
     if (!levelHasKnownData) {
         levelListEl.innerHTML = `<div class="analytics-progression-empty-state">${escapeAnalyticsHtml(emptyLevelCopy)}</div>`;
@@ -21370,7 +21947,57 @@ function renderAnalyticsProgressionReadiness(progression = {}) {
         levelCardEl.setAttribute('data-progression-state', levelHasPartialData ? 'partial' : 'populated');
     }
 
-    const level70Total = totalLevel70Count;
+    const ilvlBandOrder = { '130+': 0, '120-129': 1, '110-119': 2, '100-109': 3, '<100': 4 };
+    const ilvlToneByLabel = {
+        '130+': { route: 'filter-ilvl-130+', tone: 'prime' },
+        '120-129': { route: 'filter-ilvl-120-129', tone: 'high' },
+        '110-119': { route: 'filter-ilvl-110-119', tone: 'steady' },
+        '100-109': { route: 'filter-ilvl-100-109', tone: 'rising' },
+        '<100': { route: 'filter-ilvl-<100', tone: 'under' }
+    };
+
+    const level70IlvlEntries = ilvlRoster.filter(entry => {
+        const level = getAnalyticsRosterLevel(entry);
+        return level !== null && level >= 70;
+    });
+    const level70IlvlTotal = level70IlvlEntries.length;
+
+    level70IlvlEntries.forEach(entry => {
+        const ilvl = getAnalyticsRosterIlvl(entry);
+        if (ilvl === null) {
+            unknownIlvlCount++;
+            return;
+        }
+
+        let ilvlLabel = '';
+        if (ilvl >= 130) {
+            ilvlLabel = '130+';
+        } else if (ilvl >= 120) {
+            ilvlLabel = '120-129';
+        } else if (ilvl >= 110) {
+            ilvlLabel = '110-119';
+        } else if (ilvl >= 100) {
+            ilvlLabel = '100-109';
+        } else {
+            ilvlLabel = '<100';
+        }
+
+        const existingIlvlCount = ilvlCounts.get(ilvlLabel) || 0;
+        ilvlCounts.set(ilvlLabel, existingIlvlCount + 1);
+    });
+
+    const ilvlKnownRows = [...ilvlCounts.entries()]
+        .map(([label, count]) => ({
+            label,
+            count,
+            ...(ilvlToneByLabel[label] || { route: '', tone: '' })
+        }))
+        .sort((a, b) => (ilvlBandOrder[a.label] ?? 99) - (ilvlBandOrder[b.label] ?? 99));
+
+    const ilvlHasPartialData = unknownIlvlCount > 0 || totalLevel70Count !== level70IlvlTotal;
+    const ilvlHasKnownData = ilvlKnownRows.length > 0;
+    const hasPartialData = levelHasPartialData || ilvlHasPartialData;
+
     if (!ilvlHasKnownData) {
         ilvlListEl.innerHTML = `<div class="analytics-progression-empty-state">${escapeAnalyticsHtml(emptyIlvlCopy)}</div>`;
         ilvlCardEl.setAttribute('data-progression-state', 'empty');
@@ -21380,8 +22007,8 @@ function renderAnalyticsProgressionReadiness(progression = {}) {
             .map(row => buildAnalyticsProgressionRow({
                 label: row.label,
                 count: row.count,
-                total: level70Total,
-                meta: formatAnalyticsProgressionShareText(row.count, level70Total, 'of level 70s'),
+                total: level70IlvlTotal,
+                meta: formatAnalyticsProgressionShareText(row.count, level70IlvlTotal, 'of level 70s'),
                 tone: row.tone,
                 route: row.route
             }));
@@ -21390,7 +22017,7 @@ function renderAnalyticsProgressionReadiness(progression = {}) {
             ilvlItems.push(buildAnalyticsProgressionRow({
                 label: 'Unknown',
                 count: unknownIlvlCount,
-                total: level70Total,
+                total: level70IlvlTotal,
                 meta: 'Not available from current snapshot',
                 tone: 'unknown'
             }));
@@ -22605,7 +23232,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.activeClassExpanded = null;
     let mainDonutChartInstance = null;     
     let conciseDonutChartInstance = null;
-    let analyticsActivityChartInst = null;
     window.roleChartInstance = null;
     const analyticsView = document.getElementById('analytics-view');   
     const architectureView = document.getElementById('architecture-view');
@@ -27123,11 +27749,24 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        if (typeof renderAnalyticsCampaignTempo === 'function') {
+            renderAnalyticsCampaignTempo({
+                heatmap: recentHeatmap
+            });
+        }
+
+        if (typeof renderAnalyticsRoleSnapshot === 'function') {
+            renderAnalyticsRoleSnapshot({
+                roster: mainRoster
+            });
+        }
+
         const analyticsRosterSnapshot = Array.isArray(rawGuildRoster) && rawGuildRoster.length > 0 ? rawGuildRoster : rosterData;
 
         if (typeof renderAnalyticsProgressionReadiness === 'function') {
             renderAnalyticsProgressionReadiness({
-                roster: analyticsRosterSnapshot
+                roster: analyticsRosterSnapshot,
+                ilvlRoster: Array.isArray(rosterData) && rosterData.length > 0 ? rosterData : analyticsRosterSnapshot
             });
         }
 
@@ -27386,49 +28025,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             cta: 'Inspect 60-69 bracket ➔'
         });
 
-        const actCtx = document.getElementById('analyticsActivityChart');
-        if (actCtx && heatmapData && heatmapData.length > 0) {
-            if (analyticsActivityChartInst) analyticsActivityChartInst.destroy();
-            analyticsActivityChartInst = new Chart(actCtx, {
-                type: 'line',
-                data: {
-                    labels: heatmapData.map(d => d.day_name),
-                    datasets: [
-                        { label: 'Loot Drops', data: heatmapData.map(d => d.loot || 0), borderColor: '#a335ee', backgroundColor: 'rgba(163, 53, 238, 0.1)', borderWidth: 2, pointBackgroundColor: '#a335ee', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y' },
-                        { label: 'Level Ups', data: heatmapData.map(d => d.levels || 0), borderColor: '#ffd100', backgroundColor: 'rgba(255, 209, 0, 0.1)', borderWidth: 2, pointBackgroundColor: '#ffd100', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y' },
-                        { label: 'Total Roster (All)', data: heatmapData.map(d => getHeatmapMetricValue(d, 'total_roster', 'total_roster')), borderColor: 'rgba(52, 152, 219, 0.3)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#3498db', pointBorderColor: '#fff', tension: 0.3, fill: false, yAxisID: 'y-roster' },
-                        { label: 'Active Roster (Mains)', data: heatmapData.map(d => getHeatmapMetricValue(d, 'active_roster_mains', 'active_roster')), borderColor: 'rgba(46, 204, 113, 0.6)', backgroundColor: 'rgba(46, 204, 113, 0.05)', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#2ecc71', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y-roster' }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#bbb', font: { family: 'Cinzel' }, boxWidth: 12 } },
-                        tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#fff', bodyFont: { family: 'Cinzel' } }
-                    },
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            beginAtZero: true,
-                            title: { display: true, text: 'Activity Count', color: '#888', font: { family: 'Cinzel' } },
-                            ticks: { color: '#888', stepSize: 1, font: { family: 'Cinzel' } },
-                            grid: { color: 'rgba(255,255,255,0.05)' }
-                        },
-                        'y-roster': {
-                            type: 'linear',
-                            position: 'right',
-                            beginAtZero: false,
-                            title: { display: true, text: 'Player Count', color: '#888', font: { family: 'Cinzel' } },
-                            ticks: { color: '#888', font: { family: 'Cinzel' } },
-                            grid: { drawOnChartArea: false }
-                        },
-                        x: { ticks: { color: '#888', font: { family: 'Cinzel', weight: 'bold' } }, grid: { display: false } }
-                    },
-                    interaction: { mode: 'nearest', axis: 'x', intersect: false }
-                }
-            });
-        }
     }
 
     function bindTimelineFilterControls() {
