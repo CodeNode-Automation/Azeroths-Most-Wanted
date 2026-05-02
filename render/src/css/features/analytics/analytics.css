@@ -2623,3 +2623,358 @@ body[data-route-family="analytics"] .analytics-summary-section::after, body[data
     transparent 100%
   );
 }
+
+@media (min-width: 1200px) {
+  .analytics-view-container {
+    padding-bottom: 44px;
+  }
+
+  .analytics-hero-section,
+  .analytics-summary-section,
+  .analytics-intel-section {
+    margin-bottom: 22px;
+  }
+
+  .analytics-summary-section .analytics-heading,
+  .analytics-intel-section .analytics-heading {
+    max-width: 720px;
+  }
+
+  .analytics-summary-section .home-section-kicker,
+  .analytics-intel-section .home-section-kicker {
+    margin-bottom: 8px;
+  }
+
+  .analytics-summary-section .home-section-title {
+    font-size: clamp(20px, 2.1vw, 28px);
+  }
+
+  .analytics-summary-section .home-section-subtitle,
+  .analytics-intel-section .home-section-subtitle {
+    max-width: 600px;
+    margin-top: 8px;
+    line-height: 1.55;
+  }
+
+  .analytics-hero-shell {
+    padding: 24px 24px 18px;
+  }
+
+  .analytics-hero-title {
+    margin-bottom: 8px;
+  }
+
+  .analytics-hero-desc {
+    max-width: 760px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .analytics-hero-scope {
+    max-width: 760px;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  .analytics-hero-band {
+    margin-top: 16px;
+    gap: 12px;
+  }
+
+  .analytics-hero-band-item {
+    padding: 12px 14px;
+  }
+
+  .analytics-hero-band-kicker {
+    margin-bottom: 5px;
+  }
+
+  .analytics-hero-band-value {
+    font-size: 13px;
+  }
+
+  .analytics-snapshot-section {
+    margin: 0 auto 22px;
+    padding-top: 6px;
+  }
+
+  .analytics-snapshot-grid {
+    gap: 12px;
+  }
+
+  .analytics-snapshot-card {
+    min-height: 132px;
+    padding: 14px 14px 12px;
+  }
+
+  .analytics-snapshot-value {
+    margin-top: 8px;
+    font-size: clamp(28px, 3vw, 38px);
+  }
+
+  .analytics-snapshot-status,
+  .analytics-snapshot-scope {
+    margin-top: 7px;
+  }
+
+  .analytics-campaign-history-section,
+  .analytics-readiness-funnel-section,
+  .analytics-readiness-gap-section,
+  .analytics-honor-section,
+  .analytics-roster-composition-section,
+  .analytics-distribution-section,
+  .analytics-progression-readiness-section,
+  .analytics-activity-section {
+    margin-bottom: 22px;
+  }
+
+  .analytics-intel-section {
+    padding: 20px 20px 18px;
+  }
+
+  .analytics-primary-grid {
+    gap: 18px;
+  }
+
+  .analytics-card-grid {
+    gap: 14px;
+  }
+
+  .analytics-card {
+    padding: 14px 14px 12px;
+  }
+
+  .analytics-card-head {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    gap: 6px;
+  }
+
+  .analytics-card-wide .chart-canvas-wrapper {
+    height: 250px;
+  }
+
+  .analytics-card-side .chart-canvas-wrapper {
+    height: 210px;
+  }
+
+  .analytics-campaign-history-card {
+    gap: 14px;
+    padding: 14px 16px;
+  }
+
+  .analytics-campaign-history-metrics {
+    gap: 10px;
+  }
+
+  .analytics-campaign-history-metric {
+    padding: 12px 12px 11px;
+  }
+
+  .analytics-campaign-history-footer {
+    gap: 12px;
+  }
+
+  .analytics-readiness-funnel-card {
+    gap: 14px;
+    padding: 14px 16px;
+  }
+
+  .analytics-readiness-funnel-stages {
+    gap: 10px;
+  }
+
+  .analytics-readiness-funnel-stage {
+    padding: 12px 12px 11px;
+  }
+
+  .analytics-readiness-gap-card {
+    gap: 14px;
+    padding: 16px 18px 18px;
+  }
+
+  .analytics-readiness-gap-stats {
+    gap: 10px;
+  }
+
+  .analytics-readiness-gap-stat {
+    padding: 12px 13px;
+  }
+
+  .analytics-readiness-gap-meter {
+    height: 8px;
+  }
+
+  .analytics-honor-card {
+    gap: 14px;
+    padding: 18px 20px;
+  }
+
+  .analytics-honor-stats {
+    gap: 12px;
+  }
+
+  .analytics-honor-stat {
+    padding: 13px 14px 12px;
+  }
+
+  .analytics-honor-row {
+    gap: 6px;
+    padding: 12px 14px 13px;
+  }
+
+  .analytics-honor-row-head {
+    gap: 8px;
+  }
+
+  .analytics-roster-composition-card {
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+  }
+
+  .analytics-roster-composition-grid {
+    gap: 10px;
+  }
+
+  .analytics-roster-composition-panel {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .analytics-roster-composition-list {
+    gap: 8px;
+  }
+
+  .analytics-roster-composition-row {
+    gap: 6px;
+    padding: 11px 12px 12px;
+  }
+
+  .analytics-distribution-section {
+    gap: 12px;
+  }
+
+  .analytics-distribution-grid {
+    gap: 12px;
+  }
+
+  .analytics-distribution-card {
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .analytics-distribution-list {
+    gap: 8px;
+  }
+
+  .analytics-distribution-item {
+    gap: 6px;
+    padding: 11px 12px 12px;
+  }
+
+  .analytics-progression-readiness-section {
+    margin-bottom: 22px;
+  }
+
+  .analytics-progression-note {
+    margin-bottom: 8px;
+  }
+
+  .analytics-progression-grid {
+    gap: 12px;
+  }
+
+  .analytics-progression-card {
+    gap: 12px;
+    padding: 14px 16px 12px;
+  }
+
+  .analytics-progression-list {
+    gap: 8px;
+  }
+
+  .analytics-progression-item {
+    gap: 6px;
+    padding: 11px 12px 12px;
+  }
+
+  .analytics-pressure-grid,
+  .analytics-pressure-notes,
+  .analytics-readiness-grid,
+  .analytics-spotlight-grid {
+    gap: 14px;
+  }
+
+  .analytics-pressure-grid {
+    margin-bottom: 14px;
+  }
+
+  .analytics-quick-routes {
+    gap: 14px;
+  }
+
+  .analytics-pressure-card {
+    min-height: 190px;
+    padding: 14px 16px;
+  }
+
+  .analytics-pressure-note {
+    min-height: 128px;
+    padding: 14px 16px;
+  }
+
+  .analytics-readiness-card,
+  .analytics-spotlight-card {
+    min-height: 168px;
+    padding: 14px 16px;
+  }
+
+  .analytics-route-card {
+    min-height: 162px;
+    padding: 14px 16px 12px;
+  }
+
+  .analytics-route-card .home-nav-copy {
+    max-width: 32ch;
+  }
+
+  .analytics-route-card .home-nav-cta {
+    padding-top: 12px;
+  }
+
+  .analytics-pressure-value {
+    margin-top: 8px;
+    font-size: clamp(30px, 3.3vw, 42px);
+  }
+
+  .analytics-pressure-note-value {
+    margin: 8px 0 6px;
+    font-size: 26px;
+  }
+
+  .analytics-pressure-title {
+    margin-top: 8px;
+    font-size: 18px;
+  }
+
+  .analytics-readiness-name,
+  .analytics-spotlight-name {
+    font-size: 18px;
+  }
+
+  .analytics-pressure-meta,
+  .analytics-pressure-state,
+  .analytics-pressure-note-copy,
+  .analytics-readiness-meta,
+  .analytics-spotlight-meta {
+    line-height: 1.55;
+  }
+
+  .analytics-pressure-cta,
+  .analytics-readiness-cta,
+  .analytics-spotlight-cta,
+  .analytics-route-card .home-nav-cta {
+    padding-top: 12px;
+  }
+}
