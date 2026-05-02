@@ -149,6 +149,98 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         )
         self.assertNotIn("movement", [item["type"] for item in officer_brief["items"]])
 
+    async def test_finalize_dashboard_output_prefers_latest_real_movement_scan_over_bootstrap_scan(self):
+        recent_rows = [
+            {
+                "scan_id": "scan-200",
+                "character_name": "Alpha",
+                "event_type": "joined",
+                "detected_at": "2026-05-01T12:00:00Z",
+                "previous_status": None,
+                "current_status": "active",
+            },
+            {
+                "scan_id": "scan-200",
+                "character_name": "Bravo",
+                "event_type": "joined",
+                "detected_at": "2026-05-01T12:00:00Z",
+                "previous_status": None,
+                "current_status": "active",
+            },
+            {
+                "scan_id": "scan-200",
+                "character_name": "Charlie",
+                "event_type": "joined",
+                "detected_at": "2026-05-01T12:00:00Z",
+                "previous_status": None,
+                "current_status": "active",
+            },
+            {
+                "scan_id": "scan-100",
+                "character_name": "Alpha",
+                "event_type": "joined",
+                "detected_at": "2026-04-29T12:00:00Z",
+                "previous_status": "active",
+                "current_status": "active",
+            },
+            {
+                "scan_id": "scan-100",
+                "character_name": "Bravo",
+                "event_type": "departed",
+                "detected_at": "2026-04-29T12:00:00Z",
+                "previous_status": "active",
+                "current_status": "departed",
+            },
+            {
+                "scan_id": "scan-100",
+                "character_name": "Charlie",
+                "event_type": "rejoined",
+                "detected_at": "2026-04-29T12:00:00Z",
+                "previous_status": "departed",
+                "current_status": "active",
+            },
+        ]
+
+        def fetch_side_effect(session, query):
+            if "guild_membership_events" in query:
+                return recent_rows
+            return []
+
+        with (
+            mock.patch("wow.output.fetch_turso", side_effect=fetch_side_effect) as mock_fetch,
+            mock.patch("wow.output.write_timeline_output"),
+            mock.patch("wow.output.generate_html_dashboard") as mock_generate_html,
+        ):
+            await finalize_dashboard_output(
+                mock.MagicMock(),
+                roster_data=[{"profile": {"name": "Alpha", "level": 70, "equipped_item_level": 120}}],
+                realm_data={
+                    "global_metrics": {
+                        "total_members": 625,
+                        "active_14_days": 268,
+                        "raid_ready_count": 22,
+                        "avg_ilvl_70": 107,
+                    },
+                    "global_trends": {},
+                },
+                dashboard_feed=[],
+                raw_guild_roster=[{"name": "Alpha", "level": 70}],
+                prev_mvps={},
+            )
+
+        self.assertTrue(mock_fetch.await_count >= 1)
+        self.assertEqual(mock_generate_html.call_count, 1)
+        membership_movement = mock_generate_html.call_args.kwargs["membership_movement"]
+
+        self.assertEqual(membership_movement["joined"], 1)
+        self.assertEqual(membership_movement["departed"], 1)
+        self.assertEqual(membership_movement["rejoined"], 1)
+        self.assertFalse(membership_movement["bootstrap"])
+        self.assertEqual(
+            [event["character_name"] for event in membership_movement["recent"]],
+            ["Alpha", "Charlie", "Bravo"],
+        )
+
     def test_generate_html_dashboard_serializes_membership_movement_payload(self):
         original_cwd = os.getcwd()
         temp_dir = workspace_temp_dir()

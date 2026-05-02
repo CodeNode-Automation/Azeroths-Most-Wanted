@@ -663,9 +663,6 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
     const charName = p.name || source?.name || '';
     const vanguardBadges = safeParseArray(p.vanguard_badges || source?.vanguard_badges);
     const campaignBadges = safeParseArray(p.campaign_badges || source?.campaign_badges);
-    const vanguardBadgeTypes = vanguardBadges
-        .map(type => normalizeHallOfHeroesBadgeType(type))
-        .filter(Boolean);
     const pveGold = parseInt(p.pve_gold || source?.pve_gold, 10) || 0;
     const pveSilver = parseInt(p.pve_silver || source?.pve_silver, 10) || 0;
     const pveBronze = parseInt(p.pve_bronze || source?.pve_bronze, 10) || 0;
@@ -721,7 +718,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
             count: vanguardBadges.length,
             tone: 'vanguard',
             badgeClass: 'tt-badge-vanguard',
-            badgeTypes: vanguardBadgeTypes.length > 0 ? vanguardBadgeTypes : ['vanguard'],
+            badgeTypes: ['vanguard'],
             categoryLabel: 'Vanguard / Marks'
         },
         {
@@ -825,11 +822,11 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
 
     if (reigningEntries.length > 0) {
         reigningEntries.forEach(reigningInfo => {
-            const reigningDetails = document.createElement('details');
-            reigningDetails.className = 'char-card-commendation-showcase-item char-card-commendation-showcase-item-reigning';
+            const reigningCard = document.createElement('div');
+            reigningCard.className = 'char-card-commendation-showcase-item char-card-commendation-showcase-item-reigning char-card-commendation-showcase-item-reigning-static';
 
-            const reigningSummary = document.createElement('summary');
-            reigningSummary.className = `${reigningInfo.badgeClass} char-card-commendation-showcase-summary char-card-commendation-showcase-summary-reigning`;
+            const reigningSummary = document.createElement('div');
+            reigningSummary.className = `${reigningInfo.badgeClass} char-card-commendation-showcase-summary char-card-commendation-showcase-summary-reigning char-card-commendation-showcase-summary-reigning-static`;
 
             const reigningIcon = document.createElement('span');
             reigningIcon.className = 'char-card-commendation-showcase-summary-icon';
@@ -858,19 +855,19 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
                 reigningSummary.appendChild(reigningWeek);
             }
 
-            const reigningDetailsBody = document.createElement('div');
-            reigningDetailsBody.className = 'char-card-commendation-showcase-body';
+            reigningCard.appendChild(reigningSummary);
 
             if (reigningInfo.weekLabel) {
+                const reigningDetailsBody = document.createElement('div');
+                reigningDetailsBody.className = 'char-card-commendation-showcase-body';
                 const reigningWeek = document.createElement('span');
                 reigningWeek.className = 'char-card-commendation-showcase-history-line';
                 reigningWeek.textContent = `Latest archive week: ${reigningInfo.weekLabel}`;
                 reigningDetailsBody.appendChild(reigningWeek);
+                reigningCard.appendChild(reigningDetailsBody);
             }
 
-            reigningDetails.appendChild(reigningSummary);
-            reigningDetails.appendChild(reigningDetailsBody);
-            shell.appendChild(reigningDetails);
+            shell.appendChild(reigningCard);
         });
     }
 

@@ -2200,6 +2200,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
         classNames.forEach(cls => badge.classList.add(cls));
         if (reigningInfo.title) badge.title = reigningInfo.title;
+        badge.style.cursor = 'default';
 
         if (content) {
             content.textContent = '';

@@ -293,41 +293,66 @@ def summarize_membership_events(events, limit=5):
             "detected_at": None,
         }
 
-    latest_event = max(
-        normalized_events,
-        key=lambda event: (
-            event["detected_at"],
-            event["scan_id"] or event["detected_at"],
-            event["character_name"].lower(),
-        ),
-    )
-    latest_scan_key = latest_event["scan_id"] or latest_event["detected_at"]
-
-    latest_events = [
-        event
-        for event in normalized_events
-        if (event["scan_id"] or event["detected_at"]) == latest_scan_key
-    ]
-
-    latest_events.sort(key=lambda event: (
-        EVENT_TYPE_PRIORITY.get(event["event_type"], 99),
-        event["character_name"].lower(),
-    ))
-
-    counts = {
-        "joined": sum(1 for event in latest_events if event["event_type"] == "joined"),
-        "departed": sum(1 for event in latest_events if event["event_type"] == "departed"),
-        "rejoined": sum(1 for event in latest_events if event["event_type"] == "rejoined"),
-    }
-    total = len(latest_events)
     try:
         safe_limit = int(limit)
     except (TypeError, ValueError):
         safe_limit = 0
     safe_limit = max(0, safe_limit)
-    bootstrap = total > 0 and counts["joined"] == total and all(
-        event["previous_status"] is None for event in latest_events
-    )
+
+    scan_groups: dict[str, list[dict[str, Any]]] = {}
+    for event in normalized_events:
+        scan_key = event["scan_id"] or event["detected_at"]
+        scan_groups.setdefault(scan_key, []).append(event)
+
+    ranked_scans = []
+    for scan_key, scan_events in scan_groups.items():
+        scan_events.sort(key=lambda event: (
+            EVENT_TYPE_PRIORITY.get(event["event_type"], 99),
+            event["character_name"].lower(),
+        ))
+        latest_scan_event = max(
+            scan_events,
+            key=lambda event: (
+                event["detected_at"],
+                event["scan_id"] or event["detected_at"],
+                event["character_name"].lower(),
+            ),
+        )
+        counts = {
+            "joined": sum(1 for event in scan_events if event["event_type"] == "joined"),
+            "departed": sum(1 for event in scan_events if event["event_type"] == "departed"),
+            "rejoined": sum(1 for event in scan_events if event["event_type"] == "rejoined"),
+        }
+        total = len(scan_events)
+        bootstrap = total > 0 and counts["joined"] == total and all(
+            event["previous_status"] is None for event in scan_events
+        )
+        ranked_scans.append({
+            "scan_key": scan_key,
+            "events": scan_events,
+            "latest_event": latest_scan_event,
+            "counts": counts,
+            "total": total,
+            "bootstrap": bootstrap,
+        })
+
+    ranked_scans.sort(key=lambda scan: (
+        scan["latest_event"]["detected_at"],
+        scan["latest_event"]["scan_id"] or scan["latest_event"]["detected_at"],
+        scan["latest_event"]["character_name"].lower(),
+    ), reverse=True)
+
+    latest_scan = ranked_scans[0]
+    if latest_scan["bootstrap"]:
+        fallback_scan = next((scan for scan in ranked_scans[1:] if not scan["bootstrap"]), None)
+        if fallback_scan:
+            latest_scan = fallback_scan
+
+    latest_events = latest_scan["events"]
+    latest_event = latest_scan["latest_event"]
+    counts = latest_scan["counts"]
+    total = latest_scan["total"]
+    bootstrap = latest_scan["bootstrap"]
 
     return {
         "joined": counts["joined"],

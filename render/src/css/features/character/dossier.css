@@ -258,6 +258,18 @@
   box-sizing: border-box;
 }
 
+.char-card-commendation-showcase-summary-reigning-static {
+  cursor: default;
+}
+
+.char-card-commendation-showcase-item-reigning-static {
+  cursor: default;
+}
+
+.char-card-commendation-showcase-item-reigning-static > .char-card-commendation-showcase-body {
+  display: flex;
+}
+
 .char-card-commendation-showcase-summary-icon {
   width: 48px;
   height: 48px;
@@ -1771,6 +1783,7 @@ body[data-route-family="character"] .timeline-container.timeline-character-dossi
   padding: 14px 16px;
   border-radius: 18px;
   box-sizing: border-box;
+  cursor: default;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 16px 30px rgba(0, 0, 0, 0.28);

@@ -1775,6 +1775,7 @@
 
   .char-card-header-reigning-badge {
     width: 100%;
+    cursor: default;
   }
 
   .char-card-header-reigning-badge .full-card-badge-content {
@@ -1821,6 +1822,10 @@
 
   .char-card-commendation-showcase-item > .char-card-commendation-showcase-body {
     display: none;
+  }
+
+  .char-card-commendation-showcase-item-reigning-static > .char-card-commendation-showcase-body {
+    display: flex;
   }
 
   .char-card-commendation-showcase-item[open] > .char-card-commendation-showcase-body {

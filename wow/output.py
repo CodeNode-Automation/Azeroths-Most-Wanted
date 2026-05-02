@@ -6,7 +6,7 @@ from render.html_dashboard import generate_html_dashboard
 from wow.change_summary import build_change_summary
 from wow.campaign_archive import build_campaign_archive_payload
 from wow.officer_brief import build_officer_brief
-from wow.membership_movement import build_latest_membership_movement_query
+from wow.membership_movement import build_recent_membership_movement_query
 from wow.membership_movement import summarize_membership_events
 from wow.turso import fetch_turso
 
@@ -58,7 +58,7 @@ async def finalize_dashboard_output(session, roster_data, realm_data, dashboard_
         ladder_history_rows,
         reigning_champs_history_rows,
     )
-    membership_movement_rows = await fetch_turso(session, build_latest_membership_movement_query())
+    membership_movement_rows = await fetch_turso(session, build_recent_membership_movement_query(500))
     membership_movement = summarize_membership_events(membership_movement_rows)
     latest_changes = build_change_summary(
         membership_movement=membership_movement,
