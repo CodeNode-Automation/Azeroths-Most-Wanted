@@ -1,4 +1,4 @@
-// Character dossier feature helpers prepended during final JS assembly.
+﻿// Character dossier feature helpers prepended during final JS assembly.
 
 const DOSSIER_RECENT_ACTIVITY_WINDOW_DAYS = 14;
 const DOSSIER_QUIET_ACTIVITY_WINDOW_DAYS = 30;
@@ -664,7 +664,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'loot',
             label: "Dragon's Hoard",
-            icon: '🐉',
+            icon: 'ðŸ‰',
             count: campaignBadges.filter(type => String(type).toLowerCase() === 'loot').length,
             tone: 'loot',
             badgeClass: 'tt-badge-weekly-loot',
@@ -674,7 +674,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'xp',
             label: "Hero's Journey",
-            icon: '🛡️',
+            icon: 'ðŸ›¡ï¸',
             count: campaignBadges.filter(type => String(type).toLowerCase() === 'xp').length,
             tone: 'xp',
             badgeClass: 'tt-badge-weekly-xp',
@@ -684,7 +684,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'hks',
             label: 'Blood of the Enemy',
-            icon: '🩸',
+            icon: 'ðŸ©¸',
             count: campaignBadges.filter(type => ['hks', 'hk'].includes(String(type).toLowerCase())).length,
             tone: 'hks',
             badgeClass: 'tt-badge-weekly-hks',
@@ -694,7 +694,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'zenith',
             label: 'The Zenith Cohort',
-            icon: '⚡',
+            icon: 'âš¡',
             count: campaignBadges.filter(type => String(type).toLowerCase() === 'zenith').length,
             tone: 'zenith',
             badgeClass: 'tt-badge-weekly-zenith',
@@ -704,7 +704,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'vanguard',
             label: 'Vanguard Status',
-            icon: '🎖️',
+            icon: 'ðŸŽ–ï¸',
             count: vanguardBadges.length,
             tone: 'vanguard',
             badgeClass: 'tt-badge-vanguard',
@@ -714,7 +714,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'pve_gold',
             label: 'PvE Gold Medal',
-            icon: '🥇',
+            icon: 'ðŸ¥‡',
             count: pveGold,
             tone: 'gold',
             badgeClass: 'tt-badge-gold',
@@ -724,7 +724,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'pve_silver',
             label: 'PvE Silver Medal',
-            icon: '🥈',
+            icon: 'ðŸ¥ˆ',
             count: pveSilver,
             tone: 'silver',
             badgeClass: 'tt-badge-silver',
@@ -734,7 +734,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'pve_bronze',
             label: 'PvE Bronze Medal',
-            icon: '🥉',
+            icon: 'ðŸ¥‰',
             count: pveBronze,
             tone: 'bronze',
             badgeClass: 'tt-badge-bronze',
@@ -744,7 +744,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'pvp_gold',
             label: 'PvP Gold Medal',
-            icon: '🥇',
+            icon: 'ðŸ¥‡',
             count: pvpGold,
             tone: 'gold',
             badgeClass: 'tt-badge-gold',
@@ -754,7 +754,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'pvp_silver',
             label: 'PvP Silver Medal',
-            icon: '🥈',
+            icon: 'ðŸ¥ˆ',
             count: pvpSilver,
             tone: 'silver',
             badgeClass: 'tt-badge-silver',
@@ -764,7 +764,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
         {
             key: 'pvp_bronze',
             label: 'PvP Bronze Medal',
-            icon: '🥉',
+            icon: 'ðŸ¥‰',
             count: pvpBronze,
             tone: 'bronze',
             badgeClass: 'tt-badge-bronze',
@@ -820,7 +820,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
 
             const reigningIcon = document.createElement('span');
             reigningIcon.className = 'char-card-commendation-showcase-summary-icon';
-            reigningIcon.textContent = reigningInfo.category === 'pvp' ? '⚔️' : '👑';
+            reigningIcon.textContent = reigningInfo.category === 'pvp' ? 'âš”ï¸' : 'ðŸ‘‘';
 
             const reigningBody = document.createElement('span');
             reigningBody.className = 'char-card-commendation-showcase-summary-body';
@@ -1135,10 +1135,56 @@ function buildDossierReigning({ profile, source = null, dashboardConfig = {} }) 
     const targetName = String(profile?.name || source?.name || '').trim().toLowerCase();
     if (!targetName) return [];
 
+    const prevMvps = dashboardConfig && typeof dashboardConfig === 'object'
+        ? (dashboardConfig.prev_mvps || {})
+        : {};
+    const hasCurrentPrevMvp = Boolean((prevMvps.pve && prevMvps.pve.name) || (prevMvps.pvp && prevMvps.pvp.name));
     const archiveWeeks = getDossierCampaignArchiveWeeks(dashboardConfig);
     const latestWeek = archiveWeeks.length > 0 ? archiveWeeks[0] : null;
     const reigningEntries = Array.isArray(latestWeek?.reigning_titles) ? latestWeek.reigning_titles : [];
     const results = [];
+
+    const reigningLabelByCategory = {
+        pve: 'Reigning iLvl Champion',
+        pvp: 'Reigning HK Champion'
+    };
+    const reigningMetaByCategory = {
+        pve: 'Biggest Upgrades / iLvl',
+        pvp: 'Deadliest / HKs'
+    };
+    const badgeTextByCategory = {
+        pve: '👑 Reign',
+        pvp: '⚔️ Reign'
+    };
+    const badgeClassByCategory = {
+        pve: 'tt-badge-pve c-badge-reigning c-badge-reigning-pve',
+        pvp: 'tt-badge-pvp c-badge-reigning c-badge-reigning-pvp'
+    };
+
+    if (hasCurrentPrevMvp) {
+        ['pve', 'pvp'].forEach(category => {
+            const reigning = prevMvps[category];
+            if (!reigning || String(reigning.name || reigning.champion || '').trim().toLowerCase() !== targetName) return;
+
+            const score = parseInt(reigning.score || 0, 10) || 0;
+            const label = reigningLabelByCategory[category] || 'Reigning Champion';
+            const sourceLabel = reigningMetaByCategory[category] || 'Current reigning champion';
+
+            results.push({
+                category,
+                label,
+                badgeText: badgeTextByCategory[category] || '👑 Reign',
+                badgeClass: badgeClassByCategory[category] || 'c-badge-reigning',
+                weekAnchor: '',
+                weekLabel: '',
+                score,
+                title: `${label}\n-------------------\n${sourceLabel} · +${score.toLocaleString()}`,
+                meta: `${sourceLabel} · +${score.toLocaleString()}`
+            });
+        });
+
+        return results;
+    }
 
     reigningEntries.forEach(entry => {
         if (String(entry?.champion || '').trim().toLowerCase() !== targetName) return;
@@ -1147,60 +1193,25 @@ function buildDossierReigning({ profile, source = null, dashboardConfig = {} }) 
         const score = parseInt(entry?.score || 0, 10) || 0;
         const weekAnchor = String(latestWeek?.week_anchor || '').trim();
         const weekLabel = formatDossierCampaignWeekLabel(weekAnchor);
-        const label = category === 'pvp' ? 'Reigning PvP Champion' : 'Reigning PvE Champion';
-        const badgeClass = category === 'pvp'
-            ? 'tt-badge-pvp c-badge-reigning c-badge-reigning-pvp'
-            : 'tt-badge-pve c-badge-reigning c-badge-reigning-pve';
+        const label = reigningLabelByCategory[category] || 'Reigning Champion';
+        const badgeClass = badgeClassByCategory[category] || 'c-badge-reigning';
+        const sourceLabel = reigningMetaByCategory[category] || 'Current reigning champion';
         const title = weekLabel
-            ? `${label}\n-------------------\nLatest archive week: ${weekLabel}\nScore: ${score.toLocaleString()}`
-            : `${label}\n-------------------\nScore: ${score.toLocaleString()}`;
+            ? `${label}\n-------------------\n${sourceLabel} · Latest archive week: ${weekLabel}\nScore: +${score.toLocaleString()}`
+            : `${label}\n-------------------\n${sourceLabel} · Score: +${score.toLocaleString()}`;
 
         results.push({
             category,
             label,
-            badgeText: category === 'pvp' ? '⚔️ Reign' : '👑 Reign',
+            badgeText: badgeTextByCategory[category] || '👑 Reign',
             badgeClass,
             weekAnchor,
             weekLabel,
             score,
             title,
             meta: weekLabel
-                ? `Latest archive week: ${weekLabel} • Score ${score.toLocaleString()}`
-                : `Score ${score.toLocaleString()}`
-        });
-    });
-
-    if (results.length > 0) {
-        return results;
-    }
-
-    if (archiveWeeks.length > 0) {
-        return [];
-    }
-
-    const prevMvps = dashboardConfig && typeof dashboardConfig === 'object'
-        ? (dashboardConfig.prev_mvps || {})
-        : {};
-
-    ['pve', 'pvp'].forEach(category => {
-        const reigning = prevMvps[category];
-        if (!reigning || String(reigning.name || reigning.champion || '').trim().toLowerCase() !== targetName) return;
-
-        const score = parseInt(reigning.score || 0, 10) || 0;
-        const label = category === 'pvp' ? 'Reigning PvP Champion' : 'Reigning PvE Champion';
-
-        results.push({
-            category,
-            label,
-            badgeText: `👑 ${label}`,
-            badgeClass: category === 'pvp'
-                ? 'c-badge-reigning c-badge-reigning-pvp'
-                : 'c-badge-reigning c-badge-reigning-pve',
-            weekAnchor: '',
-            weekLabel: '',
-            score,
-            title: `${label}\n-------------------\nScore: ${score.toLocaleString()}`,
-            meta: `Score ${score.toLocaleString()}`
+                ? `${sourceLabel} · Latest archive week: ${weekLabel} • +${score.toLocaleString()}`
+                : `${sourceLabel} · +${score.toLocaleString()}`
         });
     });
 
