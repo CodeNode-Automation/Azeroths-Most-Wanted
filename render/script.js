@@ -1315,6 +1315,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         const activeSpec = p.active_spec ? p.active_spec : '';
         const specIconUrl = getSpecIcon(cClass, activeSpec);
         const displaySpecClass = activeSpec ? `${activeSpec} ${cClass}` : cClass;
+        const identity = getDossierIdentitySnapshot(p, char);
+        const activity = getDossierActivitySnapshot(p, char);
 
         const health = st.health || 0;
         const power = st.power || 0;
@@ -1886,7 +1888,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             commendationProfileEl.textContent = '';
             const commendationProfileNode = buildDossierCommendationProfile({
                 profile: p,
-                source: char
+                source: char,
+                timelineEvents: typeof timelineData !== 'undefined' ? timelineData : [],
+                dashboardConfig: typeof config !== 'undefined' ? config : {}
             });
             if (commendationProfileNode) {
                 commendationProfileEl.appendChild(commendationProfileNode);
@@ -1931,6 +1935,26 @@ window.addEventListener('DOMContentLoaded', async () => {
                         ? 'Quiet'
                         : (activity.label === 'Inactive lately' ? 'Inactive' : 'Unknown')),
                 classNames: ['default-badge']
+            });
+
+            const reigningBadges = typeof buildDossierReigning === 'function'
+                ? buildDossierReigning({
+                    profile: p,
+                    source: char,
+                    dashboardConfig: typeof config !== 'undefined' ? config : {}
+                })
+                : [];
+
+            reigningBadges.forEach((reigningInfo, index) => {
+                appendFullCardBadge(headerBadgesEl, {
+                    text: reigningInfo.badgeText || reigningInfo.label || 'Reigning Champion',
+                    title: reigningInfo.title || reigningInfo.meta || '',
+                    classNames: [
+                        'char-card-header-reigning-badge',
+                        ...(String(reigningInfo.badgeClass || '').split(' ').filter(Boolean)),
+                        index === 0 ? 'char-card-header-reigning-badge-primary' : 'char-card-header-reigning-badge-secondary'
+                    ]
+                });
             });
         }
 

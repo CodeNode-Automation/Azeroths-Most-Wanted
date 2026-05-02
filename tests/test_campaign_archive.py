@@ -58,10 +58,38 @@ class CampaignArchiveTests(unittest.TestCase):
         self.assertEqual(week["war_effort_entry_count"], 1)
         self.assertEqual(week["ladder_entry_count"], 2)
         self.assertEqual(week["reigning_entry_count"], 1)
+        self.assertEqual(week["war_effort"][0]["category"], "xp")
         self.assertEqual(week["war_effort"][0]["vanguards"], ["Bravo", "Alpha"])
         self.assertEqual(week["war_effort"][0]["participant_count"], 1)
+        self.assertEqual(week["ladder"]["pve"], [])
         self.assertEqual([entry["rank"] for entry in week["ladder"]["pvp"]], [1, 2])
+        self.assertEqual([entry["champion"] for entry in week["ladder"]["pvp"]], ["First", "Second"])
+        self.assertEqual(week["reigning_titles"][0]["category"], "pve")
         self.assertEqual(week["reigning_titles"][0]["score"], 42)
+
+    def test_build_campaign_archive_payload_keeps_latest_reigning_week_first(self):
+        payload = build_campaign_archive_payload(
+            war_effort_rows=[],
+            ladder_rows=[],
+            reigning_rows=[
+                {
+                    "week_anchor": "2026-04-14",
+                    "category": "pve",
+                    "champion": "Past Champion",
+                    "score": "10",
+                },
+                {
+                    "week_anchor": "2026-04-21",
+                    "category": "pve",
+                    "champion": "Current Champion",
+                    "score": "25",
+                },
+            ],
+        )
+
+        self.assertEqual(payload["latest_week"], "2026-04-21")
+        self.assertEqual(payload["weeks"][0]["reigning_titles"][0]["champion"], "Current Champion")
+        self.assertEqual(payload["weeks"][0]["reigning_titles"][0]["score"], 25)
 
 
 if __name__ == "__main__":

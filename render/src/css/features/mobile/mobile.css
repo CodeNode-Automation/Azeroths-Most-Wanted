@@ -1755,6 +1755,46 @@
     justify-content: flex-start;
   }
 
+  .char-card-header-badges {
+    justify-content: flex-start;
+  }
+
+  .char-card-header-badges .char-card-header-reigning-badge-primary {
+    margin-left: 0;
+  }
+
+  .char-card-commendation-showcase-summary {
+    gap: 12px;
+    padding: 13px 14px;
+  }
+
+  .char-card-commendation-showcase-summary-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .char-card-commendation-showcase-summary-label {
+    font-size: 17px;
+  }
+
+  .char-card-commendation-showcase-summary-count {
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+
+  .char-card-commendation-showcase-body {
+    padding: 0 14px 13px;
+  }
+
+  .char-card-commendation-showcase-item > .char-card-commendation-showcase-body {
+    display: none;
+  }
+
+  .char-card-commendation-showcase-item[open] > .char-card-commendation-showcase-body {
+    display: flex;
+  }
+
   .char-badges-container {
     gap: 8px;
   }
@@ -1765,8 +1805,22 @@
   }
 
   .char-card-deployment-grid,
-  .char-card-commendation-footprint-grid {
+  .char-card-commendation-footprint-grid,
+  .char-card-commendation-showcase-grid {
     grid-template-columns: 1fr;
+  }
+
+  .char-card-commendation-showcase {
+    gap: 8px;
+  }
+
+  .char-card-commendation-showcase-history {
+    gap: 5px;
+  }
+
+  .char-card-commendation-showcase-history-line {
+    padding: 7px 9px;
+    font-size: 12px;
   }
 
   .char-card-officer-title {
@@ -1830,6 +1884,15 @@
 
   .char-card-portrait {
     max-width: 96px;
+  }
+
+  .char-card-commendation-showcase-body {
+    padding: 0 12px 12px;
+  }
+
+  .char-card-commendation-showcase-meta,
+  .char-card-commendation-showcase-history-line {
+    font-size: 11px;
   }
 
   .command-hero-shell,
@@ -2157,6 +2220,15 @@
 
   .analytics-readiness-gap-card {
     padding: 10px;
+  }
+
+  .char-card-commendation-showcase-body {
+    padding: 0 10px 10px;
+  }
+
+  .char-card-commendation-showcase-meta,
+  .char-card-commendation-showcase-history-line {
+    font-size: 10px;
   }
 
   .analytics-distribution-card {
