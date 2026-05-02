@@ -972,8 +972,40 @@ function buildDossierBadgeHistoryEntries({
     };
 
     const warEffortTypes = cleanBadgeTypes.filter(type => ['xp', 'hks', 'hk', 'loot', 'zenith'].includes(type));
+    const vanguardRequested = cleanBadgeTypes.includes('vanguard');
     const ladderTypes = cleanBadgeTypes.filter(type => /^p[ev]_(gold|silver|bronze)$/.test(type));
     const timelineTypes = cleanBadgeTypes;
+
+    if (archiveWeeks.length > 0 && vanguardRequested) {
+        archiveWeeks.forEach(week => {
+            const weekAnchor = String(week?.week_anchor || '').trim();
+            const warEffortEntries = Array.isArray(week?.war_effort) ? week.war_effort : [];
+
+            warEffortEntries.forEach(typeEntry => {
+                const type = String(typeEntry?.category || '').trim().toLowerCase();
+                if (!['xp', 'hks', 'hk', 'loot', 'zenith'].includes(type)) return;
+
+                const vanguards = Array.isArray(typeEntry.vanguards) ? typeEntry.vanguards : [];
+                const isVanguard = vanguards.some(name => String(name || '').trim().toLowerCase() === targetName);
+                if (!isVanguard) return;
+
+                const dateLabel = formatDossierCampaignWeekLabel(weekAnchor) || weekAnchor;
+                const sourceLabel = typeEntry.label || (typeof getThematicName === 'function'
+                    ? getThematicName(type)
+                    : String(type || 'Awarded'));
+                const categoryLabel = String(type || '').trim().toUpperCase() || 'Campaign';
+
+                addEntry({
+                    key: `archive_${weekAnchor}_vanguard_${type}`,
+                    kind: 'war-effort',
+                    dateLabel,
+                    sourceLabel,
+                    roleLabel: 'Vanguard',
+                    detail: `${dateLabel} · ${sourceLabel} / ${categoryLabel} · Vanguard`
+                });
+            });
+        });
+    }
 
     if (archiveWeeks.length > 0 && warEffortTypes.length > 0) {
         archiveWeeks.forEach(week => {
@@ -995,13 +1027,14 @@ function buildDossierBadgeHistoryEntries({
                 const sourceLabel = typeEntry.label || (typeof getThematicName === 'function'
                     ? getThematicName(type)
                     : String(type || 'Awarded'));
+                const categoryLabel = String(type || '').trim().toUpperCase() || 'Campaign';
                 addEntry({
                     key: `archive_${weekAnchor}_${type}_${roleLabel}`,
                     kind: 'war-effort',
                     dateLabel,
                     sourceLabel,
                     roleLabel,
-                    detail: `${dateLabel} · ${sourceLabel} · ${roleLabel}`
+                    detail: `${dateLabel} · ${sourceLabel} / ${categoryLabel} · ${roleLabel}`
                 });
             });
         });
