@@ -27,8 +27,7 @@
 
 /* Character dossier and shared command/hall bands */
 @media (max-width: 1120px) {
-  .char-card-deployment-grid,
-  .char-card-commendation-grid {
+  .char-card-deployment-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -102,6 +101,7 @@
   body {
     width: 100%;
     max-width: 100%;
+    overflow-x: hidden;
   }
 
   body::before {
@@ -152,6 +152,10 @@
     min-width: 0;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  #backToTopBtn {
+    display: none !important;
   }
 
   .main-content {
@@ -375,11 +379,6 @@
   .full-card-container {
     width: 100%;
     max-width: 100%;
-  }
-
-  .char-card-summary-grid,
-  .char-card-spotlight-facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .card-content-split {
@@ -985,27 +984,14 @@
     justify-content: flex-end;
   }
 
-  .char-card-summary-grid,
-  .char-card-spotlight-facts {
-    gap: 8px;
-  }
-
-  .char-card-summary-tile,
-  .char-card-spotlight-fact {
-    padding: 11px 12px;
-  }
-
   .char-card-subtitle,
   .char-card-identity-meta,
-  .char-card-spotlight-meta,
   .char-card-gear-copy {
     font-size: 13px;
   }
 
   .char-card-deployment-grid,
-  .char-card-commendation-grid,
-  .char-card-intelligence-grid,
-  .char-card-intelligence-sections {
+  .char-card-commendation-footprint-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1632,12 +1618,10 @@
 
   .char-card-summary-value,
   .char-card-identity-title,
-  .char-card-spotlight-title,
   .char-card-gear-title {
     font-size: 21px;
   }
 
-  .char-card-honors-grid,
   .char-badges-container {
     gap: 8px;
   }
@@ -1650,13 +1634,15 @@
   .char-card-portrait-frame,
   .char-card-identity-ribbon,
   .char-card-stats-box,
-  .char-card-spotlight,
   .char-card-gear-shell {
     padding: 16px;
     border-radius: 18px;
   }
 
-  .char-card-spotlight-facts,
+  .char-card-portrait {
+    max-width: 108px;
+  }
+
   .gear-grid-container {
     grid-template-columns: 1fr;
   }
@@ -1764,40 +1750,27 @@
 
 /* Small dossier grids */
 @media (max-width: 560px) {
-  .char-card-honor-badge,
   .char-card-meta .char-badge {
     width: 100%;
     justify-content: flex-start;
   }
 
-  .char-card-honors-grid,
   .char-badges-container {
     gap: 8px;
   }
 
-  .char-card-summary-value,
-  .char-card-spotlight-fact-value {
+  .char-card-identity-title,
+  .char-card-gear-title {
     font-size: 17px;
   }
 
   .char-card-deployment-grid,
-  .char-card-commendation-grid,
-  .char-card-commendation-footprint-grid,
-  .char-card-intelligence-grid,
-  .char-card-intelligence-sections {
+  .char-card-commendation-footprint-grid {
     grid-template-columns: 1fr;
   }
 
   .char-card-officer-title {
     font-size: 18px;
-  }
-
-  .char-card-officer-badges {
-    gap: 6px;
-  }
-
-  .char-card-officer-badge {
-    font-size: 12px;
   }
 
   .char-card-officer-footer {
@@ -1853,6 +1826,10 @@
 
   .stat-box-container {
     grid-template-columns: 1fr;
+  }
+
+  .char-card-portrait {
+    max-width: 96px;
   }
 
   .command-hero-shell,
@@ -1968,10 +1945,6 @@
   .analytics-honor-leaderboard-head {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .char-card-summary-grid {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -2176,6 +2149,10 @@
 
   .nav-links-container {
     width: min(300px, 96vw);
+  }
+
+  .char-card-portrait {
+    max-width: 88px;
   }
 
   .analytics-readiness-gap-card {

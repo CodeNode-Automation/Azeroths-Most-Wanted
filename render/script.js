@@ -1833,184 +1833,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         const subtitleEl = clone.querySelector('.char-card-subtitle');
         if (subtitleEl) subtitleEl.textContent = `${raceName} ${displaySpecClass} • ${guildRank} • ${roleLabel}`;
 
-        const roleValueEl = clone.querySelector('.char-card-role-value');
-        if (roleValueEl) roleValueEl.textContent = roleLabel;
-
-        const ilvlValueEl = clone.querySelector('.char-card-ilvl-value');
-        if (ilvlValueEl) ilvlValueEl.textContent = (p.equipped_item_level || 0).toLocaleString();
-
-        const honorsValueEl = clone.querySelector('.char-card-honors-value');
-        if (honorsValueEl) honorsValueEl.textContent = totalHonors.toLocaleString();
-
-        const hksValueEl = clone.querySelector('.char-card-hks-value');
-        if (hksValueEl) hksValueEl.textContent = hks.toLocaleString();
-
-        const honorsEl = clone.querySelector('.char-card-honors-grid');
-        if (honorsEl) honorsEl.textContent = '';
-
-        if (pveGold > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `🛡️🥇 PvE Gold x${pveGold}`,
-                title: tPveGold,
-                classNames: ['char-card-honor-badge', 'badge-pve-gold']
-            });
-        }
-
-        if (pveSilver > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `🛡️🥈 PvE Silver x${pveSilver}`,
-                title: tPveSilver,
-                classNames: ['char-card-honor-badge', 'badge-silver']
-            });
-        }
-
-        if (pveBronze > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `🛡️🥉 PvE Bronze x${pveBronze}`,
-                title: tPveBronze,
-                classNames: ['char-card-honor-badge', 'badge-bronze']
-            });
-        }
-
-        if (pvpGold > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `⚔️🥇 PvP Gold x${pvpGold}`,
-                title: tPvpGold,
-                classNames: ['char-card-honor-badge', 'badge-gold-alt']
-            });
-        }
-
-        if (pvpSilver > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `⚔️🥈 PvP Silver x${pvpSilver}`,
-                title: tPvpSilver,
-                classNames: ['char-card-honor-badge', 'badge-silver']
-            });
-        }
-
-        if (pvpBronze > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `⚔️🥉 PvP Bronze x${pvpBronze}`,
-                title: tPvpBronze,
-                classNames: ['char-card-honor-badge', 'badge-bronze']
-            });
-        }
-
-        if (isPveReigning) {
-            appendFullCardBadge(honorsEl, {
-                text: '👑 Reigning PvE MVP',
-                title: 'Current Reigning PvE Champion!',
-                classNames: ['char-card-honor-badge', 'badge-reigning-pve']
-            });
-        }
-
-        if (isPvpReigning) {
-            appendFullCardBadge(honorsEl, {
-                text: '⚔️ Reigning PvP MVP',
-                title: 'Current Reigning PvP Champion!',
-                classNames: ['char-card-honor-badge', 'badge-reigning-pvp']
-            });
-        }
-
-        if (pveChamp > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `👑 PvE Champ x${pveChamp}`,
-                title: tPveChamp,
-                classNames: ['char-card-honor-badge', 'badge-pve-champ']
-            });
-        }
-
-        if (pvpChamp > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `⚔️ PvP Champ x${pvpChamp}`,
-                title: tPvpChamp,
-                classNames: ['char-card-honor-badge', 'badge-pvp-champ']
-            });
-        }
-
-        if (vCount > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `🎖️ Vanguard x${vCount}`,
-                title: tVanguard,
-                classNames: ['char-card-honor-badge', 'badge-vanguard']
-            });
-        }
-
-        if (xpCount > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `🛡️ Hero's Journey x${xpCount}`,
-                title: tXp,
-                classNames: ['char-card-honor-badge', 'badge-war-xp']
-            });
-        }
-
-        if (hksBadgeCount > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `🩸 Blood of the Enemy x${hksBadgeCount}`,
-                title: tHks,
-                classNames: ['char-card-honor-badge', 'badge-war-hks']
-            });
-        }
-
-        if (lootCount > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `🐉 Dragon's Hoard x${lootCount}`,
-                title: tLoot,
-                classNames: ['char-card-honor-badge', 'badge-war-loot']
-            });
-        }
-
-        if (zenithCount > 0) {
-            appendFullCardBadge(honorsEl, {
-                text: `⚡ The Zenith Cohort x${zenithCount}`,
-                title: tZenith,
-                classNames: ['char-card-honor-badge', 'badge-war-zenith']
-            });
-        }
-
-        if (honorsEl && honorsEl.childElementCount === 0) {
-            appendFullCardBadge(honorsEl, {
-                text: 'Awaiting first commendation',
-                classNames: ['char-card-honor-badge', 'default-badge']
-            });
-        }
-
-        const distinctions = [];
-        if (xpCount > 0) distinctions.push(`${xpCount}x Hero's Journey`);
-        if (hksBadgeCount > 0) distinctions.push(`${hksBadgeCount}x Blood of the Enemy`);
-        if (lootCount > 0) distinctions.push(`${lootCount}x Dragon's Hoard`);
-        if (zenithCount > 0) distinctions.push(`${zenithCount}x The Zenith Cohort`);
-        if ((pveGold + pveSilver + pveBronze) > 0) distinctions.push(`${(pveGold + pveSilver + pveBronze).toLocaleString()} PvE medal${(pveGold + pveSilver + pveBronze) === 1 ? '' : 's'}`);
-        if ((pvpGold + pvpSilver + pvpBronze) > 0) distinctions.push(`${(pvpGold + pvpSilver + pvpBronze).toLocaleString()} PvP medal${(pvpGold + pvpSilver + pvpBronze) === 1 ? '' : 's'}`);
-        if (championCount > 0) distinctions.push(`${championCount.toLocaleString()} MVP crown${championCount === 1 ? '' : 's'}`);
-
         const hasRaidReadyLoadout = p.level === 70 && (p.equipped_item_level || 0) >= 110;
         const readinessLabel = hasRaidReadyLoadout ? 'Raid Ready' : (p.level === 70 ? 'Staging for Raid' : 'Still Advancing');
-        const signatureHonor = championCount > 0
-            ? `${championCount.toLocaleString()} MVP crown${championCount === 1 ? '' : 's'}`
-            : xpCount > 0
-                ? `${xpCount}x Hero's Journey`
-                : hksBadgeCount > 0
-                    ? `${hksBadgeCount}x Blood of the Enemy`
-                    : lootCount > 0
-                        ? `${lootCount}x Dragon's Hoard`
-                        : zenithCount > 0
-                            ? `${zenithCount}x The Zenith Cohort`
-                            : medalCount > 0
-                                ? `${medalCount.toLocaleString()} ladder medal${medalCount === 1 ? '' : 's'}`
-                                : vCount > 0
-                                    ? `${vCount.toLocaleString()} Vanguard mark${vCount === 1 ? '' : 's'}`
-                                    : 'Awaiting first honor';
         const serviceMeta = `${raceName} • ${guildRank} • ${factionType === 'HORDE' ? 'Horde' : 'Alliance'}`;
         const lastLoginText = formatLastLoginAge(
             p.last_login_timestamp || char.last_login_ms || eq.last_login_ms || 0,
             'Unknown'
         );
-        const gearStateLabel = equippedCount > 0
-            ? (missingEnchantCount > 0
-                ? `${missingEnchantCount} missing enchant${missingEnchantCount === 1 ? '' : 's'}`
-                : `${enchantedCount.toLocaleString()} enchanted slot${enchantedCount === 1 ? '' : 's'}`)
-            : 'No armory record';
         const gearSummary = equippedCount > 0
             ? `${equippedCount}/${SLOTS.length} slots equipped • ${epicGearCount.toLocaleString()} epic or legendary piece${epicGearCount === 1 ? '' : 's'} • ${readinessLabel}`
             : 'No equipped gear was returned for this scan';
@@ -2073,41 +1902,36 @@ window.addEventListener('DOMContentLoaded', async () => {
 
         const identityMetaEl = clone.querySelector('.char-card-identity-meta');
         if (identityMetaEl) {
-            identityMetaEl.textContent = `${serviceMeta} • ${readinessLabel}`;
+            identityMetaEl.textContent = serviceMeta;
         }
 
-        const spotlightTitleEl = clone.querySelector('.char-card-spotlight-title');
-        if (spotlightTitleEl) {
-            spotlightTitleEl.textContent = totalHonors > 0 ? 'Battlefield Distinction' : 'Field Record in Progress';
-        }
+        const headerBadgesEl = clone.querySelector('.char-card-header-badges') || clone.querySelector('.char-badges-container');
+        if (headerBadgesEl) {
+            headerBadgesEl.textContent = '';
 
-        const spotlightCopyEl = clone.querySelector('.char-card-spotlight-copy');
-        if (spotlightCopyEl) {
-            spotlightCopyEl.textContent = totalHonors > 0
-                ? `${p.name || 'This hero'} carries ${totalHonors.toLocaleString()} recorded honor${totalHonors === 1 ? '' : 's'} and stands out most for ${signatureHonor}.`
-                : `${p.name || 'This hero'} is still building a decorated record across raids, war efforts, and arena play.`;
-        }
+            appendFullCardBadge(headerBadgesEl, {
+                text: identity.levelLabel,
+                classNames: ['default-badge']
+            });
 
-        const spotlightHonorEl = clone.querySelector('.char-card-spotlight-honor');
-        if (spotlightHonorEl) {
-            spotlightHonorEl.textContent = signatureHonor;
-        }
+            appendFullCardBadge(headerBadgesEl, {
+                text: readinessLabel,
+                classNames: [hasRaidReadyLoadout ? 'badge-war-zenith' : 'default-badge']
+            });
 
-        const spotlightStatusEl = clone.querySelector('.char-card-spotlight-status');
-        if (spotlightStatusEl) {
-            spotlightStatusEl.textContent = readinessLabel;
-        }
+            appendFullCardBadge(headerBadgesEl, {
+                text: identity.mainAltLabel,
+                classNames: [identity.isAlt ? 'badge-bronze' : 'badge-war-xp']
+            });
 
-        const spotlightGearEl = clone.querySelector('.char-card-spotlight-gear');
-        if (spotlightGearEl) {
-            spotlightGearEl.textContent = gearStateLabel;
-        }
-
-        const spotlightMetaEl = clone.querySelector('.char-card-spotlight-meta');
-        if (spotlightMetaEl) {
-            spotlightMetaEl.textContent = distinctions.length > 0
-                ? distinctions.slice(0, 4).join(' • ')
-                : `${serviceMeta} • Level ${p.level || 0} • ${(p.equipped_item_level || 0).toLocaleString()} iLvl`;
+            appendFullCardBadge(headerBadgesEl, {
+                text: activity.label === 'Recently active'
+                    ? 'Active'
+                    : (activity.label === 'Quiet lately'
+                        ? 'Quiet'
+                        : (activity.label === 'Inactive lately' ? 'Inactive' : 'Unknown')),
+                classNames: ['default-badge']
+            });
         }
 
         const gearCopyEl = clone.querySelector('.char-card-gear-copy');
@@ -2116,67 +1940,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             gearCopyEl.title = gearSummary;
         }
 
-        card.classList.toggle('char-card-empty-honors', totalHonors === 0);
         card.classList.toggle('char-card-empty-gear', equippedCount === 0);
-        card.classList.toggle('char-card-low-level', (p.level || 0) < 70);
-        card.classList.toggle('char-card-raid-ready', hasRaidReadyLoadout);
-        card.classList.toggle('char-card-still-advancing', !hasRaidReadyLoadout);
-        card.classList.toggle('char-card-has-missing-enchants', missingEnchantCount > 0);
 
         if (subtitleEl) subtitleEl.title = subtitleEl.textContent;
         if (identityMetaEl) identityMetaEl.title = identityMetaEl.textContent;
-        if (roleValueEl) roleValueEl.title = `${roleLabel} role`;
-        if (ilvlValueEl) ilvlValueEl.title = `${(p.equipped_item_level || 0).toLocaleString()} equipped item level`;
-        if (honorsValueEl) honorsValueEl.title = `${totalHonors.toLocaleString()} recorded honor${totalHonors === 1 ? '' : 's'}`;
-        if (hksValueEl) hksValueEl.title = `${hks.toLocaleString()} honorable kill${hks === 1 ? '' : 's'}`;
-        if (spotlightHonorEl) spotlightHonorEl.title = signatureHonor;
-        if (spotlightStatusEl) spotlightStatusEl.title = readinessLabel;
-        if (spotlightGearEl) spotlightGearEl.title = gearStateLabel;
-        if (spotlightMetaEl) spotlightMetaEl.title = spotlightMetaEl.textContent;
-
-        const badgesEl = clone.querySelector('.char-badges-container');
-        badgesEl.textContent = '';
-
-        appendFullCardBadge(badgesEl, {
-            text: `🛡️ ${guildRank}`,
-            classNames: ['char-badge-guild-rank']
-        });
-
-        appendFullCardBadge(badgesEl, {
-            text: `Last login: ${lastLoginText}`,
-            classNames: ['default-badge']
-        });
-
-        appendFullCardBadge(badgesEl, {
-            text: `Level ${p.level || 0}`,
-            classNames: ['default-badge']
-        });
-
-        appendFullCardBadge(badgesEl, {
-            text: `iLvl ${p.equipped_item_level || 0}`,
-            classNames: ['char-badge-ilvl']
-        });
-
-        appendFullCardBadge(badgesEl, {
-            text: raceName,
-            classNames: ['default-badge']
-        });
-
-        appendFullCardBadge(badgesEl, {
-            text: displaySpecClass,
-            textColor: cHex,
-            borderColor: cHex,
-            iconSrc: specIconUrl || '',
-            iconAlt: ''
-        });
-
-        if (hks > 0) {
-            appendFullCardBadge(badgesEl, {
-                text: `⚔️ ${hks.toLocaleString()} HKs`,
-                classNames: ['hk-card-badge']
-            });
-        }
-
         const restedBar = clone.querySelector('.xp-bar-rested');
         restedBar.style.width = `${restedPercent}%`;
 

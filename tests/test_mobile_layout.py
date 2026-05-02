@@ -73,7 +73,7 @@ class MobileLayoutTests(unittest.TestCase):
             self.mobile_css,
         )
         self.assertIn(
-            "@media (max-width: 1024px) {\n  html,\n  body {\n    width: 100%;\n    max-width: 100%;\n  }",
+            "@media (max-width: 1024px) {\n  html,\n  body {\n    width: 100%;\n    max-width: 100%;\n    overflow-x: hidden;\n  }",
             self.mobile_css,
         )
         self.assertIn(
@@ -96,11 +96,12 @@ class MobileLayoutTests(unittest.TestCase):
             ".leaderboards-wrapper,\n  .mvp-cards-container {\n    flex-direction: column;\n    align-items: stretch;\n    justify-content: flex-start;\n  }",
             self.mobile_css,
         )
+        self.assertIn("overflow-x: hidden;", self.mobile_css)
+        self.assertIn("#backToTopBtn {\n    display: none !important;", self.mobile_css)
         self.assertIn(
             "@media (max-width: 390px) {\n  html,\n  body {\n    width: 100%;\n    max-width: 100%;",
             self.mobile_css,
         )
-        self.assertNotIn("overflow-x: hidden", self.mobile_css)
 
     def test_narrow_phone_controls_row_is_balanced_around_center(self):
         self.assertIn(
@@ -190,9 +191,15 @@ class MobileLayoutTests(unittest.TestCase):
         self.assertIn(".analytics-roster-composition-footer-note", mobile_css)
         self.assertIn(".char-card-deployment-grid", mobile_css)
         self.assertIn(".char-card-officer-title", mobile_css)
-        self.assertIn(".char-card-officer-badges", mobile_css)
-        self.assertIn(".char-card-officer-badge", mobile_css)
+        self.assertIn(".char-card-portrait {\n    max-width: 108px;", mobile_css)
+        self.assertIn(".char-card-portrait {\n    max-width: 96px;", mobile_css)
+        self.assertIn(".char-card-portrait {\n    max-width: 88px;", mobile_css)
         self.assertIn(".char-card-officer-footer", mobile_css)
+        self.assertNotIn(".char-card-officer-badges", mobile_css)
+        self.assertNotIn(".char-card-officer-badge", mobile_css)
+        self.assertNotIn(".char-card-summary-grid", mobile_css)
+        self.assertNotIn(".char-card-spotlight", mobile_css)
+        self.assertNotIn(".char-card-honor-badge", mobile_css)
         self.assertIn(".timeline-container.timeline-home-board .monuments-grid", mobile_css)
         self.assertIn(".arch-pipeline", mobile_css)
 

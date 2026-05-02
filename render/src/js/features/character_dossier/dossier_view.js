@@ -166,6 +166,7 @@ function buildDossierDeploymentStrip({
 function buildDossierCommendationProfile({ profile, source = null }) {
     const snapshot = getDossierCommendationSnapshot(profile, source);
     if (!snapshot) return null;
+    const recognitionItems = buildDossierRecognitionItems(profile, source);
 
     const shell = document.createElement('section');
     shell.className = 'char-card-commendation-layout';
@@ -175,58 +176,30 @@ function buildDossierCommendationProfile({ profile, source = null }) {
 
     const kickerEl = document.createElement('span');
     kickerEl.className = 'char-card-panel-kicker';
-    kickerEl.textContent = 'Guild Service Record';
+    kickerEl.textContent = 'Recognition Record';
 
     const titleEl = document.createElement('h3');
     titleEl.className = 'char-card-commendation-title';
-    titleEl.textContent = 'Commendation Profile';
+    titleEl.textContent = 'Awards & Footprint';
 
     const copyEl = document.createElement('p');
     copyEl.className = 'char-card-commendation-copy';
     copyEl.textContent = snapshot.totalHonors > 0
-        ? `${profile.name || 'This hero'} holds ${snapshot.totalHonors.toLocaleString()} recorded honors across weekly campaigns, vanguard pushes, champion titles, and ladder finishes.`
-        : `${profile.name || 'This hero'} has no recorded commendations yet. The dossier will expand as weekly campaigns and ladder honors are earned.`;
+        ? `${profile.name || 'This hero'} holds ${snapshot.totalHonors.toLocaleString()} recorded honors across campaign marks, vanguard pushes, champion crowns, ladder medals, and PvP marks.`
+        : `${profile.name || 'This hero'} has no recorded honors yet. The dossier will expand as campaign, ladder, and PvP distinctions are earned.`;
 
     header.appendChild(kickerEl);
     header.appendChild(titleEl);
     header.appendChild(copyEl);
 
-    const grid = document.createElement('div');
-    grid.className = 'char-card-commendation-grid';
-
-    [
-        {
-            label: 'Campaign Marks',
-            value: snapshot.campaignMarks.toLocaleString(),
-            meta: 'Weekly campaign distinctions recorded from current badge data.',
-            className: 'char-card-commendation-tile-campaign'
-        },
-        {
-            label: 'Vanguard Marks',
-            value: snapshot.vanguardMarks.toLocaleString(),
-            meta: 'Locked front-runner appearances recorded in campaign pushes.',
-            className: 'char-card-commendation-tile-vanguard'
-        },
-        {
-            label: 'Champion Crowns',
-            value: snapshot.championCrowns.toLocaleString(),
-            meta: snapshot.championMeta,
-            className: 'char-card-commendation-tile-crown'
-        },
-        {
-            label: 'Ladder Medals',
-            value: snapshot.ladderMedals.toLocaleString(),
-            meta: snapshot.medalMeta,
-            className: 'char-card-commendation-tile-medal'
-        },
-        {
-            label: 'Reigning Status',
-            value: snapshot.reigningValue,
-            meta: snapshot.reigningMeta,
-            className: 'char-card-commendation-tile-reigning'
-        }
-    ].forEach(item => {
-        grid.appendChild(buildDossierInfoTile(item));
+    const marks = buildDossierIntelligenceSection({
+        label: 'Recognition Marks',
+        meta: snapshot.totalHonors > 0
+            ? `Recorded honors from campaigns, ladder medals, and PvP marks. ${snapshot.reigningValue}.`
+            : 'No active recognition markers have been recorded yet.',
+        items: recognitionItems.length > 0
+            ? recognitionItems
+            : [{ label: 'No recorded honors yet.' }]
     });
 
     const footprint = document.createElement('div');
@@ -274,7 +247,7 @@ function buildDossierCommendationProfile({ profile, source = null }) {
     }
 
     shell.appendChild(header);
-    shell.appendChild(grid);
+    shell.appendChild(marks);
     shell.appendChild(footprint);
 
     return shell;
@@ -369,18 +342,6 @@ function getDossierIdentitySnapshot(profile, source = null) {
     };
 }
 
-function getDossierContributionSnapshot(profile, source = null) {
-    const honorableKills = parseInt(profile?.honorable_kills || source?.honorable_kills, 10) || 0;
-
-    return {
-        honorableKills,
-        label: honorableKills > 0 ? 'PvP contributor' : 'No PvP contribution',
-        meta: honorableKills > 0
-            ? `${honorableKills.toLocaleString()} honorable kills recorded.`
-            : 'No honorable kills recorded in the current snapshot.'
-    };
-}
-
 function getDossierMovementSnapshot(profile, dashboardConfig = {}) {
     const movement = dashboardConfig?.membership_movement || {};
     const recent = Array.isArray(movement.recent) ? movement.recent : [];
@@ -409,7 +370,7 @@ function getDossierMovementSnapshot(profile, dashboardConfig = {}) {
     };
 }
 
-function buildDossierOfficerNotes({ identity, readiness, activity, contribution, movement }) {
+function buildDossierOfficerNotes({ identity, readiness, activity, movement }) {
     const notes = [];
 
     if (identity.isAlt) {
@@ -425,7 +386,6 @@ function buildDossierOfficerNotes({ identity, readiness, activity, contribution,
     }
 
     const equippedIlvl = parseInt(identity.equippedIlvl || 0, 10) || 0;
-    const averageIlvl = parseInt(identity.averageIlvl || 0, 10) || 0;
     if (identity.level >= 70 && equippedIlvl <= 0) {
         notes.push('Missing item-level data; inspect profile source before roster decisions.');
     } else if (identity.level >= 70 && readiness.label === 'Staging for raid') {
@@ -440,8 +400,6 @@ function buildDossierOfficerNotes({ identity, readiness, activity, contribution,
             : 'Recently rejoined; verify current rank and spec.');
     } else if (activity.label === 'Inactive lately' && identity.level >= 70) {
         notes.push('Inactive lately; confirm bench or raid plans before deployment.');
-    } else if (contribution.honorableKills > 0) {
-        notes.push('Active PvP contributor.');
     }
 
     if (notes.length === 0) {
@@ -460,14 +418,6 @@ function buildDossierOfficerNotes({ identity, readiness, activity, contribution,
     return deduped.slice(0, 3);
 }
 
-function buildDossierOfficerBadge({ label, tone = 'neutral' }) {
-    const badge = document.createElement('span');
-    badge.className = 'char-badge char-card-officer-badge';
-    badge.setAttribute('data-tone', tone);
-    badge.textContent = label;
-    return badge;
-}
-
 function buildDossierOfficerBriefPanel({ profile, source = null, dashboardConfig = {} }) {
     if (!profile) return null;
 
@@ -478,17 +428,13 @@ function buildDossierOfficerBriefPanel({ profile, source = null, dashboardConfig
     const identity = getDossierIdentitySnapshot(profile, source);
     const readiness = getDossierReadinessSnapshot(profile, source);
     const activity = getDossierActivitySnapshot(profile, source);
-    const contribution = getDossierContributionSnapshot(profile, source);
     const movement = getDossierMovementSnapshot(profile, effectiveConfig);
 
-    const equippedIlvl = parseInt(profile?.equipped_item_level || source?.equipped_item_level, 10) || 0;
-    const averageIlvl = parseInt(profile?.average_item_level || source?.average_item_level, 10) || 0;
     const scanTimestamp = formatDossierTimestamp(effectiveConfig?.last_updated);
     const notes = buildDossierOfficerNotes({
-        identity: { ...identity, equippedIlvl, averageIlvl },
+        identity,
         readiness,
         activity,
-        contribution,
         movement
     });
 
@@ -508,83 +454,12 @@ function buildDossierOfficerBriefPanel({ profile, source = null, dashboardConfig
 
     const copyEl = document.createElement('p');
     copyEl.className = 'char-card-intelligence-copy char-card-officer-copy';
-    copyEl.textContent = 'Identity, readiness, contribution, and action cues from the latest snapshot.';
+    copyEl.textContent = 'Deterministic notes grounded in roster, movement, and scan data.';
 
     header.appendChild(kickerEl);
     header.appendChild(titleEl);
     header.appendChild(copyEl);
     shell.appendChild(header);
-
-    const badgeRow = document.createElement('div');
-    badgeRow.className = 'char-badges-container char-card-officer-badges';
-
-    const badgeDefs = [];
-    if (identity.level > 0) {
-        badgeDefs.push({ label: identity.level === 70 ? 'Level 70' : `Level ${identity.level}`, tone: identity.level === 70 ? 'level' : 'level-sub' });
-    }
-    if (readiness.label === 'Raid ready') {
-        badgeDefs.push({ label: 'Raid Ready', tone: 'ready' });
-    } else if (readiness.label === 'Staging for raid') {
-        badgeDefs.push({ label: 'Staging', tone: 'staging' });
-    } else if (readiness.label === 'Needs gear') {
-        badgeDefs.push({ label: 'Needs Gear', tone: 'warning' });
-    } else if (readiness.label === 'Still advancing') {
-        badgeDefs.push({ label: 'Still Advancing', tone: 'advancing' });
-    }
-    if (activity.label === 'Recently active') {
-        badgeDefs.push({ label: 'Active', tone: 'active' });
-    } else if (activity.label === 'Quiet lately') {
-        badgeDefs.push({ label: 'Quiet', tone: 'quiet' });
-    } else if (activity.label === 'Inactive lately') {
-        badgeDefs.push({ label: 'Inactive', tone: 'inactive' });
-    }
-    badgeDefs.push({ label: identity.mainAltLabel, tone: identity.isAlt ? 'alt' : 'main' });
-    if (contribution.honorableKills > 0) {
-        badgeDefs.push({ label: 'PvP', tone: 'pvp' });
-    }
-    if (identity.level >= 70 && equippedIlvl <= 0) {
-        badgeDefs.push({ label: 'Missing Gear Data', tone: 'warning' });
-    }
-    if (movement && (movement.eventType === 'joined' || movement.eventType === 'rejoined')) {
-        badgeDefs.push({ label: movement.eventType === 'joined' ? 'Recently Joined' : 'Recently Rejoined', tone: 'movement' });
-    }
-
-    badgeDefs.forEach(item => {
-        badgeRow.appendChild(buildDossierOfficerBadge(item));
-    });
-    shell.appendChild(badgeRow);
-
-    const grid = document.createElement('div');
-    grid.className = 'char-card-intelligence-grid char-card-officer-grid';
-    grid.appendChild(buildDossierInfoTile({
-        label: 'Identity',
-        value: `${identity.cClass} · ${identity.raceName}`,
-        meta: [identity.guildRank, identity.mainAltLabel, identity.activeSpec || identity.roleLabel].filter(Boolean).join(' · '),
-        className: 'char-card-officer-tile char-card-officer-tile-identity'
-    }));
-    grid.appendChild(buildDossierInfoTile({
-        label: 'Readiness',
-        value: readiness.label,
-        meta: [
-            identity.level > 0 ? identity.levelLabel : '',
-            equippedIlvl > 0 ? `${equippedIlvl.toLocaleString()} equipped iLvl` : 'Equipped iLvl unavailable',
-            averageIlvl > 0 ? `Avg ${averageIlvl.toLocaleString()} iLvl` : ''
-        ].filter(Boolean).join(' · '),
-        className: 'char-card-officer-tile char-card-officer-tile-readiness'
-    }));
-    grid.appendChild(buildDossierInfoTile({
-        label: 'Activity',
-        value: activity.label,
-        meta: [activity.meta || 'Last seen unknown', scanTimestamp ? `Scanned ${scanTimestamp}` : ''].filter(Boolean).join(' · '),
-        className: 'char-card-officer-tile char-card-officer-tile-activity'
-    }));
-    grid.appendChild(buildDossierInfoTile({
-        label: 'Contribution',
-        value: contribution.honorableKills > 0 ? `${contribution.honorableKills.toLocaleString()} HKs` : 'No HKs recorded',
-        meta: [contribution.meta, movement ? movement.meta : 'No recent movement recorded.'].filter(Boolean).join(' · '),
-        className: 'char-card-officer-tile char-card-officer-tile-contribution'
-    }));
-    shell.appendChild(grid);
 
     const notesSection = buildDossierIntelligenceSection({
         label: 'Officer Notes',
@@ -603,42 +478,12 @@ function buildDossierOfficerBriefPanel({ profile, source = null, dashboardConfig
     return shell;
 }
 
-function buildDossierRecentChangeItems(characterName, timelineEvents = []) {
-    const counts = { item: 0, level_up: 0, badge: 0 };
-    const normalizedName = normalizeDossierCharacterName(characterName);
-    const cutoffMs = Date.now() - (DOSSIER_RECENT_ACTIVITY_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-
-    timelineEvents.forEach(event => {
-        if (!event || typeof event !== 'object') return;
-        if (normalizeDossierCharacterName(event.character_name || event.character) !== normalizedName) return;
-
-        const rawTimestamp = event.timestamp ? new Date(String(event.timestamp).replace('Z', '+00:00')).getTime() : NaN;
-        if (!Number.isFinite(rawTimestamp) || rawTimestamp < cutoffMs) return;
-
-        const eventType = String(event.type || event.event_type || '').trim().toLowerCase();
-        if (eventType === 'item' || eventType === 'level_up' || eventType === 'badge') {
-            counts[eventType] += 1;
-        }
-    });
-
-    const items = [];
-    if (counts.item > 0) {
-        items.push({ type: 'item', label: `${counts.item} gear upgrade${counts.item === 1 ? '' : 's'} recorded` });
-    }
-    if (counts.level_up > 0) {
-        items.push({ type: 'level_up', label: `${counts.level_up} level-up${counts.level_up === 1 ? '' : 's'} recorded` });
-    }
-    if (counts.badge > 0) {
-        items.push({ type: 'badge', label: `${counts.badge} award${counts.badge === 1 ? '' : 's'} recorded` });
-    }
-    return items;
-}
-
 function buildDossierRecognitionItems(profile, source = null) {
     const vanguardBadges = safeParseArray(profile?.vanguard_badges || source?.vanguard_badges);
     const campaignBadges = safeParseArray(profile?.campaign_badges || source?.campaign_badges);
     const pveChamp = parseInt(profile?.pve_champ_count || source?.pve_champ_count, 10) || 0;
     const pvpChamp = parseInt(profile?.pvp_champ_count || source?.pvp_champ_count, 10) || 0;
+    const honorableKills = parseInt(profile?.honorable_kills || source?.honorable_kills, 10) || 0;
 
     const items = [];
     if (pveChamp > 0 || pvpChamp > 0) {
@@ -652,6 +497,9 @@ function buildDossierRecognitionItems(profile, source = null) {
     }
     if (campaignBadges.length > 0) {
         items.push({ type: 'campaign', label: `${campaignBadges.length} campaign mark${campaignBadges.length === 1 ? '' : 's'}` });
+    }
+    if (honorableKills > 0) {
+        items.push({ type: 'hks', label: `${honorableKills.toLocaleString()} HKs` });
     }
 
     return items;
