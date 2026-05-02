@@ -133,11 +133,11 @@ class OfficerBriefTests(unittest.TestCase):
 
         self.assertEqual(summary["status"], "Watch")
         self.assertEqual(summary["tone"], "watch")
-        self.assertEqual(summary["items"][0]["type"], "movement")
         self.assertEqual(
-            summary["items"][0]["label"],
-            "Latest movement scan recorded 1 joined, 2 departed, 1 rejoined",
+            [item["type"] for item in summary["items"]],
+            ["activity", "readiness", "trend"],
         )
+        self.assertEqual(summary["items"][0]["label"], "Activity building: 5 recently active members")
         self.assertIn("watch", summary["summary"].lower())
 
     def test_bootstrap_movement_stays_neutral(self):
@@ -225,10 +225,10 @@ class OfficerBriefTests(unittest.TestCase):
             limit=4,
         )
 
-        self.assertEqual(len(summary_a["items"]), 4)
+        self.assertEqual(len(summary_a["items"]), 3)
         self.assertEqual(
             [item["type"] for item in summary_a["items"]],
-            ["movement", "activity", "readiness", "trend"],
+            ["activity", "readiness", "trend"],
         )
         self.assertEqual(
             [item["type"] for item in summary_a["items"]],

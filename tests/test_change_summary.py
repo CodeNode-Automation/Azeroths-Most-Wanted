@@ -88,7 +88,7 @@ class ChangeSummaryTests(unittest.TestCase):
         )
 
         self.assertEqual(len(summary["items"]), 1)
-        self.assertEqual(summary["items"][0]["label"], "3 joined, 1 departed, 2 rejoined")
+        self.assertEqual(summary["items"][0]["label"], "Roster movement updated in the latest scan.")
 
     def test_timeline_events_are_grouped_by_type(self):
         summary = build_change_summary(

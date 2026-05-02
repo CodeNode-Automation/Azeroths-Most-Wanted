@@ -122,6 +122,18 @@ function formatHomeOfficerBriefItemType(itemType) {
     }
 }
 
+function getHomeMovementCharacterTarget(characterName) {
+    const normalizedName = String(characterName || '').trim().toLowerCase();
+    if (!normalizedName || !Array.isArray(rosterData)) return null;
+
+    return rosterData.find(char => {
+        const profileName = char && char.profile && char.profile.name
+            ? String(char.profile.name).trim().toLowerCase()
+            : '';
+        return profileName === normalizedName;
+    }) || null;
+}
+
 function renderHomeApiStatus(apiStatus = {}) {
     const banner = document.getElementById('home-api-status-banner');
     const titleEl = document.getElementById('home-api-status-title');
@@ -158,7 +170,7 @@ function renderHomeLatestChangesCard(dashboardConfig = {}) {
     titleEl.textContent = latestChanges.title || 'What changed recently';
     summaryEl.textContent = latestChanges.empty || items.length === 0
         ? emptyText
-        : 'Recent activity, trend shifts, and roster count changes worth noting.';
+        : 'Recent activity, trend shifts, and notable roster signals worth noting.';
 
     listEl.innerHTML = '';
     if (latestChanges.empty || items.length === 0) {
@@ -234,13 +246,35 @@ function renderHomeMovementCard(dashboardConfig = {}) {
         listEl.hidden = true;
     } else {
         recent.slice(0, 5).forEach(event => {
+            const characterName = String(event.character_name || '').trim();
+            const targetCharacter = getHomeMovementCharacterTarget(characterName);
+            const hasTarget = Boolean(targetCharacter);
             const item = document.createElement('li');
             item.className = `home-movement-item home-movement-item-${(event.event_type || 'updated').toLowerCase()}`;
             item.setAttribute('data-event-type', (event.event_type || 'updated').toLowerCase());
+            if (hasTarget) {
+                item.classList.add('is-clickable');
+                item.setAttribute('role', 'button');
+                item.setAttribute('tabindex', '0');
+                item.setAttribute('aria-label', `Open dossier for ${characterName}`);
+
+                const openDossier = () => {
+                    if (!characterName) return;
+                    window.selectCharacter(characterName.toLowerCase());
+                };
+
+                item.addEventListener('click', openDossier);
+                item.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openDossier();
+                    }
+                });
+            }
 
             const name = document.createElement('span');
             name.className = 'home-movement-name';
-            name.textContent = event.character_name || 'Unknown hero';
+            name.textContent = characterName || 'Unknown hero';
 
             const metaWrap = document.createElement('span');
             metaWrap.className = 'home-movement-meta-wrap';
@@ -398,3 +432,4 @@ function populateHomeOverview(dashboardConfig = {}) {
     renderHomeLatestChangesCard(dashboardConfig);
     renderHomeOfficerBriefCard(dashboardConfig);
 }
+

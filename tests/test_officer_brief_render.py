@@ -83,7 +83,7 @@ class OfficerBriefRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(officer_brief["title"], "Officer Brief")
         self.assertFalse(officer_brief["empty"])
         self.assertEqual(officer_brief["status"], "Watch")
-        self.assertEqual(officer_brief["items"][0]["type"], "movement")
+        self.assertEqual(officer_brief["items"][0]["type"], "activity")
 
     def test_generate_html_dashboard_serializes_officer_brief_payload(self):
         original_cwd = os.getcwd()

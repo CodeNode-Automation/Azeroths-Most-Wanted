@@ -4772,6 +4772,30 @@ body.nav-menu-open {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.home-movement-item.is-clickable {
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.home-movement-item.is-clickable:hover,
+.home-movement-item.is-clickable:focus-visible {
+  border-color: rgba(255, 209, 0, 0.24);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 0, 0.12) inset,
+    0 8px 20px rgba(0, 0, 0, 0.24);
+  transform: translateY(-1px);
+}
+
+.home-movement-item.is-clickable:focus-visible {
+  outline: 2px solid rgba(255, 209, 0, 0.4);
+  outline-offset: 2px;
+}
+
 .home-latest-changes-item {
   display: flex;
   align-items: center;

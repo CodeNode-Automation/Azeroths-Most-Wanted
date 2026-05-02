@@ -245,23 +245,29 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
     def test_template_includes_guild_movement_card_markup_and_hook(self):
         template_text = Path("render/dashboard_template.html").read_text(encoding="utf-8")
         js_text = Path("render/src/js/features/home_analytics/home_overview.js").read_text(encoding="utf-8")
+        css_text = Path("render/style.css").read_text(encoding="utf-8")
 
         self.assertIn('id="home-movement-card"', template_text)
         self.assertIn('id="home-movement-list"', template_text)
         self.assertIn('Latest roster movement', template_text)
         self.assertIn('Roster Movement', template_text)
         self.assertIn("renderHomeMovementCard", js_text)
+        self.assertIn("function getHomeMovementCharacterTarget(characterName)", js_text)
         self.assertIn("movement baseline", js_text)
         self.assertIn("Guild roster currently reports", js_text)
         self.assertIn("detail-eligible characters are recorded as the movement baseline for profile, gear, activity, and movement intelligence.", js_text)
         self.assertIn("${total.toLocaleString()} detail-eligible characters are recorded as the movement baseline", js_text)
         self.assertIn('data-movement-state', js_text)
+        self.assertIn("item.classList.add('is-clickable');", js_text)
+        self.assertIn("item.setAttribute('role', 'button');", js_text)
+        self.assertIn("window.selectCharacter(characterName.toLowerCase());", js_text)
         self.assertNotIn("processedRosterCount", js_text)
         self.assertIn("Very low-level characters and characters with restricted Blizzard profile privacy may appear in the guild roster and level distribution before full profile, equipment, activity, and statistics details are available.", js_text)
         self.assertIn("No processed character departure was identified, likely because the change involved a low-level or privacy-restricted roster entry.", js_text)
-        css_text = Path("render/style.css").read_text(encoding="utf-8")
         self.assertIn('.home-movement-card[data-movement-state="bootstrap"] .home-nav-copy,', css_text)
         self.assertIn('.home-movement-card[data-movement-state="count-only"] .home-nav-copy,', css_text)
+        self.assertIn('.home-movement-item.is-clickable {', css_text)
+        self.assertIn('.home-movement-item.is-clickable:focus-visible {', css_text)
 
     def test_home_movement_card_declares_root_card_before_setting_state(self):
         js_text = Path("render/src/js/features/home_analytics/home_overview.js").read_text(encoding="utf-8")
@@ -283,7 +289,8 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('What changed recently', template_text)
         self.assertIn('renderHomeLatestChangesCard', js_text)
         self.assertIn('No notable changes recorded yet.', js_text)
-        self.assertIn('Recent activity, trend shifts, and roster count changes worth noting.', js_text)
+        self.assertIn('Recent activity, trend shifts, and notable roster signals worth noting.', js_text)
+        self.assertIn('Roster movement updated in the latest scan.', helper_text)
         self.assertIn(
             'Activity and trend changes will appear after comparison scans detect movement beyond the baseline.',
             helper_text,

@@ -44,6 +44,9 @@ def _extract_membership_movement_item(membership_movement: Any) -> list[dict[str
     departed = _clean_int(membership_movement.get("departed"), 0)
     rejoined = _clean_int(membership_movement.get("rejoined"), 0)
 
+    if joined <= 0 and departed <= 0 and rejoined <= 0:
+        return []
+
     parts = []
     if joined > 0:
         parts.append(_format_count(joined, "joined", "joined"))
@@ -55,11 +58,16 @@ def _extract_membership_movement_item(membership_movement: Any) -> list[dict[str
     if not parts:
         return []
 
+    tone = "watch" if departed > 0 else "positive"
+    label = "Roster movement updated in the latest scan."
+    if len(parts) == 1:
+        label = f"Roster movement updated: {parts[0]}."
+
     return [
         {
             "type": "movement",
-            "label": ", ".join(parts),
-            "tone": "neutral",
+            "label": label,
+            "tone": tone,
         }
     ]
 

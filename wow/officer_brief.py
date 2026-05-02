@@ -54,52 +54,6 @@ def _format_count(count: int, singular: str, plural: str | None = None) -> str:
     return f"{count} {suffix}"
 
 
-def _extract_membership_item(membership_movement: Any) -> list[dict[str, Any]]:
-    if not isinstance(membership_movement, dict):
-        return []
-
-    total = _clean_int(membership_movement.get("total"), 0)
-    if total <= 0:
-        return []
-
-    if membership_movement.get("bootstrap"):
-        return [
-            {
-                "type": "movement",
-                "label": f"Roster baseline captured from {total} members",
-                "tone": "neutral",
-            }
-        ]
-
-    joined = _clean_int(membership_movement.get("joined"), 0)
-    departed = _clean_int(membership_movement.get("departed"), 0)
-    rejoined = _clean_int(membership_movement.get("rejoined"), 0)
-
-    parts = []
-    if joined > 0:
-        parts.append(_format_count(joined, "joined", "joined"))
-    if departed > 0:
-        parts.append(_format_count(departed, "departed", "departed"))
-    if rejoined > 0:
-        parts.append(_format_count(rejoined, "rejoined", "rejoined"))
-
-    if not parts:
-        return []
-
-    tone = "watch" if departed > 0 else "positive"
-    if departed == 0 and not (joined or rejoined):
-        tone = "neutral"
-
-    label = "Latest movement scan recorded " + ", ".join(parts)
-    return [
-        {
-            "type": "movement",
-            "label": label,
-            "tone": tone,
-        }
-    ]
-
-
 def _extract_activity_item(roster_metrics: dict[str, int]) -> list[dict[str, Any]]:
     total = roster_metrics["total_members"]
     active = roster_metrics["active_14_days"]
@@ -402,18 +356,15 @@ def build_officer_brief(*, roster_summary=None, membership_movement=None, latest
 
     The helper stays intentionally small:
     - it prefers current roster snapshot counts
-    - it treats membership movement as the primary churn signal
+    - it treats membership movement as the primary churn signal for status
     - it uses latest changes and trend data only as supporting context
     - it never invents signals that are not present in the supplied data
     """
     roster_metrics = _extract_roster_metrics(roster_summary)
 
     items: list[dict[str, Any]] = []
-    movement_items = _extract_membership_item(membership_movement)
     movement = membership_movement if isinstance(membership_movement, dict) else {}
     bootstrap = bool(movement.get("bootstrap"))
-    if not bootstrap:
-        items.extend(movement_items)
     items.extend(_extract_activity_item(roster_metrics))
     items.extend(_extract_readiness_item(roster_metrics))
     trend_items = _extract_trend_item(trend_data)

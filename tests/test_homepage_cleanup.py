@@ -37,7 +37,7 @@ class HomepageCleanupTests(unittest.TestCase):
         self.assertIn('class="home-insights-row"', template_text)
         self.assertIn('id="home-latest-changes-card"', template_text)
         self.assertIn('id="home-officer-brief-card"', template_text)
-        self.assertIn('Recent activity, trend shifts, and roster count changes worth noting.', template_text)
+        self.assertIn('Recent activity, trend shifts, and notable roster signals worth noting.', template_text)
         self.assertIn('class="dashboard-footer"', template_text)
         self.assertIn('Dashboard Built', template_text)
         self.assertIn('Contact: <a href="mailto:nullbit5@protonmail.com">nullbit5@protonmail.com</a>', template_text)
