@@ -264,6 +264,14 @@
     z-index: 130;
   }
 
+  .custom-select-wrapper {
+    z-index: 140;
+  }
+
+  .custom-select-options {
+    z-index: 150;
+  }
+
   .search-box {
     width: 100%;
     height: 42px;

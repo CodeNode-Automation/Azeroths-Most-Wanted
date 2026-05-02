@@ -63,6 +63,8 @@ class MobileLayoutTests(unittest.TestCase):
         self.assertIn(".nav-links-container.open {\n    transform: translateX(0);", self.mobile_css)
         self.assertIn(".search-autocomplete {\n    width: 100%;", self.mobile_css)
         self.assertIn("env(safe-area-inset-bottom, 0px)", self.mobile_css)
+        self.assertIn(".custom-select-wrapper {\n    z-index: 140;", self.mobile_css)
+        self.assertIn(".custom-select-options {\n    z-index: 150;", self.mobile_css)
         self.assertIn("body.nav-menu-open .navbar .search-container {", self.mobile_css)
 
     def test_mobile_root_width_alignment_is_width_safe(self):
