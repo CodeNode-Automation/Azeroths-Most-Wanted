@@ -47,6 +47,7 @@ class MobileLayoutTests(unittest.TestCase):
             "Compact phone stats and metric scopes",
             "Roster distribution bars and cards",
             "Progression readiness bars and cards",
+            "Campaign tempo and raid role snapshot cards",
             "Narrow-phone root alignment",
             "Very narrow phones and bottom-browser chrome",
         ):
@@ -105,6 +106,13 @@ class MobileLayoutTests(unittest.TestCase):
         self.assertIn(".war-effort-home-card-footer", mobile_css)
         self.assertIn(".campaign-archive-grid,\n  .campaign-archive-grid-war-effort,\n  .campaign-archive-grid-dual", mobile_css)
         self.assertIn(".analytics-snapshot-grid", mobile_css)
+        self.assertIn(".analytics-tempo-card", mobile_css)
+        self.assertIn(".analytics-tempo-stats", mobile_css)
+        self.assertIn(".analytics-tempo-row-meta", mobile_css)
+        self.assertIn(".analytics-tempo-role-card", mobile_css)
+        self.assertIn(".analytics-role-snapshot-row-head", mobile_css)
+        self.assertIn(".analytics-role-snapshot-row-value", mobile_css)
+        self.assertIn(".analytics-role-snapshot-row-meta", mobile_css)
         self.assertIn(".analytics-campaign-history-metrics", mobile_css)
         self.assertIn(".analytics-campaign-history-footer", mobile_css)
         self.assertIn(".analytics-readiness-funnel-stages", mobile_css)

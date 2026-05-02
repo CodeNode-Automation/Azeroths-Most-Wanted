@@ -467,6 +467,283 @@ function renderAnalyticsReadinessGap(gap = {}) {
     cardEl.setAttribute('data-readiness-gap-state', canComputeGap && hasAvgIlvl ? 'populated' : 'partial');
 }
 
+function formatAnalyticsTempoDayStamp(day = {}) {
+    const dayName = String(day.day_name || '').trim();
+    const rawDate = String(day.date || '').trim();
+    if (!rawDate) return dayName || 'Unknown day';
+
+    const parsedDate = new Date(rawDate);
+    if (Number.isNaN(parsedDate.getTime())) {
+        return dayName ? `${dayName} · ${rawDate}` : rawDate;
+    }
+
+    const formattedDate = parsedDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+    });
+
+    return dayName ? `${dayName} · ${formattedDate}` : formattedDate;
+}
+
+function formatAnalyticsSignedDelta(value) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue) || numericValue === 0) return null;
+    return numericValue > 0
+        ? `+${Math.abs(numericValue).toLocaleString()}`
+        : `-${Math.abs(numericValue).toLocaleString()}`;
+}
+
+function buildAnalyticsTempoStat({ label, value, meta, tone = '' }) {
+    const safeValue = value === null || value === undefined || value === ''
+        ? '—'
+        : String(value);
+    const safeMeta = meta || 'Not available from current snapshot';
+
+    return `
+        <div class="analytics-tempo-stat" data-tone="${escapeAnalyticsHtml(tone)}">
+            <span class="analytics-tempo-stat-label">${escapeAnalyticsHtml(label)}</span>
+            <strong class="analytics-tempo-stat-value">${escapeAnalyticsHtml(safeValue)}</strong>
+            <span class="analytics-tempo-stat-meta">${escapeAnalyticsHtml(safeMeta)}</span>
+        </div>
+    `;
+}
+
+function buildAnalyticsTempoRow({ label, count, total, meta, tone = '' }) {
+    const share = formatAnalyticsSnapshotShare(count, total);
+    const safeCount = Number.isFinite(Number(count)) ? Number(count).toLocaleString() : '—';
+    const safeMeta = meta || (share === null ? 'Not available from current snapshot' : `${share}% of tempo`);
+    const fillPercent = Number.isFinite(share) ? Math.max(0, Math.min(100, share)) : 0;
+
+    return `
+        <div class="analytics-tempo-row" data-tone="${escapeAnalyticsHtml(tone)}">
+            <div class="analytics-tempo-row-head">
+                <span class="analytics-tempo-row-label">${escapeAnalyticsHtml(label)}</span>
+                <strong class="analytics-tempo-row-value">${safeCount}</strong>
+            </div>
+            <div class="analytics-tempo-meter" aria-hidden="true">
+                <span class="analytics-tempo-fill" style="width: ${fillPercent > 0 ? Math.max(6, fillPercent) : 0}%;"></span>
+            </div>
+            <span class="analytics-tempo-row-meta">${escapeAnalyticsHtml(safeMeta)}</span>
+        </div>
+    `;
+}
+
+function renderAnalyticsCampaignTempo(tempo = {}) {
+    const sectionEl = document.getElementById('analytics-activity-section');
+    if (!sectionEl) return;
+
+    const summaryEl = document.getElementById('analytics-campaign-tempo-summary');
+    const noteEl = document.getElementById('analytics-campaign-tempo-note');
+    const statsEl = document.getElementById('analytics-campaign-tempo-stats');
+    const barsEl = document.getElementById('analytics-campaign-tempo-bars');
+    const emptyEl = document.getElementById('analytics-campaign-tempo-empty');
+
+    if (!summaryEl || !noteEl || !statsEl || !barsEl || !emptyEl) return;
+
+    const heatmap = Array.isArray(tempo.heatmap) ? tempo.heatmap.filter(Boolean) : [];
+    const emptyCopy = 'Campaign tempo data is not available for this snapshot.';
+    const partialCopy = 'Some campaign tempo fields are unavailable from the current snapshot.';
+
+    if (!heatmap.length) {
+        statsEl.innerHTML = '';
+        barsEl.innerHTML = '';
+        summaryEl.textContent = emptyCopy;
+        noteEl.hidden = true;
+        noteEl.textContent = partialCopy;
+        emptyEl.hidden = false;
+        sectionEl.setAttribute('data-tempo-state', 'empty');
+        return;
+    }
+
+    const totalTempo = heatmap.reduce((sum, day) => sum + Number(day.count || 0), 0);
+    const lootDrops = heatmap.reduce((sum, day) => sum + Number(day.loot || 0), 0);
+    const levelUps = heatmap.reduce((sum, day) => sum + Number(day.levels || 0), 0);
+    const averageTempo = heatmap.length > 0 ? Math.round(totalTempo / heatmap.length) : 0;
+    const busiestDay = heatmap.reduce((best, day) => {
+        const currentCount = Number(day.count || 0);
+        if (!best || currentCount > Number(best.count || 0)) return day;
+        return best;
+    }, null);
+    const latestDay = heatmap[heatmap.length - 1];
+    const firstRosterPoint = [...heatmap].find(day => Number.isFinite(Number(day.total_roster)));
+    const lastRosterPoint = [...heatmap].reverse().find(day => Number.isFinite(Number(day.total_roster)));
+    const firstActivePoint = [...heatmap].find(day => Number.isFinite(Number(day.active_roster)));
+    const lastActivePoint = [...heatmap].reverse().find(day => Number.isFinite(Number(day.active_roster)));
+    const rosterDelta = firstRosterPoint && lastRosterPoint
+        ? Number(lastRosterPoint.total_roster) - Number(firstRosterPoint.total_roster)
+        : null;
+    const activeDelta = firstActivePoint && lastActivePoint
+        ? Number(lastActivePoint.active_roster) - Number(firstActivePoint.active_roster)
+        : null;
+    const maxTempo = Math.max(...heatmap.map(day => Number(day.count || 0)), 1);
+    const hasPartialData = heatmap.some(day => day.total_roster === null || day.total_roster === undefined || day.active_roster === null || day.active_roster === undefined);
+
+    summaryEl.textContent = 'The last seven days of timeline activity, highlighting loot drops, level-ups, and roster movement snapshots.';
+    const tempoNoteText = [
+        busiestDay ? `Busiest day: ${formatAnalyticsTempoDayStamp(busiestDay)} (${Number(busiestDay.count || 0).toLocaleString()} actions)` : '',
+        latestDay ? `Latest day: ${formatAnalyticsTempoDayStamp(latestDay)}` : '',
+        rosterDelta !== null ? `Total roster Δ ${formatAnalyticsSignedDelta(rosterDelta)}` : '',
+        activeDelta !== null ? `Active mains Δ ${formatAnalyticsSignedDelta(activeDelta)}` : ''
+    ].filter(Boolean).join(' · ') || partialCopy;
+    noteEl.textContent = hasPartialData && tempoNoteText !== partialCopy
+        ? `${tempoNoteText} · ${partialCopy}`
+        : tempoNoteText;
+    noteEl.hidden = false;
+
+    statsEl.innerHTML = [
+        buildAnalyticsTempoStat({
+            label: 'Tempo Total',
+            value: totalTempo.toLocaleString(),
+            meta: `${heatmap.length.toLocaleString()} days recorded`,
+            tone: 'tempo'
+        }),
+        buildAnalyticsTempoStat({
+            label: 'Loot Drops',
+            value: lootDrops.toLocaleString(),
+            meta: 'Item events recorded',
+            tone: 'loot'
+        }),
+        buildAnalyticsTempoStat({
+            label: 'Level Ups',
+            value: levelUps.toLocaleString(),
+            meta: 'Level-up events recorded',
+            tone: 'levels'
+        }),
+        buildAnalyticsTempoStat({
+            label: 'Avg / Day',
+            value: averageTempo.toLocaleString(),
+            meta: 'Across the last seven days',
+            tone: 'average'
+        })
+    ].join('');
+
+    barsEl.innerHTML = heatmap.map(day => {
+        const dailyCount = Number(day.count || 0);
+        const dailyLoot = Number(day.loot || 0);
+        const dailyLevels = Number(day.levels || 0);
+        const fillPercent = Math.max(0, Math.min(100, Math.round((dailyCount / maxTempo) * 100)));
+
+        return `
+            <div class="analytics-tempo-row${busiestDay === day ? ' is-peak' : ''}" data-tone="${busiestDay === day ? 'peak' : 'tempo'}">
+                <div class="analytics-tempo-row-head">
+                    <span class="analytics-tempo-row-label">${escapeAnalyticsHtml(formatAnalyticsTempoDayStamp(day))}</span>
+                    <strong class="analytics-tempo-row-value">${dailyCount.toLocaleString()}</strong>
+                </div>
+                <div class="analytics-tempo-meter" aria-hidden="true">
+                    <span class="analytics-tempo-fill" style="width: ${fillPercent > 0 ? Math.max(6, fillPercent) : 0}%;"></span>
+                </div>
+                <span class="analytics-tempo-row-meta">${escapeAnalyticsHtml(`${dailyLoot} loot · ${dailyLevels} level-ups`)}</span>
+            </div>
+        `;
+    }).join('');
+
+    emptyEl.hidden = true;
+    sectionEl.setAttribute('data-tempo-state', hasPartialData ? 'partial' : 'populated');
+}
+
+function buildAnalyticsRoleSnapshotRow({ label, count, total, meta, tone = '', route = '' }) {
+    const share = formatAnalyticsSnapshotShare(count, total);
+    const safeCount = Number.isFinite(Number(count)) ? Number(count).toLocaleString() : '—';
+    const safeMeta = meta || (share === null ? 'Not available from current snapshot' : `${share}% of mains`);
+    const fillPercent = Number.isFinite(share) ? Math.max(0, Math.min(100, share)) : 0;
+    const routeAttr = route ? ` data-home-route="${escapeAnalyticsHtml(route)}"` : '';
+    const labelText = escapeAnalyticsHtml(label);
+    const interactiveClass = route ? '' : ' is-static';
+    const tagName = route ? 'button type="button"' : 'div';
+
+    return `
+        <${tagName} class="analytics-role-snapshot-row${interactiveClass}" data-tone="${escapeAnalyticsHtml(tone)}"${routeAttr}${route ? ` aria-label="Inspect ${labelText}"` : ''}>
+            <div class="analytics-role-snapshot-row-head">
+                <span class="analytics-role-snapshot-row-label">${labelText}</span>
+                <strong class="analytics-role-snapshot-row-value">${safeCount}</strong>
+            </div>
+            <div class="analytics-role-snapshot-meter" aria-hidden="true">
+                <span class="analytics-role-snapshot-fill" style="width: ${fillPercent > 0 ? Math.max(6, fillPercent) : 0}%;"></span>
+            </div>
+            <span class="analytics-role-snapshot-row-meta">${escapeAnalyticsHtml(safeMeta)}</span>
+        </${route ? 'button' : 'div'}>
+    `;
+}
+
+function renderAnalyticsRoleSnapshot(snapshot = {}) {
+    const cardEl = document.getElementById('analytics-role-snapshot-card');
+    if (!cardEl) return;
+
+    const summaryEl = document.getElementById('analytics-role-snapshot-summary');
+    const noteEl = document.getElementById('analytics-role-snapshot-note');
+    const listEl = document.getElementById('analytics-role-snapshot-list');
+    const emptyEl = document.getElementById('analytics-role-snapshot-empty');
+
+    if (!summaryEl || !noteEl || !listEl || !emptyEl) return;
+
+    const roster = Array.isArray(snapshot.roster) ? snapshot.roster.filter(Boolean) : [];
+    const emptyCopy = 'Raid role data is not available for this snapshot.';
+    const partialCopy = 'Some role fields are unavailable from the current snapshot.';
+
+    if (!roster.length) {
+        listEl.innerHTML = '';
+        summaryEl.textContent = emptyCopy;
+        noteEl.hidden = true;
+        noteEl.textContent = partialCopy;
+        emptyEl.hidden = false;
+        cardEl.setAttribute('data-role-snapshot-state', 'empty');
+        return;
+    }
+
+    const roleCounts = new Map();
+    let unknownRoleCount = 0;
+
+    roster.forEach(entry => {
+        const className = getCharClass(entry);
+        const roleName = getCharacterRole(className, entry?.profile?.active_spec || '') || 'Unknown';
+        roleCounts.set(roleName, (roleCounts.get(roleName) || 0) + 1);
+        if (roleName === 'Unknown') unknownRoleCount++;
+    });
+
+    const roleOrder = {
+        'Tank': 0,
+        'Healer': 1,
+        'Melee DPS': 2,
+        'Ranged DPS': 3,
+        'Unknown': 4
+    };
+    const roleToneByLabel = {
+        'Tank': { route: 'filter-role-tank', tone: 'tank' },
+        'Healer': { route: 'filter-role-healer', tone: 'healer' },
+        'Melee DPS': { route: 'filter-role-melee-dps', tone: 'melee' },
+        'Ranged DPS': { route: 'filter-role-ranged-dps', tone: 'ranged' },
+        'Unknown': { route: '', tone: 'unknown' }
+    };
+
+    const roleRows = [...roleCounts.entries()]
+        .filter(([, count]) => count > 0)
+        .map(([label, count]) => ({
+            label,
+            count,
+            ...(roleToneByLabel[label] || { route: '', tone: '' })
+        }))
+        .sort((a, b) => (roleOrder[a.label] ?? 99) - (roleOrder[b.label] ?? 99));
+
+    listEl.innerHTML = roleRows.length > 0
+        ? roleRows.map(row => buildAnalyticsRoleSnapshotRow({
+            label: row.label,
+            count: row.count,
+            total: roster.length,
+            meta: formatAnalyticsSnapshotShareText(row.count, roster.length),
+            tone: row.tone,
+            route: row.route
+        })).join('')
+        : `<div class="analytics-role-snapshot-empty-state">No raid role data available from this snapshot.</div>`;
+
+    summaryEl.textContent = 'Known specs among mains, mapped into the app’s current tank, healer, melee, and ranged role buckets.';
+    noteEl.hidden = !unknownRoleCount;
+    noteEl.textContent = unknownRoleCount > 0
+        ? `${unknownRoleCount.toLocaleString()} mains are missing an active spec and are shown as Unknown.`
+        : 'Click a role to filter the roster.';
+    emptyEl.hidden = true;
+    cardEl.setAttribute('data-role-snapshot-state', unknownRoleCount > 0 ? 'partial' : 'populated');
+}
+
 function getAnalyticsRosterHonorKills(entry) {
     const rawValue = entry && (
         entry.honorable_kills

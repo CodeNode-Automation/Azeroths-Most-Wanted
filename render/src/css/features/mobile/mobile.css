@@ -693,6 +693,10 @@
     height: 210px;
   }
 
+  .analytics-tempo-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .analytics-progression-readiness-section {
     margin: 2px auto 30px;
   }
@@ -1461,6 +1465,36 @@
   .analytics-readiness-funnel-note,
   .analytics-readiness-funnel-empty {
     font-size: 13px;
+  }
+
+  /* Campaign tempo and raid role snapshot cards */
+
+  .analytics-tempo-card,
+  .analytics-tempo-role-card {
+    padding: 16px;
+  }
+
+  .analytics-tempo-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-tempo-summary,
+  .analytics-tempo-note,
+  .analytics-tempo-row-meta,
+  .analytics-role-snapshot-row-meta {
+    font-size: 12px;
+  }
+
+  .analytics-tempo-row-head,
+  .analytics-role-snapshot-row-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .analytics-tempo-row-value,
+  .analytics-role-snapshot-row-value {
+    white-space: normal;
   }
 
   .analytics-readiness-gap-card {

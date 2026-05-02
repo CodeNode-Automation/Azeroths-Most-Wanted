@@ -167,7 +167,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.activeClassExpanded = null;
     let mainDonutChartInstance = null;     
     let conciseDonutChartInstance = null;
-    let analyticsActivityChartInst = null;
     window.roleChartInstance = null;
     const analyticsView = document.getElementById('analytics-view');   
     const architectureView = document.getElementById('architecture-view');
@@ -4685,6 +4684,18 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        if (typeof renderAnalyticsCampaignTempo === 'function') {
+            renderAnalyticsCampaignTempo({
+                heatmap: recentHeatmap
+            });
+        }
+
+        if (typeof renderAnalyticsRoleSnapshot === 'function') {
+            renderAnalyticsRoleSnapshot({
+                roster: mainRoster
+            });
+        }
+
         const analyticsRosterSnapshot = Array.isArray(rawGuildRoster) && rawGuildRoster.length > 0 ? rawGuildRoster : rosterData;
 
         if (typeof renderAnalyticsProgressionReadiness === 'function') {
@@ -4949,49 +4960,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             cta: 'Inspect 60-69 bracket ➔'
         });
 
-        const actCtx = document.getElementById('analyticsActivityChart');
-        if (actCtx && heatmapData && heatmapData.length > 0) {
-            if (analyticsActivityChartInst) analyticsActivityChartInst.destroy();
-            analyticsActivityChartInst = new Chart(actCtx, {
-                type: 'line',
-                data: {
-                    labels: heatmapData.map(d => d.day_name),
-                    datasets: [
-                        { label: 'Loot Drops', data: heatmapData.map(d => d.loot || 0), borderColor: '#a335ee', backgroundColor: 'rgba(163, 53, 238, 0.1)', borderWidth: 2, pointBackgroundColor: '#a335ee', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y' },
-                        { label: 'Level Ups', data: heatmapData.map(d => d.levels || 0), borderColor: '#ffd100', backgroundColor: 'rgba(255, 209, 0, 0.1)', borderWidth: 2, pointBackgroundColor: '#ffd100', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y' },
-                        { label: 'Total Roster (All)', data: heatmapData.map(d => getHeatmapMetricValue(d, 'total_roster', 'total_roster')), borderColor: 'rgba(52, 152, 219, 0.3)', backgroundColor: 'transparent', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#3498db', pointBorderColor: '#fff', tension: 0.3, fill: false, yAxisID: 'y-roster' },
-                        { label: 'Active Roster (Mains)', data: heatmapData.map(d => getHeatmapMetricValue(d, 'active_roster_mains', 'active_roster')), borderColor: 'rgba(46, 204, 113, 0.6)', backgroundColor: 'rgba(46, 204, 113, 0.05)', borderWidth: 2, borderDash: [4, 4], pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#2ecc71', pointBorderColor: '#fff', tension: 0.3, fill: true, yAxisID: 'y-roster' }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#bbb', font: { family: 'Cinzel' }, boxWidth: 12 } },
-                        tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#fff', bodyFont: { family: 'Cinzel' } }
-                    },
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            beginAtZero: true,
-                            title: { display: true, text: 'Activity Count', color: '#888', font: { family: 'Cinzel' } },
-                            ticks: { color: '#888', stepSize: 1, font: { family: 'Cinzel' } },
-                            grid: { color: 'rgba(255,255,255,0.05)' }
-                        },
-                        'y-roster': {
-                            type: 'linear',
-                            position: 'right',
-                            beginAtZero: false,
-                            title: { display: true, text: 'Player Count', color: '#888', font: { family: 'Cinzel' } },
-                            ticks: { color: '#888', font: { family: 'Cinzel' } },
-                            grid: { drawOnChartArea: false }
-                        },
-                        x: { ticks: { color: '#888', font: { family: 'Cinzel', weight: 'bold' } }, grid: { display: false } }
-                    },
-                    interaction: { mode: 'nearest', axis: 'x', intersect: false }
-                }
-            });
-        }
     }
 
     function bindTimelineFilterControls() {

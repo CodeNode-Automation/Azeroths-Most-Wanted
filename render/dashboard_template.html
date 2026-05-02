@@ -1355,29 +1355,36 @@
                     <div class="home-section-heading home-section-heading-compact analytics-heading">
                         <span class="home-section-kicker">Campaign Tempo</span>
                         <h3 class="home-section-title">How the guild moved during the last seven days</h3>
-                        <p class="home-section-subtitle">Loot, level-ups, total roster size, and active roster movement in one command view.</p>
+                        <p class="home-section-subtitle">Loot, level-ups, roster movement, and raid-role coverage in a compact snapshot.</p>
                     </div>
 
                     <div class="analytics-primary-grid">
-                        <div class="heatmap-wrapper analytics-card analytics-card-wide">
+                        <article id="analytics-campaign-tempo-card" class="analytics-card analytics-card-wide analytics-tempo-card">
                             <div class="analytics-card-head">
-                                <h3 class="heatmap-title">🔥 Guild Activity (Last 7 Days)</h3>
-                                <span class="analytics-card-hint">Tracks loot, level-ups, total roster, and active roster</span>
+                                <h3 class="heatmap-title">🔥 7-Day Tempo Snapshot</h3>
+                                <span class="analytics-card-hint">Summarises the last seven days of timeline activity.</span>
                             </div>
-                            <div class="chart-canvas-wrapper">
-                                <canvas id="analyticsActivityChart"></canvas>
+                            <div class="analytics-tempo-copy">
+                                <p id="analytics-campaign-tempo-summary" class="analytics-tempo-summary">Campaign tempo data is not available for this snapshot.</p>
+                                <p id="analytics-campaign-tempo-note" class="analytics-tempo-note" hidden>Some campaign tempo fields are unavailable from the current snapshot.</p>
                             </div>
-                        </div>
+                            <div id="analytics-campaign-tempo-stats" class="analytics-tempo-stats" aria-label="Campaign tempo snapshot"></div>
+                            <div id="analytics-campaign-tempo-bars" class="analytics-tempo-bars" aria-label="Campaign tempo by day"></div>
+                            <div id="analytics-campaign-tempo-empty" class="analytics-tempo-empty" hidden>Campaign tempo data is not available for this snapshot.</div>
+                        </article>
 
-                        <div class="heatmap-wrapper analytics-card analytics-card-side">
+                        <article id="analytics-role-snapshot-card" class="analytics-card analytics-card-side analytics-tempo-card analytics-tempo-role-card">
                             <div class="analytics-card-head">
-                                <h3 class="heatmap-title chart-title-center">🛡️ Raid Roles <span class="chart-title-sub">Known Specs</span></h3>
-                                <span class="analytics-card-hint">Click a slice to filter matching heroes</span>
+                                <h3 class="heatmap-title chart-title-center">🛡️ Raid Role Snapshot</h3>
+                                <span class="analytics-card-hint">Known specs among mains, mapped to raid roles.</span>
                             </div>
-                            <div class="chart-canvas-wrapper flex-center">
-                                <canvas id="roleDonutChart"></canvas>
+                            <div class="analytics-tempo-copy">
+                                <p id="analytics-role-snapshot-summary" class="analytics-tempo-summary">Raid role data is not available for this snapshot.</p>
+                                <p id="analytics-role-snapshot-note" class="analytics-tempo-note" hidden>Some role fields are unavailable from the current snapshot.</p>
                             </div>
-                        </div>
+                            <div id="analytics-role-snapshot-list" class="analytics-role-snapshot-list" aria-label="Raid role snapshot"></div>
+                            <div id="analytics-role-snapshot-empty" class="analytics-tempo-empty" hidden>Raid role data is not available for this snapshot.</div>
+                        </article>
                     </div>
                 </section>
 
