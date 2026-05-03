@@ -630,6 +630,23 @@ body[data-route="war-effort-zenith"]::before {
     inset 0 0 28px rgba(255, 209, 0, 0.07);
 }
 
+@media (min-width: 1025px) {
+  .home-war-effort-section .weekly-challenges-flex-container > .war-effort-home-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: 100%;
+    max-width: calc((100% - 22px) / 2);
+  }
+
+  .war-effort-shell-readiness .war-effort-info-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .war-effort-shell-readiness .war-effort-info-band > .campaign-archive-grid-war-effort {
+    grid-column: 1 / -1;
+  }
+}
+
 .war-effort-home-card-xp {
   border-top: 1px solid rgba(255, 209, 0, 0.34);
   background:
