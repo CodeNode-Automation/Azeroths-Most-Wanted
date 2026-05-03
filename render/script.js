@@ -47,6 +47,27 @@ const DASHBOARD_BADGE_ICONS = Object.freeze({
     readiness: '\u{1F3F0}'
 });
 
+function getReadinessBadgeState(vanguardBadges = [], campaignBadgeTypes = []) {
+    const isReadinessBadge = (value) => {
+        const cleanType = normalizeHallOfHeroesBadgeType(value);
+        if (cleanType === 'readiness') return true;
+
+        const cleanLabel = String(value || '').trim().toLowerCase();
+        return cleanLabel === "warden's standard" || cleanLabel === "warden's standard vanguard";
+    };
+
+    const vanguardReadinessCount = safeParseArray(vanguardBadges).filter(isReadinessBadge).length;
+    const campaignReadinessCount = safeParseArray(campaignBadgeTypes).filter(isReadinessBadge).length;
+
+    return {
+        count: vanguardReadinessCount > 0 ? vanguardReadinessCount : campaignReadinessCount,
+        hasVanguard: vanguardReadinessCount > 0,
+        title: vanguardReadinessCount > 0
+            ? "Warden's Standard Vanguard: top 3 active raid-ready profiles by equipped item level."
+            : "Warden's Standard: maintained active raid-ready status this week."
+    };
+}
+
 function formatReadinessDisplayName(name) {
     return String(name || '')
         .trim()
@@ -1266,6 +1287,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (classList.contains('badge-war-hks') || classList.contains('c-badge-weekly-hks') || classList.contains('tt-badge-weekly-hks')) return 'hks';
         if (classList.contains('badge-war-loot') || classList.contains('c-badge-weekly-loot') || classList.contains('tt-badge-weekly-loot')) return 'loot';
         if (classList.contains('badge-war-zenith') || classList.contains('c-badge-weekly-zenith') || classList.contains('tt-badge-weekly-zenith')) return 'zenith';
+        if (classList.contains('badge-war-readiness') || classList.contains('c-badge-weekly-readiness') || classList.contains('tt-badge-weekly-readiness')) return 'readiness';
 
         return 'default';
     }
@@ -3424,6 +3446,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const hksCount = campaignBadgeTypes.filter(type => type === 'hks').length;
                 const lootCount = campaignBadgeTypes.filter(type => type === 'loot').length;
                 const zenithCount = campaignBadgeTypes.filter(type => type === 'zenith').length;
+                const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);
                 const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count || deepChar.pve_champ_count) || 0;
                 const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count || deepChar.pvp_champ_count) || 0;
                 const pveGold = parseInt(p.pve_gold || char.pve_gold || deepChar.pve_gold) || 0;
@@ -3452,6 +3475,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 if (pvpChamp > 0) awardsAttr.push('mvp_pvp');
                 if (vCount > 0) awardsAttr.push('vanguard');
                 if (cCount > 0) awardsAttr.push('campaign');
+                if (readinessState.count > 0) awardsAttr.push('readiness');
 
                 const tXp = getDetailedBadgeTooltip(p.name, ['xp'], `${xpCount}x Hero's Journey`, xpCount);
                 const tHks = getDetailedBadgeTooltip(p.name, ['hks', 'hk'], `${hksCount}x Blood of the Enemy`, hksCount);
@@ -3587,6 +3611,19 @@ window.addEventListener('DOMContentLoaded', async () => {
                         text: `${DASHBOARD_BADGE_ICONS.lightning} ${zenithCount}`,
                         title: tZenith,
                         classNames: ['c-badge-pill', 'c-badge-weekly-zenith']
+                    });
+                }
+
+                if (readinessState.count > 0) {
+                    conciseBadges.push({
+                        text: `${DASHBOARD_BADGE_ICONS.readiness} ${readinessState.count}`,
+                        title: getDetailedBadgeTooltip(
+                            p.name,
+                            ['readiness'],
+                            readinessState.title,
+                            readinessState.count
+                        ),
+                        classNames: ['c-badge-pill', 'c-badge-weekly-readiness']
                     });
                 }
 
@@ -4048,6 +4085,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const hksCount = campaignBadgeTypes.filter(type => type === 'hks').length;
                 const lootCount = campaignBadgeTypes.filter(type => type === 'loot').length;
                 const zenithCount = campaignBadgeTypes.filter(type => type === 'zenith').length;
+                const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);
                 const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count) || 0;
                 const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count) || 0;
                 const pveGold = parseInt(p.pve_gold || char.pve_gold) || 0;
@@ -4073,6 +4111,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const tHks = getDetailedBadgeTooltip(p.name, ['hks', 'hk'], `${hksCount}x Blood of the Enemy`, hksCount);
                 const tLoot = getDetailedBadgeTooltip(p.name, ['loot'], `${lootCount}x Dragon's Hoard`, lootCount);
                 const tZenith = getDetailedBadgeTooltip(p.name, ['zenith'], `${zenithCount}x The Zenith Cohort`, zenithCount);
+                const tReadiness = getDetailedBadgeTooltip(p.name, ['readiness'], readinessState.title, readinessState.count);
 
                 tooltip.innerHTML = '';
                 const template = document.getElementById('tpl-char-tooltip');
@@ -4109,6 +4148,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                     addBadge(hksCount, tHks, 'tt-badge-weekly-hks', DASHBOARD_BADGE_ICONS.blood);
                     addBadge(lootCount, tLoot, 'tt-badge-weekly-loot', DASHBOARD_BADGE_ICONS.dragon);
                     addBadge(zenithCount, tZenith, 'tt-badge-weekly-zenith', DASHBOARD_BADGE_ICONS.lightning);
+                    addBadge(readinessState.count, tReadiness, 'tt-badge-weekly-readiness', DASHBOARD_BADGE_ICONS.readiness);
                     
                     clone.querySelector('.tooltip-guild-rank').textContent = guildRank;
                     clone.querySelector('.tooltip-level-race').textContent = `${p.level || 0} / ${raceName}`;
