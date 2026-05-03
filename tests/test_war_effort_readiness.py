@@ -11,11 +11,18 @@ NOW_MS = 1_725_000_000_000
 DAY_MS = 24 * 60 * 60 * 1000
 
 
-def make_equipped(slot_keys=None, include_shirt=True, include_tabard=True, extra_metadata=None):
+def make_equipped(
+    slot_keys=None,
+    include_shirt=True,
+    include_tabard=True,
+    extra_metadata=None,
+    slot_key_transform=None,
+):
     equipped = {}
     slot_keys = slot_keys or READINESS_COMBAT_SLOT_KEYS
     for index, slot_key in enumerate(slot_keys):
-        equipped[slot_key] = {"item_id": 10_000 + index}
+        key = slot_key_transform(slot_key) if slot_key_transform else slot_key
+        equipped[key] = {"item_id": 10_000 + index}
 
     if include_shirt:
         equipped["shirt"] = {"item_id": 20_000}
@@ -40,6 +47,7 @@ def make_character(
     include_equipped=True,
     extra_profile=None,
     extra_equipped=None,
+    slot_key_transform=None,
 ):
     character = {"char": name.lower()}
 
@@ -60,6 +68,7 @@ def make_character(
             include_shirt=include_shirt,
             include_tabard=include_tabard,
             extra_metadata=extra_equipped,
+            slot_key_transform=slot_key_transform,
         )
 
     return character
@@ -117,6 +126,32 @@ class WarEffortReadinessTests(unittest.TestCase):
         self.assertNotIn("notenoughgear", state["participants"])
         self.assertNotIn("missingprofile", state["participants"])
         self.assertNotIn("missingequipment", state["participants"])
+
+    def test_readiness_accepts_normalized_current_gear_slots_and_rejects_href_only_profile_equipment(self):
+        roster = [
+            make_character(
+                "UppercaseGear",
+                slot_key_transform=str.upper,
+            ),
+            make_character(
+                "HrefOnlyProfileEquipment",
+                include_equipped=False,
+                extra_profile={"equipped": {"href": "https://example.invalid/equipment"}},
+            ),
+            make_character(
+                "MissingOneUppercase",
+                combat_slots=16,
+                slot_key_transform=str.upper,
+            ),
+        ]
+
+        state = build_readiness_week_state(roster, {row["char"] for row in roster}, now_ms=NOW_MS)
+
+        self.assertIn("uppercasegear", state["participants"])
+        self.assertNotIn("hrefonlyprofileequipment", state["participants"])
+        self.assertNotIn("missingoneuppercase", state["participants"])
+        self.assertEqual(state["participant_count"], 1)
+        self.assertEqual(state["vanguards"], ["uppercasegear"])
 
     def test_extra_metadata_dicts_do_not_increase_combat_slot_count(self):
         roster = [

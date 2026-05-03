@@ -1,6 +1,7 @@
 import json
 import math
 import os
+import re
 from datetime import datetime, timedelta, timezone
 
 
@@ -34,6 +35,39 @@ READINESS_COMBAT_SLOT_KEYS = (
     "ranged",
 )
 READINESS_COMBAT_SLOT_SET = set(READINESS_COMBAT_SLOT_KEYS)
+READINESS_COMBAT_SLOT_ID_MAP = {
+    1: "head",
+    2: "neck",
+    3: "shoulder",
+    4: "shirt",
+    5: "chest",
+    6: "waist",
+    7: "legs",
+    8: "feet",
+    9: "wrist",
+    10: "hands",
+    11: "finger_1",
+    12: "finger_2",
+    13: "trinket_1",
+    14: "trinket_2",
+    15: "back",
+    16: "main_hand",
+    17: "off_hand",
+    18: "ranged",
+    19: "tabard",
+}
+READINESS_COMBAT_SLOT_ALIAS_MAP = {
+    "shoulders": "shoulder",
+    "wrists": "wrist",
+    "mainhand": "main_hand",
+    "offhand": "off_hand",
+    "finger1": "finger_1",
+    "finger2": "finger_2",
+    "trinket1": "trinket_1",
+    "trinket2": "trinket_2",
+}
+for _slot_key in READINESS_COMBAT_SLOT_KEYS:
+    READINESS_COMBAT_SLOT_ALIAS_MAP[re.sub(r"[^a-z0-9]+", "", _slot_key.lower())] = _slot_key
 
 
 def _clean_int(value, default=0):
@@ -56,14 +90,44 @@ def _parse_timestamp_ms(value):
 
 
 def _count_combat_equipment_slots(equipped):
-    if not isinstance(equipped, dict):
+    normalized_equipped = _normalize_readiness_equipped_slots(equipped)
+    if not normalized_equipped:
         return 0
 
-    return sum(
-        1
-        for slot_name in READINESS_COMBAT_SLOT_KEYS
-        if isinstance(equipped.get(slot_name), dict)
-    )
+    return len(normalized_equipped)
+
+
+def _normalize_readiness_slot_name(raw_slot_name):
+    if isinstance(raw_slot_name, bool):
+        return None
+
+    if isinstance(raw_slot_name, int):
+        return READINESS_COMBAT_SLOT_ID_MAP.get(raw_slot_name)
+
+    raw_text = str(raw_slot_name or "").strip()
+    if not raw_text:
+        return None
+
+    if raw_text.isdigit():
+        return READINESS_COMBAT_SLOT_ID_MAP.get(int(raw_text))
+
+    normalized = re.sub(r"[^a-z0-9]+", "", raw_text.lower())
+    return READINESS_COMBAT_SLOT_ALIAS_MAP.get(normalized)
+
+
+def _normalize_readiness_equipped_slots(equipped):
+    if not isinstance(equipped, dict):
+        return {}
+
+    normalized_equipped = {}
+    for raw_slot_name, item in equipped.items():
+        slot_name = _normalize_readiness_slot_name(raw_slot_name)
+        if not slot_name or slot_name not in READINESS_COMBAT_SLOT_SET:
+            continue
+        if isinstance(item, dict):
+            normalized_equipped[slot_name] = item
+
+    return normalized_equipped
 
 
 def _get_character_roster_name(character):
@@ -79,7 +143,23 @@ def _get_character_profile_and_equipped(character):
         return {}, {}
 
     profile = character.get("profile") if isinstance(character.get("profile"), dict) else {}
-    equipped = character.get("equipped") if isinstance(character.get("equipped"), dict) else {}
+    equipped_candidates = []
+    for key in ("equipped", "gear", "current_gear", "equipment"):
+        candidate = character.get(key)
+        if isinstance(candidate, dict):
+            equipped_candidates.append(candidate)
+
+    profile_equipped = profile.get("equipped") if isinstance(profile.get("equipped"), dict) else {}
+    if profile_equipped:
+        equipped_candidates.append(profile_equipped)
+
+    equipped = {}
+    for candidate in equipped_candidates:
+        normalized = _normalize_readiness_equipped_slots(candidate)
+        if normalized:
+            equipped = normalized
+            break
+
     return profile, equipped
 
 
