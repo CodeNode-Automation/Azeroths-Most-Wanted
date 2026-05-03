@@ -27,6 +27,7 @@ function getHallOfHeroesEntry(char, isRawMode = false) {
     const hksCount = weeklyBadgeTypes.filter(type => type === 'hks').length;
     const lootCount = weeklyBadgeTypes.filter(type => type === 'loot').length;
     const zenithCount = weeklyBadgeTypes.filter(type => type === 'zenith').length;
+    const readinessCount = weeklyBadgeTypes.filter(type => type === 'readiness').length;
 
     const pveChamp = parseInt(profile.pve_champ_count || source?.pve_champ_count) || 0;
     const pvpChamp = parseInt(profile.pvp_champ_count || source?.pvp_champ_count) || 0;
@@ -54,6 +55,7 @@ function getHallOfHeroesEntry(char, isRawMode = false) {
     if (hksCount > 0) awards.push('hks');
     if (lootCount > 0) awards.push('loot');
     if (zenithCount > 0) awards.push('zenith');
+    if (readinessCount > 0) awards.push('readiness');
     if (pveGold > 0) awards.push('pve_gold');
     if (pveSilver > 0) awards.push('pve_silver');
     if (pveBronze > 0) awards.push('pve_bronze');
@@ -81,6 +83,7 @@ function getHallOfHeroesEntry(char, isRawMode = false) {
         hasHks: hksCount > 0,
         hasLoot: lootCount > 0,
         hasZenith: zenithCount > 0,
+        hasReadiness: readinessCount > 0,
         hasMvp: championCount > 0,
         hasReigning: isPveReigning || isPvpReigning,
         hasPveMedal: pveMedals > 0,
@@ -144,6 +147,7 @@ function getHallOfHeroesSnapshot(profile, source = null) {
     const vBadges = safeParseArray(profile.vanguard_badges || source?.vanguard_badges);
     const cBadges = safeParseArray(profile.campaign_badges || source?.campaign_badges);
     const weeklyBadgeTypes = [...vBadges, ...cBadges].map(normalizeHallOfHeroesBadgeType);
+    const readinessCount = weeklyBadgeTypes.filter(type => type === 'readiness').length;
 
     const pveChamp = parseInt(profile.pve_champ_count || source?.pve_champ_count) || 0;
     const pvpChamp = parseInt(profile.pvp_champ_count || source?.pvp_champ_count) || 0;
@@ -184,6 +188,7 @@ function getHallOfHeroesSnapshot(profile, source = null) {
         hasHks: weeklyBadgeTypes.includes('hks'),
         hasLoot: weeklyBadgeTypes.includes('loot'),
         hasZenith: weeklyBadgeTypes.includes('zenith'),
+        hasReadiness: readinessCount > 0,
         hasMvp: (pveChamp + pvpChamp) > 0,
         hasReigning: isPveReigning || isPvpReigning,
         hasPveMedal: pveMedals > 0,
@@ -232,11 +237,12 @@ function getHallOfHeroesConfig(characters, isRawRoster = false) {
         ],
         bandItems: [
             { kicker: 'Archive Roll', value: 'All Heroes', meta: `${snapshots.length.toLocaleString()} decorated names are recorded in the archive.`, filterKey: 'honor', filterValue: 'all' },
-            { kicker: 'War Effort', value: "Hero's Journey", meta: `${filterCount(snapshot => snapshot.hasXp).toLocaleString()} heroes carry leveling marks from the weekly push.`, filterKey: 'honor', filterValue: 'xp' },
-            { kicker: 'War Effort', value: 'Blood of the Enemy', meta: `${filterCount(snapshot => snapshot.hasHks).toLocaleString()} heroes are marked for PvP bloodshed this cycle.`, filterKey: 'honor', filterValue: 'hks' },
-            { kicker: 'War Effort', value: "Dragon's Hoard", meta: `${filterCount(snapshot => snapshot.hasLoot).toLocaleString()} heroes are stamped by epic spoils.`, filterKey: 'honor', filterValue: 'loot' },
-            { kicker: 'War Effort', value: 'The Zenith Cohort', meta: `${filterCount(snapshot => snapshot.hasZenith).toLocaleString()} heroes reached the summit and entered the cohort.`, filterKey: 'honor', filterValue: 'zenith' },
-            { kicker: 'Champion Crowns', value: 'Weekly MVPs', meta: `${filterCount(snapshot => snapshot.hasMvp).toLocaleString()} heroes have been crowned by weekly MVP honors.`, filterKey: 'honor', filterValue: 'mvp' },
+        { kicker: 'War Effort', value: "Hero's Journey", meta: `${filterCount(snapshot => snapshot.hasXp).toLocaleString()} heroes carry leveling marks from the weekly push.`, filterKey: 'honor', filterValue: 'xp' },
+        { kicker: 'War Effort', value: 'Blood of the Enemy', meta: `${filterCount(snapshot => snapshot.hasHks).toLocaleString()} heroes are marked for PvP bloodshed this cycle.`, filterKey: 'honor', filterValue: 'hks' },
+        { kicker: 'War Effort', value: "Dragon's Hoard", meta: `${filterCount(snapshot => snapshot.hasLoot).toLocaleString()} heroes are stamped by epic spoils.`, filterKey: 'honor', filterValue: 'loot' },
+        { kicker: 'War Effort', value: 'The Zenith Cohort', meta: `${filterCount(snapshot => snapshot.hasZenith).toLocaleString()} heroes reached the summit and entered the cohort.`, filterKey: 'honor', filterValue: 'zenith' },
+        { kicker: 'War Effort', value: "Warden's Standard", meta: `${filterCount(snapshot => snapshot.hasReadiness).toLocaleString()} heroes maintained deployable readiness this cycle.`, filterKey: 'honor', filterValue: 'readiness' },
+        { kicker: 'Champion Crowns', value: 'Weekly MVPs', meta: `${filterCount(snapshot => snapshot.hasMvp).toLocaleString()} heroes have been crowned by weekly MVP honors.`, filterKey: 'honor', filterValue: 'mvp' },
             { kicker: 'Champion Crowns', value: 'Reigning Champions', meta: `${reigningCount.toLocaleString()} current title holders still sit on the throne.`, filterKey: 'honor', filterValue: 'reigning' },
             { kicker: 'Ladder Medals', value: 'PvE Medalists', meta: `${filterCount(snapshot => snapshot.hasPveMedal).toLocaleString()} raiders hold PvE podium medals.`, filterKey: 'honor', filterValue: 'ladder_pve' },
             { kicker: 'Ladder Medals', value: 'PvP Medalists', meta: `${filterCount(snapshot => snapshot.hasPvpMedal).toLocaleString()} duelists hold PvP podium medals.`, filterKey: 'honor', filterValue: 'ladder_pvp' },
@@ -312,6 +318,7 @@ function applyHallOfHeroesCardDataset(cardEl, entry) {
     if (entry.snapshot.hasHks) awards.push('hks');
     if (entry.snapshot.hasLoot) awards.push('loot');
     if (entry.snapshot.hasZenith) awards.push('zenith');
+    if (entry.snapshot.hasReadiness) awards.push('readiness');
     if (entry.snapshot.hasMvp) awards.push('mvp_pve', 'mvp_pvp');
     if (entry.snapshot.hasPveMedal) awards.push('pve_gold', 'pve_silver', 'pve_bronze');
     if (entry.snapshot.hasPvpMedal) awards.push('pvp_gold', 'pvp_silver', 'pvp_bronze');
