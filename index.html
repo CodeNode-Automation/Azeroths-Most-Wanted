@@ -1936,6 +1936,10 @@ a,
   border-color: rgba(255, 225, 106, 0.24);
 }
 
+.char-card-commendation-footprint-readiness {
+  border-color: rgba(143, 240, 195, 0.24);
+}
+
 
 /* Character dossier route shells */
 body[data-route-family="character"]::before {
@@ -2565,6 +2569,12 @@ body[data-route-family="character"] .timeline-container.timeline-character-dossi
   background: rgba(255, 225, 106, 0.2);
   border-color: rgba(255, 225, 106, 0.45);
   color: #ffe16a;
+}
+
+.tt-badge-weekly-readiness {
+  background: rgba(143, 240, 195, 0.2);
+  border-color: rgba(143, 240, 195, 0.45);
+  color: #8ff0c3;
 }
 .tooltip-guild-rank {
   color: #ffd100;
@@ -4464,6 +4474,23 @@ body[data-route="war-effort-zenith"]::before {
   box-shadow:
     0 22px 40px rgba(0, 0, 0, 0.48),
     inset 0 0 28px rgba(255, 209, 0, 0.07);
+}
+
+@media (min-width: 1025px) {
+  .home-war-effort-section .weekly-challenges-flex-container > .war-effort-home-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: 100%;
+    max-width: calc((100% - 22px) / 2);
+  }
+
+  .war-effort-shell-readiness .war-effort-info-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .war-effort-shell-readiness .war-effort-info-band > .campaign-archive-grid-war-effort {
+    grid-column: 1 / -1;
+  }
 }
 
 .war-effort-home-card-xp {
@@ -10671,6 +10698,12 @@ body.nav-menu-open {
   background: rgba(255, 225, 106, 0.14);
   border-color: rgba(255, 225, 106, 0.36);
   color: #ffe16a;
+}
+
+.c-badge-weekly-readiness {
+  background: rgba(143, 240, 195, 0.14);
+  border-color: rgba(143, 240, 195, 0.36);
+  color: #8ff0c3;
 }
 
 .c-badge-weekly-xp {
@@ -17417,6 +17450,7 @@ body[data-route-family="character"] {
                             <a href="#war-effort-hk" class="nav-dropdown-link">🩸 Blood of the Enemy</a>
                             <a href="#war-effort-loot" class="nav-dropdown-link">🐉 Dragon's Hoard</a>
                             <a href="#war-effort-zenith" class="nav-dropdown-link">⚡ The Zenith Cohort</a>
+                            <a href="#war-effort-readiness" class="nav-dropdown-link">🏰 Warden's Standard</a>
                         </div>
                     </div>
                     
@@ -17435,6 +17469,7 @@ body[data-route-family="character"] {
                     <a href="#war-effort-hk" class="nav-btn nav-btn-route" data-nav-target="war-effort">🩸 Blood of the Enemy</a>
                     <a href="#war-effort-loot" class="nav-btn nav-btn-route" data-nav-target="war-effort">🐉 Dragon's Hoard</a>
                     <a href="#war-effort-zenith" class="nav-btn nav-btn-route" data-nav-target="war-effort">⚡ The Zenith Cohort</a>
+                    <a href="#war-effort-readiness" class="nav-btn nav-btn-route" data-nav-target="war-effort">🏰 Warden's Standard</a>
                     <a href="#badges" class="nav-btn nav-btn-route hall-of-heroes-btn" data-nav-target="badges">🌟 Hall of Heroes</a>
 
                     <div class="nav-section-header">GUILD DATA</div>
@@ -17622,7 +17657,7 @@ body[data-route-family="character"] {
                     <div class="home-section-heading home-section-heading-compact home-roster-intelligence-heading">
                         <h3 class="home-section-title">Roster Intelligence</h3>
                         <p class="home-section-subtitle">Movement, recent changes, and officer health from the latest guild snapshot.</p>
-                        <p id="home-roster-intelligence-sync" class="home-roster-intelligence-sync">Dashboard built: 03.05.2026 16:01 Uhr (CET/CEST)</p>
+                        <p id="home-roster-intelligence-sync" class="home-roster-intelligence-sync">Dashboard built: 03.05.2026 16:19 Uhr (CET/CEST)</p>
                     </div>
 
                     <div id="home-movement-card" class="home-movement-card" role="note" aria-labelledby="home-movement-title">
@@ -17666,7 +17701,7 @@ body[data-route-family="character"] {
                                 <div class="weekly-challenges-head">
                                     <div>
                                         <h3 class="weekly-challenges-title">⚔️ Guild Campaign Objectives ⚔️</h3>
-                                        <p class="weekly-challenges-subtitle">A stronger weekly push for leveling, battleground pressure, trophy pulls, and the race to level 70.</p>
+                                        <p class="weekly-challenges-subtitle">A stronger weekly push for leveling, battleground pressure, trophy pulls, raid readiness, and the race to level 70.</p>
                                     </div>
                                     <div class="weekly-challenges-countdown-pill">
                                         <span class="weekly-challenges-countdown-label">Reset in</span>
@@ -17752,6 +17787,27 @@ body[data-route-family="character"] {
                                         </div>
                                         <div class="war-effort-home-card-footer">
                                             <span id="guild-zenith-leader" class="war-effort-home-card-leader">Needs progress • Progress: 0 / 5 members</span>
+                                        </div>
+                                    </article>
+
+                                    <article class="war-effort-home-card war-effort-home-card-readiness">
+                                        <div class="challenge-header challenge-header-readiness">
+                                            <span id="guild-readiness-kicker" class="war-effort-home-card-kicker">Warden's Standard</span>
+                                            <span id="guild-readiness-tooltip-trigger" class="war-effort-link challenge-link">Open campaign board ➔</span>
+                                        </div>
+                                        <h4 class="war-effort-home-card-title">Active raid-ready pressure</h4>
+                                        <p id="guild-readiness-summary" class="war-effort-home-card-summary">Target: maintain 70% of the active raid-ready roster at weekly reset.</p>
+                                        <p id="guild-readiness-meta" class="war-effort-home-card-summary">Weekly lock waiting for readiness data.</p>
+                                        <div class="challenge-bar-bg war-effort-home-track">
+                                            <div id="guild-readiness-fill" class="progress-bar-glow challenge-fill"></div>
+                                            <div class="challenge-glare"></div>
+                                            <div class="challenge-tick tick-25"></div>
+                                            <div class="challenge-tick tick-50"></div>
+                                            <div class="challenge-tick tick-75"></div>
+                                            <div id="guild-readiness-text" class="challenge-text">Progress: 0 / 0 participants</div>
+                                        </div>
+                                        <div class="war-effort-home-card-footer">
+                                            <span id="guild-readiness-leader" class="war-effort-home-card-leader">No active raid-ready characters were available this week.</span>
                                         </div>
                                     </article>
                                 </div>
@@ -18750,10 +18806,10 @@ body[data-route-family="character"] {
     </div>
 
     <script id="dashboard-config" type="application/json">
-        {"last_updated": "2026-05-03T14:01:35.082554Z", "total_members": 657, "total_members_mains": 625, "active_14_days": 258, "active_14_days_mains": 245, "raid_ready_count": 23, "raid_ready_count_mains": 23, "avg_ilvl_70": 107, "avg_ilvl_70_mains": 107, "global_trends": {"trend_total": 0, "trend_active": 0, "trend_ready": 0, "trend_total_mains": 0, "trend_active_mains": 0, "trend_ready_mains": 0, "total_members": 657, "previous_total_members": 657}, "prev_mvps": {"pve": {"name": "shambeenie", "score": 25}, "pvp": {"name": "romisterio", "score": 352}}, "campaign_archive": {"weeks": [{"week_anchor": "2026-04-28", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["ancey", "sleipnerr", "shambeenie", "agioserotas", "baldurinus", "avotear", "cairlecus", "sildow", "cursedface", "kaivelle", "spacemedic", "chikay", "shmiquel", "anantios", "matechile", "moonola", "christah", "lathinus", "mumpithz", "gylletanken", "portalpan", "ironminer", "abete", "cennoreth", "heterjaglnur", "maikle", "tovanier", "veelilah", "ethreel", "rinette", "marfic", "alhanna", "kr\u00e9me", "matsumu", "sikapala", "sikasham", "elroq", "prska", "ayuri", "slid\u00e9", "yeyeayeah", "manalover", "midser", "trhorn", "gofuko", "schurgee", "redforkbeard", "jeslana", "vanbaer", "pearicetea", "waaldrin", "huglada", "greatives", "pur\u00eety", "claycassius", "cyrithis", "beligucimane", "n\u00e9rolas", "sousedka", "frauwd", "j\u00e0ckaustin", "unclesmilk", "praxeos", "eliseraf", "roastpiglet", "ardonus", "corrwin", "swaarley", "shingles", "felixyung", "labanta", "besquinn", "conpin", "onslo", "tamegmed", "r\u00f6m\u00ef", "robinthefox", "hanselaura", "arm\u00e3kuni"], "participant_count": 79}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": [], "participants": ["ironminer", "unslopable", "moonola", "tovanier", "chikay", "kaivelle"], "participant_count": 6}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["unslopable", "visucius", "lockro", "anklecleaver", "anantios", "baldurinus", "jogonwar", "aregos", "gnomusblasus", "mikaelion", "matechile"], "participant_count": 11}], "reigning_titles": [], "ladder": {"pve": [], "pvp": []}, "war_effort_entry_count": 3, "ladder_entry_count": 0, "reigning_entry_count": 0}, {"week_anchor": "2026-04-21", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["beligucimane", "sildow", "dragansaban", "veelilah", "anakius", "arm\u00e3kuni", "conpin", "chikay", "anantios", "n\u00e9rolas", "huglada", "hanselaura", "moonola", "roastpiglet", "besquinn", "unslopable", "yeyeayeah", "kinila", "ironminer", "bonkonyou", "tamegmed", "schurgee", "abete", "majky", "cyrithis", "vzh", "felixyung", "labanta", "baddock", "rinette", "eliseraf", "maikle", "cositank", "sikasham", "christah", "cennoreth", "elroq", "lautna", "slid\u00e9", "cursedface", "mageius", "maius", "ethreel", "misstemult", "becrux", "heavendot", "sparr\u00f4w", "candressa", "lowelheim", "drazei", "tovanier", "baldurinus", "j\u00e0ckaustin", "lathinus", "midser", "sleipnerr", "varkie", "spacemedic", "trhorn", "kaivelle", "pointiear", "smallpea", "heterjaglnur", "praxeos", "pearicetea", "greatives", "ziraknar\u00e2g", "tankpan", "firnessa", "onslo", "kr\u00e9me", "kl\u00e9ryk", "mescalito", "herrencrem\u00e9", "shambeenie", "kkohkris", "creepew", "jacquie", "silzard", "cairlecus", "corrwin", "murderrose", "neolyte", "neoflayme", "robinthefox", "marfic", "chim\u00e1y", "geilgeilgeil", "unclesmilk", "gr\u00e9giud", "dugallis", "rensen", "el\u00f8mer", "alhanna", "bigchill", "ardiano", "k\u00eengmemos", "kohkris", "sikapala", "matechile", "r\u00fcg", "narshal", "portalpan", "asheess", "elfelya", "redforkbeard", "authlas", "aregos", "prska", "gylletanken", "mavverick", "ravas", "elunida", "frauwd"], "participant_count": 114}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["romisterio", "lockro"], "participants": ["aregos", "romisterio", "lockro", "murphii", "gnomusblasus", "anklecleaver", "culoloco", "ironminer", "moonola", "conpin"], "participant_count": 10}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["veelilah", "whitefight", "romisterio", "tovanier", "chim\u00e1y", "petruzkii", "jogonwar", "murphii", "lockro", "lennier", "baldurinus", "anklecleaver", "kultapoju", "mikaelion", "jalozin", "gnomusblasus", "gnokedli", "culoloco", "aregos", "moonola"], "participant_count": 20}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["aregos", "authlas", "elfelya", "chim\u00e1y", "mescalito", "smallpea", "unslopable"], "participant_count": 7}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "shambeenie", "score": 25}, {"category": "pvp", "label": "PvP", "champion": "romisterio", "score": 352}], "ladder": {"pve": [{"rank": 1, "champion": "culoloco", "score": 116}, {"rank": 2, "champion": "pipogya", "score": 116}, {"rank": 3, "champion": "jalozin", "score": 115}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 6, "reigning_entry_count": 2}, {"week_anchor": "2026-04-14", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["neolyte", "matechile", "moonola", "corrwin", "yeyeayeah", "tamegmed", "vzh", "hawksy", "kr\u00e9me", "veelilah", "neoflayme", "mescalito", "sildow", "anakius", "n\u00e9rolas", "mageius", "asheess", "elunida", "baddock", "hanselaura", "portalpan", "kaivelle", "muthapharma", "visucius", "sikasham", "heterjaglnur", "j\u00e0ckaustin", "aregos", "felixyung", "labanta", "authlas", "narshal", "bigchill", "majky", "vanbaer", "tanaqui", "murderrose", "el\u00f8mer", "shambeenie", "silzard", "sleipnerr", "geilgeilgeil", "ethreel", "conpin", "mord\u00e1k", "besquinn", "cyrithis", "rinette", "varkie", "ziraknar\u00e2g", "slid\u00e9", "lathinus", "synthhr", "unslopable", "pewtah", "marl\u00e4n", "tovanier", "huglada", "varallion", "drazei", "marfic", "schurgee", "midser", "shelidoni", "erenyah", "shingles", "lautna", "ravas", "unclesmilk", "elfelya", "nacht\u00f6lfin", "thorrison", "weck\u00f8", "herrencrem\u00e9", "uncleurkle", "chikay", "mauldarth", "claycassius", "onslo", "beeravergina", "wetmetter", "zorciah", "redforkbeard", "elroq", "romisterio", "ironminer", "sousedka", "murphii", "alhanna", "bonkonyou", "cursedface", "yd\u00fara", "kohnina", "ir\u00falan", "creepew", "cairlecus", "cosimendes", "jeslana", "dialectic", "mavverick", "jackspicer", "dugallis", "takadoss", "sikapala", "spacemedic", "kelliahs", "anwy", "cennoreth", "r\u00e5uger", "de\u00e4deater", "histarael", "candressa", "cocobear", "allze", "azylum", "fulldverg", "christah", "ayuri", "peytr", "eliseraf"], "participant_count": 120}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["lockro", "murphii"], "participants": ["aregos", "romisterio", "lockro", "murphii", "lautna", "de\u00e4deater", "ravas", "gnomusblasus", "marfic", "culoloco", "uncleurkle", "dialectic", "sousedka", "ironminer", "unslopable", "moonola"], "participant_count": 16}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["whitefight", "matechile", "romisterio", "jalozin", "sedrev", "kultapoju", "kr\u00e9me", "pipogya", "aregos", "gnomusblasus", "culoloco", "mikaelion", "elunida", "gabbriello"], "participant_count": 14}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["cocobear", "dialectic", "cosimendes", "murphii", "romisterio", "uncleurkle", "marl\u00e4n", "visucius"], "participant_count": 8}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "claycassius", "score": 40}, {"category": "pvp", "label": "PvP", "champion": "lockro", "score": 257}], "ladder": {"pve": [{"rank": 1, "champion": "culoloco", "score": 116}, {"rank": 2, "champion": "pipogya", "score": 116}, {"rank": 3, "champion": "gnomusblasus", "score": 113}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 6, "reigning_entry_count": 2}, {"week_anchor": "2026-04-07", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["shambeenie", "moonola", "allze", "candressa", "cairlecus", "el\u00f8mer", "romisterio", "histarael", "tovanier", "matechile", "dugallis", "aodheriel", "slid\u00e9", "synthhie", "varallion", "kaivelle", "ethreel", "marl\u00e4n", "veelilah", "baddock", "sousedka", "elfelya", "vanbaer", "drazei", "wetmetter", "anakius", "shelidoni", "ayuri", "heavenleigh", "narshal", "besquinn", "cyrithis", "avotear", "bigchill", "onslo", "yeyeayeah", "heavenlo", "lathinus", "authlas", "midser", "silzard", "murderrose", "uncleurkle", "elunida", "cennoreth", "creepew", "corrwin", "herrencrem\u00e9", "visucius", "mavverick", "rensen", "mageius", "asheess", "peytr", "ziraknar\u00e2g", "elroq", "aregos", "sikapala", "frauwd", "heterjaglnur", "chikay", "unslopable", "christah", "kr\u00e9me", "cocobear", "tamegmed", "schurgee", "majky", "de\u00e4deater", "schnapsbarti", "goyathlay", "claycassius", "dialectic", "lautna", "saadnuga", "shinuko", "geilgeilgeil", "shazahm", "lockro", "becrux", "manalover", "varkie", "tankpan", "akhiles", "zorciah", "kohninah", "sikasham", "malifrizider", "kkohkris", "ironminer", "kultapoju", "pearicetea", "greatives", "padussy", "rinette", "murphii", "weck\u00f8", "neolyte", "neoflayme", "gongles", "conpin", "ir\u00falan", "huglada", "takadoss", "alhanna", "griee", "conviction", "marfic", "svimen", "mescalito", "huntpan", "swaarley", "r\u00e5uger", "ardiano", "solrye", "arm\u00e3kuni", "ravas", "hawksy", "soales", "primadonnali", "anwy", "funniermonke", "emrian", "elsberg", "firnessa", "nieznanys", "mikaelion", "j\u00e0ckaustin", "jackspicer", "eliseraf", "rayr", "huunterz", "lotomba", "yd\u00fara", "vzh", "roastpiglet", "pur\u00eety", "kelliahs", "mord\u00e1k", "veelock", "steverwin", "n\u00e9rolas", "portalpan", "missrog", "rapyz", "cursedface", "sikagnome", "praxeos", "nacht\u00f6lfin", "mauldarth", "raindropplet", "jacquie", "robinthefox"], "participant_count": 153}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["nelfas"], "participants": ["aregos", "slid\u00e9", "svimen", "de\u00e4deater", "nelfas", "ravas", "elroq", "elsberg", "culoloco", "elfelya", "candressa", "unslopable", "conpin", "anakius", "rayr", "jackspicer"], "participant_count": 16}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["culoloco", "jalozin", "aregos", "pipogya", "petruzkii", "lennier", "gnomusblasus", "nelfas", "dugallis", "ahzrael", "whitefight"], "participant_count": 11}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": ["missrog", "steverwin"], "participants": ["missrog", "steverwin", "mikaelion", "kultapoju", "lockro", "shinuko", "heavenlo", "heavenleigh", "synthhie"], "participant_count": 9}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "kultapoju", "score": 81}], "ladder": {"pve": [{"rank": 2, "champion": "culoloco", "score": 115}, {"rank": 3, "champion": "pipogya", "score": 115}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 5, "reigning_entry_count": 1}, {"week_anchor": "2026-03-31", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": ["arm\u00e3kuni", "shambeenie"], "participants": ["avotear", "padussy", "toxeris", "vzh", "vanbaer", "pearicetea", "dugallis", "sqishy", "r\u00e5uger", "murderrose", "varallion", "mageius", "cennoreth", "ethreel", "rayr", "besquinn", "ironminer", "marl\u00e4n", "jaade", "patogoat", "lotomba", "shelidoni", "saadnuga", "claycassius", "yd\u00fara", "drazei", "ir\u00falan", "chikay", "creepew", "bigchill", "midser", "elunida", "romisterio", "roastpiglet", "yeyeayeah", "jackspicer", "j\u00e0ckaustin", "veelock", "marfic", "weck\u00f8", "herrencrem\u00e9", "anakius", "onslo", "robinthefox", "griee", "paisioss", "elsberg", "murphii", "firnessa", "varkie", "tamegmed", "duckmanpet", "peytr", "asheess", "shambeenie", "silzard", "zyphari", "portalpan", "christah", "histarael", "cairlecus", "visucius", "noordraak", "unslopable", "sikagnome", "gofuko", "emrian", "erenyah", "lautna", "swaarley", "takadoss", "malifrizider", "steverwin", "mikaelion", "allze", "eliseraf", "elfelya", "ziraknar\u00e2g", "el\u00f8mer", "kelliahs", "ardiano", "spacemedic", "heterjaglnur", "rinette", "sedrev", "huntpan", "matechile", "frauwd", "lockro", "lathinus", "huglada", "tovanier", "majky", "candressa", "missrog", "cursedface", "arm\u00e3kuni", "lowelheim", "nacht\u00f6lfin", "conpin", "rubyone", "heavenlo", "mavverick", "raindropplet", "myrathine", "tankpan", "aregos", "corrwin", "whatheals", "sousedka", "mescalito", "hanselaura", "ravas", "rapyz", "iwannabe", "pentzalon", "elroq", "starbeast", "heavenleigh", "de\u00e4deater", "orgodon", "cyrithis", "kultapoju", "n\u00e9rolas", "drez", "anwy", "moonola", "jeslana", "belujar", "evilbeard", "bellelissa", "huunterz", "aedankhan", "wurim", "thyhorn", "cocobear", "goyathlay", "solrye", "rensen", "narshal", "schurgee", "idashealer", "hulie", "uncleurkle", "roosterqt", "ar\u00f8wyn", "funniermonke", "abete", "alhanna", "deathofexile", "crueldreki", "zorciah", "shingles", "pur\u00eety", "shinuko", "manareach", "svimen", "karrage", "l\u00f6tk\u00f6", "oskosh", "thert", "antist", "jacquie", "anantios", "slid\u00e9", "praxeos", "trhorn", "shazahm", "fenderart", "beeravergina", "sleipnerr", "q\u00e1mmar", "felixyung", "philmccraken", "schnapsbarti", "labanta", "toxicx", "primadonnali", "tanaqui", "dialectic", "missbubbles"], "participant_count": 181}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["nelfas", "unslopable", "anklecleaver"], "participants": ["ragoutto", "aregos", "cursedface", "ahzrael", "thert", "pentzalon", "talamear", "starbeast", "deathofexile", "nelfas", "anklecleaver", "reyman", "herrencrem\u00e9", "sikagnome", "belujar", "unslopable", "roosterqt", "huunterz"], "participant_count": 18}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["karismo", "gnomusblasus", "gnokedli", "cresia", "ahzrael", "sedrev", "nelfas", "whitefight", "pentzalon", "shootrmcgvin", "pipogya", "nadhi", "goyathlay", "roosterqt", "fenderart", "raindropplet"], "participant_count": 16}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["roosterqt", "starbeast", "rubyone", "sedrev", "noordraak", "zyphari"], "participant_count": 6}], "reigning_titles": [{"category": "pvp", "label": "PvP", "champion": "nelfas", "score": 376}], "ladder": {"pve": [{"rank": 1, "champion": "pipogya", "score": 115}, {"rank": 3, "champion": "crowlyy", "score": 112}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 5, "reigning_entry_count": 1}, {"week_anchor": "2026-03-24", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": ["narshal", "karrage", "visucius"], "participants": ["mikaelion", "mavverick", "de\u00e4deater", "toxeris", "allze", "aedankhan", "patogoat", "roosterqt", "shelidoni", "starbeast", "huunterz", "rensen", "varallion", "malifrizider", "narshal", "padussy", "abete", "sedrev", "tamegmed", "gongles", "erenyah", "pearicetea", "r\u00e5uger", "mageius", "yeyeayeah", "unslopable", "corrwin", "toxicx", "greatives", "steverwin", "robinthefox", "j\u00e0ckaustin", "arm\u00e3kuni", "wurim", "elfelya", "romisterio", "christah", "jackspicer", "ir\u00falan", "shambeenie", "anwy", "saadnuga", "driesmertens", "karrage", "anantios", "heterjaglnur", "shinuko", "manalover", "manareach", "q\u00e1mmar", "noordraak", "primadonnali", "cursedface", "lautna", "takadoss", "rapyz", "thert", "hanselaura", "jaade", "creepew", "belujar", "yd\u00fara", "visucius", "raindropplet", "missbubbles", "sikagnome", "mino\u00e4h", "bigchill", "ziraknar\u00e2g", "lowelheim", "idashealer", "ardiano", "elsberg", "peytr", "oskosh", "philmccraken", "draengheit", "pur\u00eety", "orgodon", "ragoutto", "sousedka", "mundaa", "zyphari", "synthhie", "marl\u00e4n", "bellelissa", "ar\u00f8wyn", "huntpan", "nieznanys", "mauldarth", "fenderart", "drez", "marfic", "gofuko", "zorciah", "seralyph", "angmarien", "raelenna", "confusmax", "nacht\u00f6lfin", "roastpiglet", "murphii", "\u00e6doar", "lockro", "lathinus", "beeravergina", "majky", "rinette", "antist", "drazei", "dugallis", "sqishy", "ironmaidon", "slid\u00e9", "solidshort", "griee", "murderrose", "vanbaer", "twezz", "ironminer", "dustaclaud", "rudolfonso", "lagerka", "muktu", "alvyyn", "schurgee", "elunida", "funniermonke", "veelock", "avotear", "trhorn", "lilidani", "thalamear", "goyathlay", "magekopie", "alhanna", "jogonwar", "waaldrin", "rubyone", "joestawr", "kinila", "valanths", "herendahr", "duckmanpet", "tiefk\u00fchlware", "swaarley", "onslo", "dialectic", "shingles", "gurdats", "fulldverg", "pointiear", "angsironfist", "eliseraf", "hulie", "tovanier", "emrian", "huglada", "praxeos", "myrathine", "besquinn", "l\u00f6tk\u00f6", "yetogaben", "moonola", "johnlocky", "alexitron", "tankpan", "dizzydudess", "shazahm", "kelliahs", "anklecleaver", "n\u00e2zg\u00fal", "asheess", "tomsaft", "raeghar", "paisioss", "redriding", "elroq", "herrencrem\u00e9", "mord\u00e1k", "yeldor", "ostobad", "jacquie", "raaiinzl", "uncleurkle", "candressa", "frauwd", "engywooktbc", "aregos", "chim\u00e1y", "mechoka", "vzh", "gelkin", "thaiwan", "firnessa", "alduriaf", "toxocto", "conviction", "sveinar", "inciter", "pytah", "ravas", "aeghtelius", "schnapsbarti", "caerci", "gnokedli", "arcanik", "cresia"], "participant_count": 208}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["crowlyy", "thert"], "participants": ["anwy", "authlas", "thert", "lockro", "whitefight", "murphii", "anklecleaver", "crowlyy", "uncleurkle", "pointiear", "ziraknar\u00e2g", "reyman", "yetogaben", "thalamear", "dialectic", "elfelya", "rudolfonso"], "participant_count": 17}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": ["gnokedli", "whitefight", "karismo"], "participants": ["gnokedli", "whitefight", "karismo", "cresia", "wrynnin", "pipogya", "reyman", "hehealer", "idashealer", "fenderart", "ahzrael", "shinuko", "crowlyy", "culoloco", "antist"], "participant_count": 15}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": ["cresia", "gnokedli"], "participants": ["cresia", "gnokedli", "gelkin", "raeghar", "anklecleaver", "valanths", "jogonwar", "muktu", "ragoutto"], "participant_count": 9}], "reigning_titles": [{"category": "pvp", "label": "PvP", "champion": "crowlyy", "score": 279}], "ladder": {"pve": [{"rank": 2, "champion": "pipogya", "score": 113}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 3, "champion": "heavenlo", "score": 2121}]}, "war_effort_entry_count": 4, "ladder_entry_count": 3, "reigning_entry_count": 1}, {"week_anchor": "2026-03-17", "war_effort": [], "reigning_titles": [], "ladder": {"pve": [], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "pupicus", "score": 1187}, {"rank": 3, "champion": "paples", "score": 683}]}, "war_effort_entry_count": 0, "ladder_entry_count": 3, "reigning_entry_count": 0}], "latest_week": "2026-04-28", "archived_weeks": 7, "total_campaign_entries": 51, "reigning_titles_logged": 7}, "membership_movement": {"joined": 0, "departed": 1, "rejoined": 0, "total": 1, "recent": [{"scan_id": "2026-05-03T08:30:35.593357Z", "character_name": "Bellfast", "event_type": "departed", "detected_at": "2026-05-03T08:30:35.593357Z", "previous_status": "active", "current_status": "departed"}], "bootstrap": false, "scan_id": "2026-05-03T08:30:35.593357Z", "detected_at": "2026-05-03T08:30:35.593357Z"}, "latest_changes": {"title": "Latest Changes", "items": [{"type": "movement", "label": "Roster movement updated: 1 departed.", "tone": "watch"}, {"type": "level_up", "label": "10 level-ups recorded", "tone": "positive"}, {"type": "item", "label": "40 gear upgrades recorded", "tone": "positive"}], "empty": false, "empty_text": "No notable changes recorded yet."}, "officer_brief": {"title": "Officer Brief", "status": "Watch", "tone": "watch", "summary": "Roster health needs a watch, but the guild remains active.", "items": [{"type": "activity", "label": "Activity steady: 258 recently active members", "tone": "positive"}, {"type": "readiness", "label": "Readiness building: 23 raid-ready members tracked", "tone": "neutral"}], "empty": false, "empty_text": "No roster health signals are available yet."}}
+        {"last_updated": "2026-05-03T14:19:37.108407Z", "total_members": 657, "total_members_mains": 625, "active_14_days": 258, "active_14_days_mains": 245, "raid_ready_count": 22, "raid_ready_count_mains": 22, "avg_ilvl_70": 107, "avg_ilvl_70_mains": 107, "global_trends": {"trend_total": 0, "trend_active": 0, "trend_ready": -1, "trend_total_mains": 0, "trend_active_mains": 0, "trend_ready_mains": -1, "total_members": 657, "previous_total_members": 657}, "prev_mvps": {"pve": {"name": "shambeenie", "score": 25}, "pvp": {"name": "romisterio", "score": 352}}, "campaign_archive": {"weeks": [{"week_anchor": "2026-04-28", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["anantios", "ancey", "sleipnerr", "shambeenie", "agioserotas", "baldurinus", "avotear", "cairlecus", "sildow", "cursedface", "kaivelle", "spacemedic", "chikay", "shmiquel", "matechile", "moonola", "christah", "lathinus", "mumpithz", "gylletanken", "portalpan", "ironminer", "abete", "cennoreth", "heterjaglnur", "maikle", "tovanier", "veelilah", "ethreel", "rinette", "marfic", "alhanna", "kr\u00e9me", "matsumu", "sikapala", "sikasham", "elroq", "prska", "ayuri", "slid\u00e9", "yeyeayeah", "manalover", "midser", "trhorn", "gofuko", "schurgee", "redforkbeard", "jeslana", "vanbaer", "pearicetea", "waaldrin", "huglada", "greatives", "pur\u00eety", "claycassius", "cyrithis", "beligucimane", "n\u00e9rolas", "sousedka", "frauwd", "j\u00e0ckaustin", "unclesmilk", "praxeos", "eliseraf", "roastpiglet", "ardonus", "corrwin", "swaarley", "shingles", "felixyung", "labanta", "besquinn", "conpin", "onslo", "tamegmed", "r\u00f6m\u00ef", "robinthefox", "hanselaura", "arm\u00e3kuni"], "participant_count": 79}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": [], "participants": ["ironminer", "unslopable", "moonola", "tovanier", "chikay", "kaivelle"], "participant_count": 6}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["unslopable", "visucius", "lockro", "anklecleaver", "anantios", "baldurinus", "jogonwar", "aregos", "gnomusblasus", "mikaelion", "matechile"], "participant_count": 11}], "reigning_titles": [], "ladder": {"pve": [], "pvp": []}, "war_effort_entry_count": 3, "ladder_entry_count": 0, "reigning_entry_count": 0}, {"week_anchor": "2026-04-21", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["beligucimane", "sildow", "dragansaban", "veelilah", "anakius", "arm\u00e3kuni", "conpin", "chikay", "anantios", "n\u00e9rolas", "huglada", "hanselaura", "moonola", "roastpiglet", "besquinn", "unslopable", "yeyeayeah", "kinila", "ironminer", "bonkonyou", "tamegmed", "schurgee", "abete", "majky", "cyrithis", "vzh", "felixyung", "labanta", "baddock", "rinette", "eliseraf", "maikle", "cositank", "sikasham", "christah", "cennoreth", "elroq", "lautna", "slid\u00e9", "cursedface", "mageius", "maius", "ethreel", "misstemult", "becrux", "heavendot", "sparr\u00f4w", "candressa", "lowelheim", "drazei", "tovanier", "baldurinus", "j\u00e0ckaustin", "lathinus", "midser", "sleipnerr", "varkie", "spacemedic", "trhorn", "kaivelle", "pointiear", "smallpea", "heterjaglnur", "praxeos", "pearicetea", "greatives", "ziraknar\u00e2g", "tankpan", "firnessa", "onslo", "kr\u00e9me", "kl\u00e9ryk", "mescalito", "herrencrem\u00e9", "shambeenie", "kkohkris", "creepew", "jacquie", "silzard", "cairlecus", "corrwin", "murderrose", "neolyte", "neoflayme", "robinthefox", "marfic", "chim\u00e1y", "geilgeilgeil", "unclesmilk", "gr\u00e9giud", "dugallis", "rensen", "el\u00f8mer", "alhanna", "bigchill", "ardiano", "k\u00eengmemos", "kohkris", "sikapala", "matechile", "r\u00fcg", "narshal", "portalpan", "asheess", "elfelya", "redforkbeard", "authlas", "aregos", "prska", "gylletanken", "mavverick", "ravas", "elunida", "frauwd"], "participant_count": 114}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["romisterio", "lockro"], "participants": ["aregos", "romisterio", "lockro", "murphii", "gnomusblasus", "anklecleaver", "culoloco", "ironminer", "moonola", "conpin"], "participant_count": 10}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["veelilah", "whitefight", "romisterio", "tovanier", "chim\u00e1y", "petruzkii", "jogonwar", "murphii", "lockro", "lennier", "baldurinus", "anklecleaver", "kultapoju", "mikaelion", "jalozin", "gnomusblasus", "gnokedli", "culoloco", "aregos", "moonola"], "participant_count": 20}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["aregos", "authlas", "elfelya", "chim\u00e1y", "mescalito", "smallpea", "unslopable"], "participant_count": 7}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "shambeenie", "score": 25}, {"category": "pvp", "label": "PvP", "champion": "romisterio", "score": 352}], "ladder": {"pve": [{"rank": 1, "champion": "culoloco", "score": 116}, {"rank": 2, "champion": "pipogya", "score": 116}, {"rank": 3, "champion": "jalozin", "score": 115}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 6, "reigning_entry_count": 2}, {"week_anchor": "2026-04-14", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["neolyte", "matechile", "moonola", "corrwin", "yeyeayeah", "tamegmed", "vzh", "hawksy", "kr\u00e9me", "veelilah", "neoflayme", "mescalito", "sildow", "anakius", "n\u00e9rolas", "mageius", "asheess", "elunida", "baddock", "hanselaura", "portalpan", "kaivelle", "muthapharma", "visucius", "sikasham", "heterjaglnur", "j\u00e0ckaustin", "aregos", "felixyung", "labanta", "authlas", "narshal", "bigchill", "majky", "vanbaer", "tanaqui", "murderrose", "el\u00f8mer", "shambeenie", "silzard", "sleipnerr", "geilgeilgeil", "ethreel", "conpin", "mord\u00e1k", "besquinn", "cyrithis", "rinette", "varkie", "ziraknar\u00e2g", "slid\u00e9", "lathinus", "synthhr", "unslopable", "pewtah", "marl\u00e4n", "tovanier", "huglada", "varallion", "drazei", "marfic", "schurgee", "midser", "shelidoni", "erenyah", "shingles", "lautna", "ravas", "unclesmilk", "elfelya", "nacht\u00f6lfin", "thorrison", "weck\u00f8", "herrencrem\u00e9", "uncleurkle", "chikay", "mauldarth", "claycassius", "onslo", "beeravergina", "wetmetter", "zorciah", "redforkbeard", "elroq", "romisterio", "ironminer", "sousedka", "murphii", "alhanna", "bonkonyou", "cursedface", "yd\u00fara", "kohnina", "ir\u00falan", "creepew", "cairlecus", "cosimendes", "jeslana", "dialectic", "mavverick", "jackspicer", "dugallis", "takadoss", "sikapala", "spacemedic", "kelliahs", "anwy", "cennoreth", "r\u00e5uger", "de\u00e4deater", "histarael", "candressa", "cocobear", "allze", "azylum", "fulldverg", "christah", "ayuri", "peytr", "eliseraf"], "participant_count": 120}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["lockro", "murphii"], "participants": ["aregos", "romisterio", "lockro", "murphii", "lautna", "de\u00e4deater", "ravas", "gnomusblasus", "marfic", "culoloco", "uncleurkle", "dialectic", "sousedka", "ironminer", "unslopable", "moonola"], "participant_count": 16}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["whitefight", "matechile", "romisterio", "jalozin", "sedrev", "kultapoju", "kr\u00e9me", "pipogya", "aregos", "gnomusblasus", "culoloco", "mikaelion", "elunida", "gabbriello"], "participant_count": 14}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["cocobear", "dialectic", "cosimendes", "murphii", "romisterio", "uncleurkle", "marl\u00e4n", "visucius"], "participant_count": 8}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "claycassius", "score": 40}, {"category": "pvp", "label": "PvP", "champion": "lockro", "score": 257}], "ladder": {"pve": [{"rank": 1, "champion": "culoloco", "score": 116}, {"rank": 2, "champion": "pipogya", "score": 116}, {"rank": 3, "champion": "gnomusblasus", "score": 113}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 6, "reigning_entry_count": 2}, {"week_anchor": "2026-04-07", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": [], "participants": ["shambeenie", "moonola", "allze", "candressa", "cairlecus", "el\u00f8mer", "romisterio", "histarael", "tovanier", "matechile", "dugallis", "aodheriel", "slid\u00e9", "synthhie", "varallion", "kaivelle", "ethreel", "marl\u00e4n", "veelilah", "baddock", "sousedka", "elfelya", "vanbaer", "drazei", "wetmetter", "anakius", "shelidoni", "ayuri", "heavenleigh", "narshal", "besquinn", "cyrithis", "avotear", "bigchill", "onslo", "yeyeayeah", "heavenlo", "lathinus", "authlas", "midser", "silzard", "murderrose", "uncleurkle", "elunida", "cennoreth", "creepew", "corrwin", "herrencrem\u00e9", "visucius", "mavverick", "rensen", "mageius", "asheess", "peytr", "ziraknar\u00e2g", "elroq", "aregos", "sikapala", "frauwd", "heterjaglnur", "chikay", "unslopable", "christah", "kr\u00e9me", "cocobear", "tamegmed", "schurgee", "majky", "de\u00e4deater", "schnapsbarti", "goyathlay", "claycassius", "dialectic", "lautna", "saadnuga", "shinuko", "geilgeilgeil", "shazahm", "lockro", "becrux", "manalover", "varkie", "tankpan", "akhiles", "zorciah", "kohninah", "sikasham", "malifrizider", "kkohkris", "ironminer", "kultapoju", "pearicetea", "greatives", "padussy", "rinette", "murphii", "weck\u00f8", "neolyte", "neoflayme", "gongles", "conpin", "ir\u00falan", "huglada", "takadoss", "alhanna", "griee", "conviction", "marfic", "svimen", "mescalito", "huntpan", "swaarley", "r\u00e5uger", "ardiano", "solrye", "arm\u00e3kuni", "ravas", "hawksy", "soales", "primadonnali", "anwy", "funniermonke", "emrian", "elsberg", "firnessa", "nieznanys", "mikaelion", "j\u00e0ckaustin", "jackspicer", "eliseraf", "rayr", "huunterz", "lotomba", "yd\u00fara", "vzh", "roastpiglet", "pur\u00eety", "kelliahs", "mord\u00e1k", "veelock", "steverwin", "n\u00e9rolas", "portalpan", "missrog", "rapyz", "cursedface", "sikagnome", "praxeos", "nacht\u00f6lfin", "mauldarth", "raindropplet", "jacquie", "robinthefox"], "participant_count": 153}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["nelfas"], "participants": ["aregos", "slid\u00e9", "svimen", "de\u00e4deater", "nelfas", "ravas", "elroq", "elsberg", "culoloco", "elfelya", "candressa", "unslopable", "conpin", "anakius", "rayr", "jackspicer"], "participant_count": 16}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["culoloco", "jalozin", "aregos", "pipogya", "petruzkii", "lennier", "gnomusblasus", "nelfas", "dugallis", "ahzrael", "whitefight"], "participant_count": 11}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": ["missrog", "steverwin"], "participants": ["missrog", "steverwin", "mikaelion", "kultapoju", "lockro", "shinuko", "heavenlo", "heavenleigh", "synthhie"], "participant_count": 9}], "reigning_titles": [{"category": "pve", "label": "PvE", "champion": "kultapoju", "score": 81}], "ladder": {"pve": [{"rank": 2, "champion": "culoloco", "score": 115}, {"rank": 3, "champion": "pipogya", "score": 115}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 5, "reigning_entry_count": 1}, {"week_anchor": "2026-03-31", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": ["arm\u00e3kuni", "shambeenie"], "participants": ["avotear", "padussy", "toxeris", "vzh", "vanbaer", "pearicetea", "dugallis", "sqishy", "r\u00e5uger", "murderrose", "varallion", "mageius", "cennoreth", "ethreel", "rayr", "besquinn", "ironminer", "marl\u00e4n", "jaade", "patogoat", "lotomba", "shelidoni", "saadnuga", "claycassius", "yd\u00fara", "drazei", "ir\u00falan", "chikay", "creepew", "bigchill", "midser", "elunida", "romisterio", "roastpiglet", "yeyeayeah", "jackspicer", "j\u00e0ckaustin", "veelock", "marfic", "weck\u00f8", "herrencrem\u00e9", "anakius", "onslo", "robinthefox", "griee", "paisioss", "elsberg", "murphii", "firnessa", "varkie", "tamegmed", "duckmanpet", "peytr", "asheess", "shambeenie", "silzard", "zyphari", "portalpan", "christah", "histarael", "cairlecus", "visucius", "noordraak", "unslopable", "sikagnome", "gofuko", "emrian", "erenyah", "lautna", "swaarley", "takadoss", "malifrizider", "steverwin", "mikaelion", "allze", "eliseraf", "elfelya", "ziraknar\u00e2g", "el\u00f8mer", "kelliahs", "ardiano", "spacemedic", "heterjaglnur", "rinette", "sedrev", "huntpan", "matechile", "frauwd", "lockro", "lathinus", "huglada", "tovanier", "majky", "candressa", "missrog", "cursedface", "arm\u00e3kuni", "lowelheim", "nacht\u00f6lfin", "conpin", "rubyone", "heavenlo", "mavverick", "raindropplet", "myrathine", "tankpan", "aregos", "corrwin", "whatheals", "sousedka", "mescalito", "hanselaura", "ravas", "rapyz", "iwannabe", "pentzalon", "elroq", "starbeast", "heavenleigh", "de\u00e4deater", "orgodon", "cyrithis", "kultapoju", "n\u00e9rolas", "drez", "anwy", "moonola", "jeslana", "belujar", "evilbeard", "bellelissa", "huunterz", "aedankhan", "wurim", "thyhorn", "cocobear", "goyathlay", "solrye", "rensen", "narshal", "schurgee", "idashealer", "hulie", "uncleurkle", "roosterqt", "ar\u00f8wyn", "funniermonke", "abete", "alhanna", "deathofexile", "crueldreki", "zorciah", "shingles", "pur\u00eety", "shinuko", "manareach", "svimen", "karrage", "l\u00f6tk\u00f6", "oskosh", "thert", "antist", "jacquie", "anantios", "slid\u00e9", "praxeos", "trhorn", "shazahm", "fenderart", "beeravergina", "sleipnerr", "q\u00e1mmar", "felixyung", "philmccraken", "schnapsbarti", "labanta", "toxicx", "primadonnali", "tanaqui", "dialectic", "missbubbles"], "participant_count": 181}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["nelfas", "unslopable", "anklecleaver"], "participants": ["ragoutto", "aregos", "cursedface", "ahzrael", "thert", "pentzalon", "talamear", "starbeast", "deathofexile", "nelfas", "anklecleaver", "reyman", "herrencrem\u00e9", "sikagnome", "belujar", "unslopable", "roosterqt", "huunterz"], "participant_count": 18}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": [], "participants": ["karismo", "gnomusblasus", "gnokedli", "cresia", "ahzrael", "sedrev", "nelfas", "whitefight", "pentzalon", "shootrmcgvin", "pipogya", "nadhi", "goyathlay", "roosterqt", "fenderart", "raindropplet"], "participant_count": 16}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": [], "participants": ["roosterqt", "starbeast", "rubyone", "sedrev", "noordraak", "zyphari"], "participant_count": 6}], "reigning_titles": [{"category": "pvp", "label": "PvP", "champion": "nelfas", "score": 376}], "ladder": {"pve": [{"rank": 1, "champion": "pipogya", "score": 115}, {"rank": 3, "champion": "crowlyy", "score": 112}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "heavenlo", "score": 2121}, {"rank": 3, "champion": "heavenleigh", "score": 1570}]}, "war_effort_entry_count": 4, "ladder_entry_count": 5, "reigning_entry_count": 1}, {"week_anchor": "2026-03-24", "war_effort": [{"category": "xp", "label": "Hero's Journey", "vanguards": ["narshal", "karrage", "visucius"], "participants": ["mikaelion", "mavverick", "de\u00e4deater", "toxeris", "allze", "aedankhan", "patogoat", "roosterqt", "shelidoni", "starbeast", "huunterz", "rensen", "varallion", "malifrizider", "narshal", "padussy", "abete", "sedrev", "tamegmed", "gongles", "erenyah", "pearicetea", "r\u00e5uger", "mageius", "yeyeayeah", "unslopable", "corrwin", "toxicx", "greatives", "steverwin", "robinthefox", "j\u00e0ckaustin", "arm\u00e3kuni", "wurim", "elfelya", "romisterio", "christah", "jackspicer", "ir\u00falan", "shambeenie", "anwy", "saadnuga", "driesmertens", "karrage", "anantios", "heterjaglnur", "shinuko", "manalover", "manareach", "q\u00e1mmar", "noordraak", "primadonnali", "cursedface", "lautna", "takadoss", "rapyz", "thert", "hanselaura", "jaade", "creepew", "belujar", "yd\u00fara", "visucius", "raindropplet", "missbubbles", "sikagnome", "mino\u00e4h", "bigchill", "ziraknar\u00e2g", "lowelheim", "idashealer", "ardiano", "elsberg", "peytr", "oskosh", "philmccraken", "draengheit", "pur\u00eety", "orgodon", "ragoutto", "sousedka", "mundaa", "zyphari", "synthhie", "marl\u00e4n", "bellelissa", "ar\u00f8wyn", "huntpan", "nieznanys", "mauldarth", "fenderart", "drez", "marfic", "gofuko", "zorciah", "seralyph", "angmarien", "raelenna", "confusmax", "nacht\u00f6lfin", "roastpiglet", "murphii", "\u00e6doar", "lockro", "lathinus", "beeravergina", "majky", "rinette", "antist", "drazei", "dugallis", "sqishy", "ironmaidon", "slid\u00e9", "solidshort", "griee", "murderrose", "vanbaer", "twezz", "ironminer", "dustaclaud", "rudolfonso", "lagerka", "muktu", "alvyyn", "schurgee", "elunida", "funniermonke", "veelock", "avotear", "trhorn", "lilidani", "thalamear", "goyathlay", "magekopie", "alhanna", "jogonwar", "waaldrin", "rubyone", "joestawr", "kinila", "valanths", "herendahr", "duckmanpet", "tiefk\u00fchlware", "swaarley", "onslo", "dialectic", "shingles", "gurdats", "fulldverg", "pointiear", "angsironfist", "eliseraf", "hulie", "tovanier", "emrian", "huglada", "praxeos", "myrathine", "besquinn", "l\u00f6tk\u00f6", "yetogaben", "moonola", "johnlocky", "alexitron", "tankpan", "dizzydudess", "shazahm", "kelliahs", "anklecleaver", "n\u00e2zg\u00fal", "asheess", "tomsaft", "raeghar", "paisioss", "redriding", "elroq", "herrencrem\u00e9", "mord\u00e1k", "yeldor", "ostobad", "jacquie", "raaiinzl", "uncleurkle", "candressa", "frauwd", "engywooktbc", "aregos", "chim\u00e1y", "mechoka", "vzh", "gelkin", "thaiwan", "firnessa", "alduriaf", "toxocto", "conviction", "sveinar", "inciter", "pytah", "ravas", "aeghtelius", "schnapsbarti", "caerci", "gnokedli", "arcanik", "cresia"], "participant_count": 208}, {"category": "hk", "label": "Blood of the Enemy", "vanguards": ["crowlyy", "thert"], "participants": ["anwy", "authlas", "thert", "lockro", "whitefight", "murphii", "anklecleaver", "crowlyy", "uncleurkle", "pointiear", "ziraknar\u00e2g", "reyman", "yetogaben", "thalamear", "dialectic", "elfelya", "rudolfonso"], "participant_count": 17}, {"category": "loot", "label": "Dragon's Hoard", "vanguards": ["gnokedli", "whitefight", "karismo"], "participants": ["gnokedli", "whitefight", "karismo", "cresia", "wrynnin", "pipogya", "reyman", "hehealer", "idashealer", "fenderart", "ahzrael", "shinuko", "crowlyy", "culoloco", "antist"], "participant_count": 15}, {"category": "zenith", "label": "The Zenith Cohort", "vanguards": ["cresia", "gnokedli"], "participants": ["cresia", "gnokedli", "gelkin", "raeghar", "anklecleaver", "valanths", "jogonwar", "muktu", "ragoutto"], "participant_count": 9}], "reigning_titles": [{"category": "pvp", "label": "PvP", "champion": "crowlyy", "score": 279}], "ladder": {"pve": [{"rank": 2, "champion": "pipogya", "score": 113}], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 3, "champion": "heavenlo", "score": 2121}]}, "war_effort_entry_count": 4, "ladder_entry_count": 3, "reigning_entry_count": 1}, {"week_anchor": "2026-03-17", "war_effort": [], "reigning_titles": [], "ladder": {"pve": [], "pvp": [{"rank": 1, "champion": "fewick", "score": 3610}, {"rank": 2, "champion": "pupicus", "score": 1187}, {"rank": 3, "champion": "paples", "score": 683}]}, "war_effort_entry_count": 0, "ladder_entry_count": 3, "reigning_entry_count": 0}], "latest_week": "2026-04-28", "archived_weeks": 7, "total_campaign_entries": 51, "reigning_titles_logged": 7}, "membership_movement": {"joined": 0, "departed": 1, "rejoined": 0, "total": 1, "recent": [{"scan_id": "2026-05-03T08:30:35.593357Z", "character_name": "Bellfast", "event_type": "departed", "detected_at": "2026-05-03T08:30:35.593357Z", "previous_status": "active", "current_status": "departed"}], "bootstrap": false, "scan_id": "2026-05-03T08:30:35.593357Z", "detected_at": "2026-05-03T08:30:35.593357Z"}, "latest_changes": {"title": "Latest Changes", "items": [{"type": "movement", "label": "Roster movement updated: 1 departed.", "tone": "watch"}, {"type": "level_up", "label": "11 level-ups recorded", "tone": "positive"}, {"type": "item", "label": "39 gear upgrades recorded", "tone": "positive"}, {"type": "trend", "label": "Daily trend vs previous snapshot: -1 raid-ready mains", "tone": "trend"}], "empty": false, "empty_text": "No notable changes recorded yet."}, "officer_brief": {"title": "Officer Brief", "status": "Watch", "tone": "watch", "summary": "Roster health needs a watch, but the guild remains active.", "items": [{"type": "activity", "label": "Activity steady: 258 recently active members", "tone": "positive"}, {"type": "readiness", "label": "Readiness building: 22 raid-ready members tracked", "tone": "neutral"}, {"type": "trend", "label": "Recent trend needs a watch", "tone": "watch"}], "empty": false, "empty_text": "No roster health signals are available yet."}}
     </script>
     <script id="heatmap-data" type="application/json">
-        [{"date": "2026-04-27", "day_name": "Mon", "count": 173, "loot": 131, "levels": 42, "total_roster": 661, "total_roster_mains": 629, "active_roster": 277, "active_roster_mains": 263}, {"date": "2026-04-28", "day_name": "Tue", "count": 149, "loot": 119, "levels": 30, "total_roster": 657, "total_roster_mains": 625, "active_roster": 272, "active_roster_mains": 258}, {"date": "2026-04-29", "day_name": "Wed", "count": 143, "loot": 104, "levels": 39, "total_roster": 658, "total_roster_mains": 626, "active_roster": 265, "active_roster_mains": 252}, {"date": "2026-04-30", "day_name": "Thu", "count": 134, "loot": 88, "levels": 46, "total_roster": 657, "total_roster_mains": 625, "active_roster": 266, "active_roster_mains": 253}, {"date": "2026-05-01", "day_name": "Fri", "count": 172, "loot": 126, "levels": 46, "total_roster": 660, "total_roster_mains": 628, "active_roster": 264, "active_roster_mains": 251}, {"date": "2026-05-02", "day_name": "Sat", "count": 171, "loot": 132, "levels": 39, "total_roster": 658, "total_roster_mains": 626, "active_roster": 259, "active_roster_mains": 246}, {"date": "2026-05-03", "day_name": "Sun", "count": 112, "loot": 93, "levels": 19, "total_roster": 657, "total_roster_mains": 625, "active_roster": 258, "active_roster_mains": 245}]
+        [{"date": "2026-04-27", "day_name": "Mon", "count": 173, "loot": 131, "levels": 42, "total_roster": 661, "total_roster_mains": 629, "active_roster": 277, "active_roster_mains": 263}, {"date": "2026-04-28", "day_name": "Tue", "count": 149, "loot": 119, "levels": 30, "total_roster": 657, "total_roster_mains": 625, "active_roster": 272, "active_roster_mains": 258}, {"date": "2026-04-29", "day_name": "Wed", "count": 143, "loot": 104, "levels": 39, "total_roster": 658, "total_roster_mains": 626, "active_roster": 265, "active_roster_mains": 252}, {"date": "2026-04-30", "day_name": "Thu", "count": 134, "loot": 88, "levels": 46, "total_roster": 657, "total_roster_mains": 625, "active_roster": 266, "active_roster_mains": 253}, {"date": "2026-05-01", "day_name": "Fri", "count": 172, "loot": 126, "levels": 46, "total_roster": 660, "total_roster_mains": 628, "active_roster": 264, "active_roster_mains": 251}, {"date": "2026-05-02", "day_name": "Sat", "count": 171, "loot": 132, "levels": 39, "total_roster": 658, "total_roster_mains": 626, "active_roster": 259, "active_roster_mains": 246}, {"date": "2026-05-03", "day_name": "Sun", "count": 113, "loot": 93, "levels": 20, "total_roster": 657, "total_roster_mains": 625, "active_roster": 258, "active_roster_mains": 245}]
     </script>
 
     <script>
@@ -18979,7 +19035,9 @@ function getCharClass(char) {
 
 function normalizeHallOfHeroesBadgeType(rawType = '') {
     const cleanType = (rawType || '').toLowerCase().trim();
-    return cleanType === 'hk' ? 'hks' : cleanType;
+    if (cleanType === 'hk') return 'hks';
+    if (cleanType === 'readiness') return 'readiness';
+    return cleanType;
 }
 
 
@@ -19550,6 +19608,7 @@ function getHallOfHeroesEntry(char, isRawMode = false) {
     const hksCount = weeklyBadgeTypes.filter(type => type === 'hks').length;
     const lootCount = weeklyBadgeTypes.filter(type => type === 'loot').length;
     const zenithCount = weeklyBadgeTypes.filter(type => type === 'zenith').length;
+    const readinessCount = weeklyBadgeTypes.filter(type => type === 'readiness').length;
 
     const pveChamp = parseInt(profile.pve_champ_count || source?.pve_champ_count) || 0;
     const pvpChamp = parseInt(profile.pvp_champ_count || source?.pvp_champ_count) || 0;
@@ -19577,6 +19636,7 @@ function getHallOfHeroesEntry(char, isRawMode = false) {
     if (hksCount > 0) awards.push('hks');
     if (lootCount > 0) awards.push('loot');
     if (zenithCount > 0) awards.push('zenith');
+    if (readinessCount > 0) awards.push('readiness');
     if (pveGold > 0) awards.push('pve_gold');
     if (pveSilver > 0) awards.push('pve_silver');
     if (pveBronze > 0) awards.push('pve_bronze');
@@ -19604,6 +19664,7 @@ function getHallOfHeroesEntry(char, isRawMode = false) {
         hasHks: hksCount > 0,
         hasLoot: lootCount > 0,
         hasZenith: zenithCount > 0,
+        hasReadiness: readinessCount > 0,
         hasMvp: championCount > 0,
         hasReigning: isPveReigning || isPvpReigning,
         hasPveMedal: pveMedals > 0,
@@ -19667,6 +19728,7 @@ function getHallOfHeroesSnapshot(profile, source = null) {
     const vBadges = safeParseArray(profile.vanguard_badges || source?.vanguard_badges);
     const cBadges = safeParseArray(profile.campaign_badges || source?.campaign_badges);
     const weeklyBadgeTypes = [...vBadges, ...cBadges].map(normalizeHallOfHeroesBadgeType);
+    const readinessCount = weeklyBadgeTypes.filter(type => type === 'readiness').length;
 
     const pveChamp = parseInt(profile.pve_champ_count || source?.pve_champ_count) || 0;
     const pvpChamp = parseInt(profile.pvp_champ_count || source?.pvp_champ_count) || 0;
@@ -19707,6 +19769,7 @@ function getHallOfHeroesSnapshot(profile, source = null) {
         hasHks: weeklyBadgeTypes.includes('hks'),
         hasLoot: weeklyBadgeTypes.includes('loot'),
         hasZenith: weeklyBadgeTypes.includes('zenith'),
+        hasReadiness: readinessCount > 0,
         hasMvp: (pveChamp + pvpChamp) > 0,
         hasReigning: isPveReigning || isPvpReigning,
         hasPveMedal: pveMedals > 0,
@@ -19755,11 +19818,12 @@ function getHallOfHeroesConfig(characters, isRawRoster = false) {
         ],
         bandItems: [
             { kicker: 'Archive Roll', value: 'All Heroes', meta: `${snapshots.length.toLocaleString()} decorated names are recorded in the archive.`, filterKey: 'honor', filterValue: 'all' },
-            { kicker: 'War Effort', value: "Hero's Journey", meta: `${filterCount(snapshot => snapshot.hasXp).toLocaleString()} heroes carry leveling marks from the weekly push.`, filterKey: 'honor', filterValue: 'xp' },
-            { kicker: 'War Effort', value: 'Blood of the Enemy', meta: `${filterCount(snapshot => snapshot.hasHks).toLocaleString()} heroes are marked for PvP bloodshed this cycle.`, filterKey: 'honor', filterValue: 'hks' },
-            { kicker: 'War Effort', value: "Dragon's Hoard", meta: `${filterCount(snapshot => snapshot.hasLoot).toLocaleString()} heroes are stamped by epic spoils.`, filterKey: 'honor', filterValue: 'loot' },
-            { kicker: 'War Effort', value: 'The Zenith Cohort', meta: `${filterCount(snapshot => snapshot.hasZenith).toLocaleString()} heroes reached the summit and entered the cohort.`, filterKey: 'honor', filterValue: 'zenith' },
-            { kicker: 'Champion Crowns', value: 'Weekly MVPs', meta: `${filterCount(snapshot => snapshot.hasMvp).toLocaleString()} heroes have been crowned by weekly MVP honors.`, filterKey: 'honor', filterValue: 'mvp' },
+        { kicker: 'War Effort', value: "Hero's Journey", meta: `${filterCount(snapshot => snapshot.hasXp).toLocaleString()} heroes carry leveling marks from the weekly push.`, filterKey: 'honor', filterValue: 'xp' },
+        { kicker: 'War Effort', value: 'Blood of the Enemy', meta: `${filterCount(snapshot => snapshot.hasHks).toLocaleString()} heroes are marked for PvP bloodshed this cycle.`, filterKey: 'honor', filterValue: 'hks' },
+        { kicker: 'War Effort', value: "Dragon's Hoard", meta: `${filterCount(snapshot => snapshot.hasLoot).toLocaleString()} heroes are stamped by epic spoils.`, filterKey: 'honor', filterValue: 'loot' },
+        { kicker: 'War Effort', value: 'The Zenith Cohort', meta: `${filterCount(snapshot => snapshot.hasZenith).toLocaleString()} heroes reached the summit and entered the cohort.`, filterKey: 'honor', filterValue: 'zenith' },
+        { kicker: 'War Effort', value: "Warden's Standard", meta: `${filterCount(snapshot => snapshot.hasReadiness).toLocaleString()} heroes maintained deployable readiness this cycle.`, filterKey: 'honor', filterValue: 'readiness' },
+        { kicker: 'Champion Crowns', value: 'Weekly MVPs', meta: `${filterCount(snapshot => snapshot.hasMvp).toLocaleString()} heroes have been crowned by weekly MVP honors.`, filterKey: 'honor', filterValue: 'mvp' },
             { kicker: 'Champion Crowns', value: 'Reigning Champions', meta: `${reigningCount.toLocaleString()} current title holders still sit on the throne.`, filterKey: 'honor', filterValue: 'reigning' },
             { kicker: 'Ladder Medals', value: 'PvE Medalists', meta: `${filterCount(snapshot => snapshot.hasPveMedal).toLocaleString()} raiders hold PvE podium medals.`, filterKey: 'honor', filterValue: 'ladder_pve' },
             { kicker: 'Ladder Medals', value: 'PvP Medalists', meta: `${filterCount(snapshot => snapshot.hasPvpMedal).toLocaleString()} duelists hold PvP podium medals.`, filterKey: 'honor', filterValue: 'ladder_pvp' },
@@ -19835,6 +19899,7 @@ function applyHallOfHeroesCardDataset(cardEl, entry) {
     if (entry.snapshot.hasHks) awards.push('hks');
     if (entry.snapshot.hasLoot) awards.push('loot');
     if (entry.snapshot.hasZenith) awards.push('zenith');
+    if (entry.snapshot.hasReadiness) awards.push('readiness');
     if (entry.snapshot.hasMvp) awards.push('mvp_pve', 'mvp_pvp');
     if (entry.snapshot.hasPveMedal) awards.push('pve_gold', 'pve_silver', 'pve_bronze');
     if (entry.snapshot.hasPvpMedal) awards.push('pvp_gold', 'pvp_silver', 'pvp_bronze');
@@ -20044,6 +20109,7 @@ const DOSSIER_PRESTIGE_ICONS = Object.freeze({
     heroJourney: '\u{1F6E1}\uFE0F',
     bloodEnemy: '\u{1FA78}',
     zenith: '\u26A1\uFE0F',
+    readiness: '\u{1F3F0}',
     vanguard: '\u{1F396}\uFE0F',
     crown: '\u{1F451}',
     sword: '\u2694\uFE0F',
@@ -20083,6 +20149,7 @@ function getDossierCommendationSnapshot(profile, source = null, dashboardConfig 
     const hksCount = campaignBadgeTypes.filter(type => type === 'hks').length;
     const lootCount = campaignBadgeTypes.filter(type => type === 'loot').length;
     const zenithCount = campaignBadgeTypes.filter(type => type === 'zenith').length;
+    const readinessCount = campaignBadgeTypes.filter(type => type === 'readiness').length;
     const pveMedals = pveGold + pveSilver + pveBronze;
     const pvpMedals = pvpGold + pvpSilver + pvpBronze;
     const medalCount = pveMedals + pvpMedals;
@@ -20146,7 +20213,14 @@ function getDossierCommendationSnapshot(profile, source = null, dashboardConfig 
             { label: "Hero's Journey", value: xpCount, tone: 'xp' },
             { label: 'Blood of the Enemy', value: hksCount, tone: 'hks' },
             { label: "Dragon's Hoard", value: lootCount, tone: 'loot' },
-            zenithFootprint
+            zenithFootprint,
+            readinessCount > 0
+                ? {
+                    label: "Warden's Standard",
+                    value: readinessCount,
+                    tone: 'readiness'
+                }
+                : null
         ],
         championMeta: `PvE ${pveChamp.toLocaleString()} / PvP ${pvpChamp.toLocaleString()} crowns recorded.`,
         medalMeta: `PvE ${pveMedals.toLocaleString()} / PvP ${pvpMedals.toLocaleString()} ladder medals recorded.`
@@ -20302,7 +20376,7 @@ function buildDossierCommendationProfile({ profile, source = null, timelineEvent
     footprintLabel.textContent = 'Campaign Footprint';
     footprint.appendChild(footprintLabel);
 
-    const visibleFootprint = snapshot.footprint.filter(item => item.value > 0 || item.tone === 'zenith');
+    const visibleFootprint = snapshot.footprint.filter(item => item && (item.value > 0 || item.tone === 'zenith'));
     if (visibleFootprint.length > 0) {
         const footprintGrid = document.createElement('div');
         footprintGrid.className = 'char-card-commendation-footprint-grid';
@@ -20585,6 +20659,7 @@ function buildDossierRecognitionItems(profile, source = null) {
     const campaignBadges = safeParseArray(profile?.campaign_badges || source?.campaign_badges);
     const pveChamp = parseInt(profile?.pve_champ_count || source?.pve_champ_count, 10) || 0;
     const pvpChamp = parseInt(profile?.pvp_champ_count || source?.pvp_champ_count, 10) || 0;
+    const readinessBadges = campaignBadges.filter(type => normalizeHallOfHeroesBadgeType(type) === 'readiness');
 
     const items = [];
     if (pveChamp > 0 || pvpChamp > 0) {
@@ -20595,6 +20670,13 @@ function buildDossierRecognitionItems(profile, source = null) {
     }
     if (vanguardBadges.length > 0) {
         items.push({ type: 'vanguard', label: `${vanguardBadges.length} vanguard mark${vanguardBadges.length === 1 ? '' : 's'}` });
+    }
+    if (readinessBadges.length > 0) {
+        items.push({
+            type: 'readiness',
+            label: `${readinessBadges.length} Warden's Standard mark${readinessBadges.length === 1 ? '' : 's'}`,
+            className: 'tt-badge-weekly-readiness'
+        });
     }
     if (campaignBadges.length > 0) {
         items.push({ type: 'campaign', label: `${campaignBadges.length} campaign mark${campaignBadges.length === 1 ? '' : 's'}` });
@@ -20747,6 +20829,16 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
             categoryLabel: 'Campaign / Zenith'
         },
         {
+            key: 'readiness',
+            label: "Warden's Standard",
+            icon: DOSSIER_PRESTIGE_ICONS.readiness,
+            count: campaignBadges.filter(type => String(type).toLowerCase() === 'readiness').length,
+            tone: 'readiness',
+            badgeClass: 'tt-badge-weekly-readiness',
+            badgeTypes: ['readiness'],
+            categoryLabel: 'Campaign / Readiness'
+        },
+        {
             key: 'vanguard',
             label: 'Vanguard Status',
             icon: DOSSIER_PRESTIGE_ICONS.vanguard,
@@ -20826,13 +20918,14 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
                 xp: 1,
                 hks: 2,
                 zenith: 3,
-                vanguard: 4,
-                pve_gold: 5,
-                pve_silver: 6,
-                pve_bronze: 7,
-                pvp_gold: 8,
-                pvp_silver: 9,
-                pvp_bronze: 10
+                readiness: 4,
+                vanguard: 5,
+                pve_gold: 6,
+                pve_silver: 7,
+                pve_bronze: 8,
+                pvp_gold: 9,
+                pvp_silver: 10,
+                pvp_bronze: 11
             };
             const aPriority = Object.prototype.hasOwnProperty.call(priority, a.key) ? priority[a.key] : 99;
             const bPriority = Object.prototype.hasOwnProperty.call(priority, b.key) ? priority[b.key] : 99;
@@ -20840,7 +20933,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
             if (b.count !== a.count) return b.count - a.count;
             return 0;
         })
-        .slice(0, 11);
+        .slice(0, 12);
 
     const reigningEntries = buildDossierReigning({ profile: p, source, dashboardConfig });
     const reigningInfo = reigningEntries.length > 0 ? reigningEntries[0] : null;
@@ -20945,7 +21038,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
                 summaryMeta.textContent = summarizeBadges(vanguardBadges) || `${item.categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${item.count.toLocaleString()} recorded mark${item.count === 1 ? '' : 's'}`;
             } else if (item.key.startsWith('pve_') || item.key.startsWith('pvp_')) {
                 summaryMeta.textContent = `${item.categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${item.count.toLocaleString()} medal${item.count === 1 ? '' : 's'}`;
-            } else if (item.key === 'loot' || item.key === 'xp' || item.key === 'hks' || item.key === 'zenith') {
+            } else if (item.key === 'loot' || item.key === 'xp' || item.key === 'hks' || item.key === 'zenith' || item.key === 'readiness') {
                 summaryMeta.textContent = `${item.categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${item.count.toLocaleString()} supporting week${item.count === 1 ? '' : 's'}`;
             } else {
                 summaryMeta.textContent = `${item.categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${item.count.toLocaleString()} recorded instance${item.count === 1 ? '' : 's'}`;
@@ -21016,7 +21109,7 @@ function buildDossierBadgeHistoryEntries({
         entries.push(entry);
     };
 
-    const warEffortTypes = cleanBadgeTypes.filter(type => ['xp', 'hks', 'hk', 'loot', 'zenith'].includes(type));
+    const warEffortTypes = cleanBadgeTypes.filter(type => ['xp', 'hks', 'hk', 'loot', 'zenith', 'readiness'].includes(type));
     const vanguardRequested = cleanBadgeTypes.includes('vanguard');
     const ladderTypes = cleanBadgeTypes.filter(type => /^p[ev]_(gold|silver|bronze)$/.test(type));
     const timelineTypes = cleanBadgeTypes;
@@ -21028,7 +21121,7 @@ function buildDossierBadgeHistoryEntries({
 
             warEffortEntries.forEach(typeEntry => {
                 const type = String(typeEntry?.category || '').trim().toLowerCase();
-                if (!['xp', 'hks', 'hk', 'loot', 'zenith'].includes(type)) return;
+                if (!['xp', 'hks', 'hk', 'loot', 'zenith', 'readiness'].includes(type)) return;
 
                 const vanguards = Array.isArray(typeEntry.vanguards) ? typeEntry.vanguards : [];
                 const isVanguard = vanguards.some(name => String(name || '').trim().toLowerCase() === targetName);
@@ -21038,7 +21131,9 @@ function buildDossierBadgeHistoryEntries({
                 const sourceLabel = typeEntry.label || (typeof getThematicName === 'function'
                     ? getThematicName(type)
                     : String(type || 'Awarded'));
-                const categoryLabel = String(type || '').trim().toUpperCase() || 'Campaign';
+                const categoryLabel = type === 'readiness'
+                    ? 'Readiness'
+                    : String(type || '').trim().toUpperCase() || 'Campaign';
 
                 addEntry({
                     key: `archive_${weekAnchor}_vanguard_${type}`,
@@ -21072,14 +21167,21 @@ function buildDossierBadgeHistoryEntries({
                 const sourceLabel = typeEntry.label || (typeof getThematicName === 'function'
                     ? getThematicName(type)
                     : String(type || 'Awarded'));
-                const categoryLabel = String(type || '').trim().toUpperCase() || 'Campaign';
+                const categoryLabel = type === 'readiness'
+                    ? 'Readiness'
+                    : String(type || '').trim().toUpperCase() || 'Campaign';
+                const readinessCopy = isVanguard
+                    ? "Warden's Standard Vanguard: top 3 active raid-ready profiles by equipped item level."
+                    : "Warden's Standard: maintained active raid-ready status this week.";
                 addEntry({
                     key: `archive_${weekAnchor}_${type}_${roleLabel}`,
                     kind: 'war-effort',
                     dateLabel,
                     sourceLabel,
                     roleLabel,
-                    detail: `${dateLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${sourceLabel} / ${categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${roleLabel}`
+                    detail: type === 'readiness'
+                        ? `${dateLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${readinessCopy}`
+                        : `${dateLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${sourceLabel} / ${categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${roleLabel}`
                 });
             });
         });
@@ -21277,10 +21379,19 @@ function buildDossierIntelligencePanel({ profile, source = null, timelineEvents 
 
 const CAMPAIGN_ARCHIVE_PARTICIPANT_PREVIEW_COUNT = 6;
 const CAMPAIGN_ARCHIVE_CATEGORY_ICONS = {
-    xp: '🛡️',
-    hk: '🩸',
-    loot: '🐉',
-    zenith: '⚡'
+    xp: '\u{1F6E1}\uFE0F',
+    hk: '\u{1FA78}',
+    loot: '\u{1F409}',
+    zenith: '\u26A1\uFE0F',
+    readiness: '\u{1F3F0}'
+};
+
+const CAMPAIGN_ARCHIVE_CATEGORY_LABELS = {
+    xp: "Hero's Journey",
+    hk: 'Blood of the Enemy',
+    loot: "Dragon's Hoard",
+    zenith: 'The Zenith Cohort',
+    readiness: "Warden's Standard"
 };
 
 function formatCampaignArchiveWeekLabel(weekAnchor) {
@@ -21493,17 +21604,18 @@ function buildCampaignArchiveSummaryCard({
 function buildCampaignArchiveWarEffortTitle(category, label) {
     const titleEl = document.createElement('h4');
     titleEl.className = 'leaderboard-title campaign-archive-panel-title campaign-archive-panel-title-war-effort';
+    const cleanCategory = String(category || '').trim().toLowerCase();
 
     const titleWrap = document.createElement('span');
     titleWrap.className = 'campaign-archive-title-wrap';
 
     const iconEl = document.createElement('span');
     iconEl.className = 'campaign-archive-title-icon';
-    iconEl.textContent = CAMPAIGN_ARCHIVE_CATEGORY_ICONS[String(category || '').trim().toLowerCase()] || '🎖️';
+    iconEl.textContent = CAMPAIGN_ARCHIVE_CATEGORY_ICONS[cleanCategory] || '\u{1F396}\uFE0F';
 
     const textEl = document.createElement('span');
     textEl.className = 'campaign-archive-title-text';
-    textEl.textContent = label;
+    textEl.textContent = String(label || '').trim() || CAMPAIGN_ARCHIVE_CATEGORY_LABELS[cleanCategory] || cleanCategory || 'War Effort';
 
     titleWrap.appendChild(iconEl);
     titleWrap.appendChild(textEl);
@@ -24089,6 +24201,21 @@ function getWarEffortConfig(type) {
             ctaValue: 'Be the first new level 70.',
             ctaMeta: 'Turn the race board live and claim the first summit position before anyone else.',
             target: window.WAR_EFFORT_THRESHOLDS.zenith
+        },
+        readiness: {
+            theme: 'readiness',
+            overline: 'Deployable Roster Command',
+            title: "Warden's Standard",
+            desc: 'Recognizes raid-ready characters who remained active and deployable this week.',
+            emptyTitle: 'No active raid-ready baseline is currently locked.',
+            emptyDesc: "No active raid-ready baseline is currently locked for Warden's Standard. The board will populate after the next backend refresh.",
+            objectiveLabel: 'Objective: Maintain 70% of the active raid-ready roster captured at weekly reset.',
+            unitLabel: 'Participants',
+            progressUnitSingular: 'participant',
+            progressUnitPlural: 'participants',
+            ctaValue: 'Awaiting deployable roster data.',
+            ctaMeta: 'Keep the active raid-ready roster deployable, recently seen, and fully equipped.',
+            target: 0
         }
     };
 
@@ -24142,6 +24269,48 @@ function formatWarEffortProgressLine(snapshot, config) {
     const current = snapshot && snapshot.current ? snapshot.current : 0;
     const target = snapshot && snapshot.target ? snapshot.target : config.target;
     return `Progress: ${current.toLocaleString()} / ${target.toLocaleString()} ${config.progressUnitPlural}`;
+}
+
+function buildReadinessWarEffortSnapshot(readinessLock = {}) {
+    const participants = Array.isArray(readinessLock.participants) ? readinessLock.participants : [];
+    const vanguards = Array.isArray(readinessLock.vanguards) ? readinessLock.vanguards : [];
+    const target = Number(readinessLock.target) || 0;
+    const participantCount = Number(readinessLock.participant_count) || participants.length || 0;
+    const activeBaseline = Number(readinessLock.active_raid_ready_baseline) || 0;
+    const activeCount = Number(readinessLock.active_raid_ready_count) || 0;
+    const totalCount = Number(readinessLock.total_raid_ready_count) || 0;
+    const completionPct = Number(readinessLock.completion_pct) || (target > 0 ? Math.min((participantCount / target) * 100, 100) : 0);
+    const weekLabel = formatReadinessWeekAnchor(readinessLock.week_anchor || '');
+    const firstParticipant = participants[0] || '';
+    const firstVanguard = vanguards[0] || firstParticipant || '';
+
+    return {
+        current: participantCount,
+        target,
+        pct: completionPct,
+        contributorCount: participantCount,
+        topName: firstVanguard,
+        topValue: participantCount,
+        vanguards,
+        participants,
+        lockTime: weekLabel,
+        activeBaseline,
+        activeCount,
+        totalCount,
+        completionPct,
+        weekLabel,
+        ribbonText: target > 0
+            ? `${participantCount.toLocaleString()} / ${target.toLocaleString()} Participants`
+            : "No active raid-ready baseline is currently locked for Warden's Standard.",
+        homeSummary: target > 0
+            ? `Frozen weekly target from the ${weekLabel || 'latest'} reset: ${target.toLocaleString()} participants built from ${activeBaseline.toLocaleString()} active raid-ready characters.`
+            : "No active raid-ready baseline is currently locked for Warden's Standard.",
+        homeLeader: target > 0
+            ? (vanguards.length > 0
+                ? `Vanguards: ${vanguards.map(formatReadinessDisplayName).join(', ')}`
+                : 'Vanguards: Awaiting deployable roster data.')
+            : 'Awaiting deployable roster.'
+    };
 }
 
 function getWarEffortMilestoneText(snapshot, config) {
@@ -24199,6 +24368,108 @@ function buildWarEffortShell(hashUrl, characters = []) {
     const statsGrid = clone.querySelector('.war-effort-hero-stats');
     const infoBand = clone.querySelector('.war-effort-info-band');
     const progressStatus = getWarEffortStatusLabel(snapshot, config);
+    const isReadiness = type === 'readiness';
+
+    if (isReadiness) {
+        const participants = Array.isArray(snapshot.participants) ? snapshot.participants : [];
+        const vanguards = Array.isArray(snapshot.vanguards) ? snapshot.vanguards : [];
+        const participantCount = Number(snapshot.current) || 0;
+        const target = Number(snapshot.target) || 0;
+        const activeBaseline = Number(snapshot.activeBaseline) || 0;
+        const activeCount = Number(snapshot.activeCount) || 0;
+        const totalCount = Number(snapshot.totalCount) || 0;
+        const completionPct = Number(snapshot.completionPct || snapshot.pct) || 0;
+        const readinessHasLock = target > 0;
+        const frontRunnerName = vanguards[0] || participants[0] || '';
+        const frontRunnerDisplay = frontRunnerName ? formatReadinessDisplayName(frontRunnerName) : 'Awaiting deployable roster';
+        const readinessProgressLine = readinessHasLock
+            ? `Progress: ${participantCount.toLocaleString()} / ${target.toLocaleString()} participants \u2022 ${Math.round(completionPct).toLocaleString()}% complete`
+            : "No active raid-ready baseline is currently locked for Warden's Standard.";
+        const readinessMetaLine = readinessHasLock
+            ? `Frozen weekly target from the ${snapshot.weekLabel || 'latest'} reset \u2022 ${activeBaseline.toLocaleString()} active raid-ready at lock \u2022 ${activeCount.toLocaleString()} currently active \u2022 ${totalCount.toLocaleString()} total raid-ready`
+            : "No active raid-ready baseline is currently locked for Warden's Standard.";
+
+        if (shell) shell.classList.add(`war-effort-shell-${config.theme}`);
+        if (overline) overline.textContent = config.overline;
+        if (title) title.textContent = config.title;
+        if (desc) desc.textContent = readinessHasLock ? config.desc : config.emptyDesc;
+        if (ribbonText) ribbonText.textContent = readinessHasLock
+            ? `${participantCount.toLocaleString()} / ${target.toLocaleString()} ${config.unitLabel}`
+            : "No active raid-ready baseline is currently locked for Warden's Standard.";
+        if (ribbonReset) ribbonReset.textContent = `Resets in ${getWarEffortResetText()} (Berlin)`;
+        if (progressLabel) progressLabel.textContent = config.objectiveLabel;
+        if (progressMeta) progressMeta.textContent = readinessMetaLine;
+        if (progressFill) {
+            progressFill.classList.add(`we-fill-${config.theme}`);
+            progressFill.classList.add(getWarEffortProgressState(readinessHasLock ? completionPct : 0));
+            progressFill.style.width = `${readinessHasLock ? Math.min(completionPct, 100) : 0}%`;
+        }
+        if (progressText) {
+            progressText.className = `challenge-text ${readinessHasLock && completionPct >= 100 ? 'we-text-state-max' : 'we-text-state-normal'} we-text-type-${config.theme}`;
+            progressText.textContent = readinessProgressLine;
+        }
+
+        [
+            buildWarEffortHeroStatNode(participantCount.toLocaleString(), 'Participants'),
+            buildWarEffortHeroStatNode(target.toLocaleString(), 'Target'),
+            buildWarEffortHeroStatNode(activeBaseline.toLocaleString(), 'Active at Reset'),
+            buildWarEffortHeroStatNode(activeCount.toLocaleString(), 'Currently Active'),
+            buildWarEffortHeroStatNode(totalCount.toLocaleString(), 'Total Raid-Ready'),
+            buildWarEffortHeroStatNode(`${Math.round(completionPct).toLocaleString()}%`, 'Completion'),
+            buildWarEffortHeroStatNode(vanguards.length > 0 ? `${vanguards.length}/3` : '0/3', 'Vanguards Locked')
+        ].forEach(node => {
+            if (node && statsGrid) statsGrid.appendChild(node);
+        });
+
+        if (infoBand) {
+            const readinessSummaryGrid = document.createElement('div');
+            readinessSummaryGrid.className = 'campaign-archive-grid campaign-archive-grid-war-effort';
+
+            if (typeof buildCampaignArchiveSummaryCard === 'function') {
+                readinessSummaryGrid.appendChild(buildCampaignArchiveSummaryCard({
+                    kicker: 'Participants',
+                    value: readinessHasLock ? `${participantCount.toLocaleString()} logged` : 'Awaiting baseline',
+                    meta: readinessHasLock
+                        ? `Frozen target set from ${activeBaseline.toLocaleString()} active raid-ready characters at weekly reset.`
+                        : config.emptyDesc,
+                    names: participants.map(formatReadinessDisplayName),
+                    emptyText: 'No participants recorded.',
+                    cardClass: 'campaign-archive-summary-card-readiness'
+                }));
+                readinessSummaryGrid.appendChild(buildCampaignArchiveSummaryCard({
+                    kicker: 'Vanguards',
+                    value: readinessHasLock ? `${vanguards.length.toLocaleString()}/3 locked` : 'Awaiting lock',
+                    meta: readinessHasLock
+                        ? 'Top 3 by equipped item level.'
+                        : 'No vanguards are locked until the weekly target is captured.',
+                    names: vanguards.map(formatReadinessDisplayName),
+                    emptyText: 'No vanguards locked yet.',
+                    cardClass: 'campaign-archive-summary-card-readiness'
+                }));
+                infoBand.appendChild(readinessSummaryGrid);
+            }
+
+            [
+                {
+                    kicker: frontRunnerName ? 'Current Front-Runner' : 'Awaiting Deployable Roster',
+                    value: frontRunnerDisplay,
+                    meta: readinessHasLock
+                        ? 'Locked front-runner from the weekly readiness snapshot.'
+                        : 'The board will populate after the next backend refresh.'
+                },
+                {
+                    kicker: 'Command Order',
+                    value: 'Keep the active raid-ready roster deployable, recently seen, and fully equipped.',
+                    meta: 'Maintain 70% of the active raid-ready roster captured at weekly reset.'
+                }
+            ].forEach(item => {
+                const node = buildHeroBandItemNode(item);
+                if (node && infoBand) infoBand.appendChild(node);
+            });
+
+            return clone;
+        }
+    }
 
     if (shell) shell.classList.add(`war-effort-shell-${config.theme}`);
     if (overline) overline.textContent = config.overline;
@@ -24429,8 +24700,114 @@ const DASHBOARD_BADGE_ICONS = Object.freeze({
     shield: '\u{1F6E1}\uFE0F',
     blood: '\u{1FA78}',
     dragon: '\u{1F409}',
-    lightning: '\u26A1\uFE0F'
+    lightning: '\u26A1\uFE0F',
+    readiness: '\u{1F3F0}'
 });
+
+function getReadinessBadgeState(vanguardBadges = [], campaignBadgeTypes = []) {
+    const isReadinessBadge = (value) => {
+        const cleanType = normalizeHallOfHeroesBadgeType(value);
+        if (cleanType === 'readiness') return true;
+
+        const cleanLabel = String(value || '').trim().toLowerCase();
+        return cleanLabel === "warden's standard" || cleanLabel === "warden's standard vanguard";
+    };
+
+    const vanguardReadinessCount = safeParseArray(vanguardBadges).filter(isReadinessBadge).length;
+    const campaignReadinessCount = safeParseArray(campaignBadgeTypes).filter(isReadinessBadge).length;
+
+    return {
+        count: vanguardReadinessCount > 0 ? vanguardReadinessCount : campaignReadinessCount,
+        hasVanguard: vanguardReadinessCount > 0,
+        title: vanguardReadinessCount > 0
+            ? "Warden's Standard Vanguard: top 3 active raid-ready profiles by equipped item level."
+            : "Warden's Standard: maintained active raid-ready status this week."
+    };
+}
+
+function formatReadinessDisplayName(name) {
+    return String(name || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+}
+
+function formatReadinessWeekAnchor(weekAnchor) {
+    const rawWeekAnchor = String(weekAnchor || '').trim();
+    if (!rawWeekAnchor) return '';
+
+    const parsed = new Date(`${rawWeekAnchor}T00:00:00Z`);
+    if (Number.isNaN(parsed.getTime())) return rawWeekAnchor;
+
+    return parsed.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+}
+
+function renderReadinessObjectiveCard(readinessLock = {}, weekAnchor = '') {
+    const kickerEl = document.getElementById('guild-readiness-kicker');
+    const summaryEl = document.getElementById('guild-readiness-summary');
+    const metaEl = document.getElementById('guild-readiness-meta');
+    const fillEl = document.getElementById('guild-readiness-fill');
+    const textEl = document.getElementById('guild-readiness-text');
+    const leaderEl = document.getElementById('guild-readiness-leader');
+    const cardEl = kickerEl ? kickerEl.closest('.war-effort-home-card') : null;
+
+    if (!kickerEl || !summaryEl || !metaEl || !fillEl || !textEl || !leaderEl || !cardEl) return;
+
+    const participants = Array.isArray(readinessLock.participants) ? readinessLock.participants : [];
+    const vanguards = Array.isArray(readinessLock.vanguards) ? readinessLock.vanguards : [];
+    const target = Number(readinessLock.target) || 0;
+    const participantCount = Number(readinessLock.participant_count) || participants.length || 0;
+    const activeBaseline = Number(readinessLock.active_raid_ready_baseline) || 0;
+    const activeCount = Number(readinessLock.active_raid_ready_count) || 0;
+    const totalCount = Number(readinessLock.total_raid_ready_count) || 0;
+    const completionPct = Number(readinessLock.completion_pct) || (target > 0 ? Math.round((participantCount / target) * 100) : 0);
+    const progressPct = target > 0 ? Math.min((participantCount / target) * 100, 100) : 0;
+    const weekLabel = formatReadinessWeekAnchor(weekAnchor || readinessLock.week_anchor || '');
+
+    cardEl.setAttribute('data-readiness-state', target > 0 ? 'populated' : 'empty');
+    kickerEl.textContent = `${DASHBOARD_BADGE_ICONS.readiness} Warden's Standard`;
+
+    if (target > 0) {
+        summaryEl.textContent = weekLabel
+            ? `Frozen weekly target from the ${weekLabel} reset: ${target.toLocaleString()} participants built from ${activeBaseline.toLocaleString()} active raid-ready characters.`
+            : `Frozen weekly target from the latest reset: ${target.toLocaleString()} participants built from ${activeBaseline.toLocaleString()} active raid-ready characters.`;
+        metaEl.textContent = `Current active raid-ready: ${activeCount.toLocaleString()} / ${totalCount.toLocaleString()} total raid-ready.`;
+        textEl.textContent = `Progress: ${participantCount.toLocaleString()} / ${target.toLocaleString()} participants • ${completionPct.toLocaleString()}% complete`;
+        leaderEl.textContent = vanguards.length > 0
+            ? `Vanguards: ${vanguards.map(formatReadinessDisplayName).join(', ')}`
+            : 'Vanguards: Awaiting deployable roster data.';
+    } else {
+        summaryEl.textContent = 'No active raid-ready characters were available for Warden\'s Standard this week.';
+        metaEl.textContent = 'The weekly target is frozen at 0 until an active raid-ready baseline exists.';
+        textEl.textContent = 'No active raid-ready characters were available this week.';
+        leaderEl.textContent = 'Awaiting a deployable roster.';
+    }
+
+    fillEl.classList.remove(
+        'we-fill-xp',
+        'we-fill-hk',
+        'we-fill-loot',
+        'we-fill-zenith',
+        'we-fill-state-low',
+        'we-fill-state-mid',
+        'we-fill-state-high',
+        'we-fill-state-max'
+    );
+    fillEl.classList.add('we-fill-zenith');
+    fillEl.classList.add(
+        progressPct >= 100 ? 'we-fill-state-max' :
+        progressPct >= 75 ? 'we-fill-state-high' :
+        progressPct >= 30 ? 'we-fill-state-mid' :
+        'we-fill-state-low'
+    );
+    fillEl.style.width = `${progressPct}%`;
+}
 
 function killIntro() {
     sessionStorage.setItem('amwIntroPlayed', 'true');
@@ -24511,6 +24888,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (weRes.ok) {
             const weData = await weRes.json();
             warEffortLocks = weData.locks || {};
+            window.warEffortWeekAnchor = weData.week_anchor || '';
         }
     } catch (error) {
         console.warn("War Effort locks not generated yet. Proceeding with dynamic data.");
@@ -24566,6 +24944,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     let mainDonutChartInstance = null;     
     let conciseDonutChartInstance = null;
     window.roleChartInstance = null;
+    window.warEffortReadinessLock = warEffortLocks.readiness || {};
     const analyticsView = document.getElementById('analytics-view');   
     const architectureView = document.getElementById('architecture-view');
 
@@ -25565,6 +25944,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (classList.contains('badge-war-hks') || classList.contains('c-badge-weekly-hks') || classList.contains('tt-badge-weekly-hks')) return 'hks';
         if (classList.contains('badge-war-loot') || classList.contains('c-badge-weekly-loot') || classList.contains('tt-badge-weekly-loot')) return 'loot';
         if (classList.contains('badge-war-zenith') || classList.contains('c-badge-weekly-zenith') || classList.contains('tt-badge-weekly-zenith')) return 'zenith';
+        if (classList.contains('badge-war-readiness') || classList.contains('c-badge-weekly-readiness') || classList.contains('tt-badge-weekly-readiness')) return 'readiness';
 
         return 'default';
     }
@@ -27723,6 +28103,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const hksCount = campaignBadgeTypes.filter(type => type === 'hks').length;
                 const lootCount = campaignBadgeTypes.filter(type => type === 'loot').length;
                 const zenithCount = campaignBadgeTypes.filter(type => type === 'zenith').length;
+                const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);
                 const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count || deepChar.pve_champ_count) || 0;
                 const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count || deepChar.pvp_champ_count) || 0;
                 const pveGold = parseInt(p.pve_gold || char.pve_gold || deepChar.pve_gold) || 0;
@@ -27751,6 +28132,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 if (pvpChamp > 0) awardsAttr.push('mvp_pvp');
                 if (vCount > 0) awardsAttr.push('vanguard');
                 if (cCount > 0) awardsAttr.push('campaign');
+                if (readinessState.count > 0) awardsAttr.push('readiness');
 
                 const tXp = getDetailedBadgeTooltip(p.name, ['xp'], `${xpCount}x Hero's Journey`, xpCount);
                 const tHks = getDetailedBadgeTooltip(p.name, ['hks', 'hk'], `${hksCount}x Blood of the Enemy`, hksCount);
@@ -27886,6 +28268,19 @@ window.addEventListener('DOMContentLoaded', async () => {
                         text: `${DASHBOARD_BADGE_ICONS.lightning} ${zenithCount}`,
                         title: tZenith,
                         classNames: ['c-badge-pill', 'c-badge-weekly-zenith']
+                    });
+                }
+
+                if (readinessState.count > 0) {
+                    conciseBadges.push({
+                        text: `${DASHBOARD_BADGE_ICONS.readiness} ${readinessState.count}`,
+                        title: getDetailedBadgeTooltip(
+                            p.name,
+                            ['readiness'],
+                            readinessState.title,
+                            readinessState.count
+                        ),
+                        classNames: ['c-badge-pill', 'c-badge-weekly-readiness']
                     });
                 }
 
@@ -28347,6 +28742,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const hksCount = campaignBadgeTypes.filter(type => type === 'hks').length;
                 const lootCount = campaignBadgeTypes.filter(type => type === 'loot').length;
                 const zenithCount = campaignBadgeTypes.filter(type => type === 'zenith').length;
+                const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);
                 const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count) || 0;
                 const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count) || 0;
                 const pveGold = parseInt(p.pve_gold || char.pve_gold) || 0;
@@ -28372,6 +28768,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const tHks = getDetailedBadgeTooltip(p.name, ['hks', 'hk'], `${hksCount}x Blood of the Enemy`, hksCount);
                 const tLoot = getDetailedBadgeTooltip(p.name, ['loot'], `${lootCount}x Dragon's Hoard`, lootCount);
                 const tZenith = getDetailedBadgeTooltip(p.name, ['zenith'], `${zenithCount}x The Zenith Cohort`, zenithCount);
+                const tReadiness = getDetailedBadgeTooltip(p.name, ['readiness'], readinessState.title, readinessState.count);
 
                 tooltip.innerHTML = '';
                 const template = document.getElementById('tpl-char-tooltip');
@@ -28408,6 +28805,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                     addBadge(hksCount, tHks, 'tt-badge-weekly-hks', DASHBOARD_BADGE_ICONS.blood);
                     addBadge(lootCount, tLoot, 'tt-badge-weekly-loot', DASHBOARD_BADGE_ICONS.dragon);
                     addBadge(zenithCount, tZenith, 'tt-badge-weekly-zenith', DASHBOARD_BADGE_ICONS.lightning);
+                    addBadge(readinessState.count, tReadiness, 'tt-badge-weekly-readiness', DASHBOARD_BADGE_ICONS.readiness);
                     
                     clone.querySelector('.tooltip-guild-rank').textContent = guildRank;
                     clone.querySelector('.tooltip-level-race').textContent = `${p.level || 0} / ${raceName}`;
@@ -29259,6 +29657,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (xpCont) xpCont.hidden = false;
 
         populateHomeOverview(config);
+        renderReadinessObjectiveCard(window.warEffortReadinessLock || {}, window.warEffortWeekAnchor || '');
 
         if (typeof window.renderGuildXPBar === 'function') window.renderGuildXPBar();
 
@@ -30087,10 +30486,21 @@ window.addEventListener('DOMContentLoaded', async () => {
                 if (type === 'xp') title = `🛡️ Hero's Journey Contributors (${filteredRoster.length})`;
                 if (type === 'loot') title = `🐉 Dragon's Hoard Contributors (${filteredRoster.length})`;
                 if (type === 'zenith') title = `⚡ The Zenith Cohort (${filteredRoster.length})`;
-                
-                let sortPref = type === 'loot' ? 'ilvl' : 'level';
-                // Note: The 'false' flag here hides the Class Badges
-                showConciseView(title, filteredRoster, false, false, sortPref); 
+                if (type === 'readiness') {
+                    const readinessLock = window.warEffortReadinessLock || {};
+                    const readinessNames = new Set([
+                        ...(Array.isArray(readinessLock.participants) ? readinessLock.participants : []),
+                        ...(Array.isArray(readinessLock.vanguards) ? readinessLock.vanguards : [])
+                    ].map(name => String(name || '').toLowerCase()).filter(Boolean));
+
+                    filteredRoster = rosterData.filter(c => c.profile && c.profile.name && readinessNames.has(c.profile.name.toLowerCase()));
+                    title = `${DASHBOARD_BADGE_ICONS.readiness} Warden's Standard (${filteredRoster.length})`;
+                    showConciseView(title, filteredRoster, false, false, 'ilvl');
+                } else {
+                    let sortPref = type === 'loot' ? 'ilvl' : 'level';
+                    // Note: The 'false' flag here hides the Class Badges
+                    showConciseView(title, filteredRoster, false, false, sortPref);
+                }
             }
             
             updateDropdownLabel('all');
@@ -31479,7 +31889,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, window.WAR_EFFORT_THRESHOLDS.zenith, 'ZENITH');
 
         // Track locked vanguards and milestone monuments for the current war-effort board.
-        window.warEffortVanguards = { xp: [], hk: [], loot: [], zenith: [] };
+        window.warEffortVanguards = { xp: [], hk: [], loot: [], zenith: [], readiness: [] };
         window.warEffortMonuments = [];
         window.warEffortLockTimes = {};
 
@@ -31493,6 +31903,12 @@ window.addEventListener('DOMContentLoaded', async () => {
                 window.warEffortMonuments.push(fallbackMon);
                 window.warEffortLockTimes[type] = fallbackMon.timestamp;
             }
+        }
+
+        if (window.warEffortReadinessLock) {
+            window.warEffortVanguards.readiness = Array.isArray(window.warEffortReadinessLock.vanguards)
+                ? window.warEffortReadinessLock.vanguards
+                : [];
         }
 
         if (totalLevels >= window.WAR_EFFORT_THRESHOLDS.xp) {
@@ -31614,7 +32030,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                         : ''
                 ),
                 topValueOverride: zenithFirstFinisher ? 1 : 0
-            })
+            }),
+            readiness: buildReadinessWarEffortSnapshot(window.warEffortReadinessLock || {})
         };
 
         function applyHomeWarEffortText(type) {
@@ -31727,6 +32144,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 else if (triggerId === 'guild-hk-tooltip-trigger') window.location.hash = 'war-effort-hk';
                 else if (triggerId === 'guild-loot-tooltip-trigger') window.location.hash = 'war-effort-loot';
                 else if (triggerId === 'guild-zenith-tooltip-trigger') window.location.hash = 'war-effort-zenith';
+                else if (triggerId === 'guild-readiness-tooltip-trigger') window.location.hash = 'war-effort-readiness';
             });
         }
 
@@ -31734,6 +32152,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         bindTooltip('guild-hk-tooltip-trigger', hkContributors, "Top PvP Slayers", "HKs");
         bindTooltip('guild-loot-tooltip-trigger', lootContributors, "Top Treasure Hunters", "Epics");
         bindTooltip('guild-zenith-tooltip-trigger', zenithContributors, "The Zenith Cohort", "Max Levels");
+        bindTooltip('guild-readiness-tooltip-trigger', {}, "Warden's Standard", "participants");
     };
 
     window.addEventListener('hashchange', route);
