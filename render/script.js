@@ -5789,10 +5789,21 @@ window.addEventListener('DOMContentLoaded', async () => {
                 if (type === 'xp') title = `🛡️ Hero's Journey Contributors (${filteredRoster.length})`;
                 if (type === 'loot') title = `🐉 Dragon's Hoard Contributors (${filteredRoster.length})`;
                 if (type === 'zenith') title = `⚡ The Zenith Cohort (${filteredRoster.length})`;
-                
-                let sortPref = type === 'loot' ? 'ilvl' : 'level';
-                // Note: The 'false' flag here hides the Class Badges
-                showConciseView(title, filteredRoster, false, false, sortPref); 
+                if (type === 'readiness') {
+                    const readinessLock = window.warEffortReadinessLock || {};
+                    const readinessNames = new Set([
+                        ...(Array.isArray(readinessLock.participants) ? readinessLock.participants : []),
+                        ...(Array.isArray(readinessLock.vanguards) ? readinessLock.vanguards : [])
+                    ].map(name => String(name || '').toLowerCase()).filter(Boolean));
+
+                    filteredRoster = rosterData.filter(c => c.profile && c.profile.name && readinessNames.has(c.profile.name.toLowerCase()));
+                    title = `${DASHBOARD_BADGE_ICONS.readiness} Warden's Standard (${filteredRoster.length})`;
+                    showConciseView(title, filteredRoster, false, false, 'ilvl');
+                } else {
+                    let sortPref = type === 'loot' ? 'ilvl' : 'level';
+                    // Note: The 'false' flag here hides the Class Badges
+                    showConciseView(title, filteredRoster, false, false, sortPref);
+                }
             }
             
             updateDropdownLabel('all');
@@ -7322,7 +7333,8 @@ window.addEventListener('DOMContentLoaded', async () => {
                         : ''
                 ),
                 topValueOverride: zenithFirstFinisher ? 1 : 0
-            })
+            }),
+            readiness: buildReadinessWarEffortSnapshot(window.warEffortReadinessLock || {})
         };
 
         function applyHomeWarEffortText(type) {
@@ -7435,6 +7447,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 else if (triggerId === 'guild-hk-tooltip-trigger') window.location.hash = 'war-effort-hk';
                 else if (triggerId === 'guild-loot-tooltip-trigger') window.location.hash = 'war-effort-loot';
                 else if (triggerId === 'guild-zenith-tooltip-trigger') window.location.hash = 'war-effort-zenith';
+                else if (triggerId === 'guild-readiness-tooltip-trigger') window.location.hash = 'war-effort-readiness';
             });
         }
 
@@ -7442,6 +7455,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         bindTooltip('guild-hk-tooltip-trigger', hkContributors, "Top PvP Slayers", "HKs");
         bindTooltip('guild-loot-tooltip-trigger', lootContributors, "Top Treasure Hunters", "Epics");
         bindTooltip('guild-zenith-tooltip-trigger', zenithContributors, "The Zenith Cohort", "Max Levels");
+        bindTooltip('guild-readiness-tooltip-trigger', {}, "Warden's Standard", "participants");
     };
 
     window.addEventListener('hashchange', route);
