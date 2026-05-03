@@ -229,6 +229,18 @@ body[data-route="war-effort-zenith"]::before {
   --we-fill-max-animation: pulseMaxZENITH 1.5s infinite alternate;
 }
 
+.challenge-fill.we-fill-readiness {
+  --we-fill-base: #1f5f4b;
+  --we-fill-mid: #46c38f;
+  --we-fill-max: #8ff0d0;
+  --we-fill-mid-shadow: #46c38f;
+  --we-fill-high-shadow: #8ff0d0;
+  --we-fill-max-shadow: #8ff0d0;
+  --we-fill-mid-animation: pulseSlowZENITH 1.5s infinite alternate;
+  --we-fill-high-animation: pulseFastZENITH 0.8s infinite alternate;
+  --we-fill-max-animation: pulseMaxZENITH 1.5s infinite alternate;
+}
+
 .challenge-fill.we-fill-state-low {
   background: linear-gradient(90deg, #333, var(--we-fill-base));
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
