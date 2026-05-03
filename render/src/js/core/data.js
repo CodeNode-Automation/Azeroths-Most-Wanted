@@ -122,8 +122,13 @@ function getCharClass(char) {
 }
 
 function normalizeHallOfHeroesBadgeType(rawType = '') {
-    const cleanType = (rawType || '').toLowerCase().trim();
+    const cleanType = String(rawType || '')
+        .toLowerCase()
+        .trim()
+        .replace(/\u2019/g, "'");
     if (cleanType === 'hk') return 'hks';
     if (cleanType === 'readiness') return 'readiness';
+    if (cleanType === "warden's standard") return 'readiness';
+    if (cleanType === "warden's standard vanguard") return 'readiness';
     return cleanType;
 }

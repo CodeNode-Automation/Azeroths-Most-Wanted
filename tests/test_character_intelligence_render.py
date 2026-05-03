@@ -11,6 +11,7 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
 
     def test_dossier_js_includes_prestige_identity_and_reigning_header(self):
         html_dashboard_text = Path("render/html_dashboard.py").read_text(encoding="utf-8")
+        core_data_text = Path("render/src/js/core/data.js").read_text(encoding="utf-8")
         js_text = Path("render/src/js/features/character_dossier/dossier_view.js").read_text(encoding="utf-8")
         runtime_text = Path("render/script.js").read_text(encoding="utf-8")
         style_css_text = Path("render/style.css").read_text(encoding="utf-8")
@@ -41,6 +42,10 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertIn("Deadliest / HKs", js_text)
         self.assertIn("const prevMvps = dashboardConfig && typeof dashboardConfig === 'object'", js_text)
         self.assertIn("const hasCurrentPrevMvp = Boolean((prevMvps.pve && prevMvps.pve.name) || (prevMvps.pvp && prevMvps.pvp.name));", js_text)
+        self.assertIn("function normalizeHallOfHeroesBadgeType(rawType = '')", core_data_text)
+        self.assertIn("if (cleanType === \"warden's standard\") return 'readiness';", core_data_text)
+        self.assertIn("if (cleanType === \"warden's standard vanguard\") return 'readiness';", core_data_text)
+        self.assertIn("replace(/\\u2019/g, \"'\")", core_data_text)
         self.assertIn("tt-badge-weekly-loot", js_text)
         self.assertIn("tt-badge-weekly-xp", js_text)
         self.assertIn("tt-badge-weekly-hks", js_text)
@@ -72,6 +77,7 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertIn("const campaignBadges = safeParseArray(profile?.campaign_badges || source?.campaign_badges);", js_text)
         self.assertIn("const readinessBadges = campaignBadges.filter(type => normalizeHallOfHeroesBadgeType(type) === 'readiness');", js_text)
         self.assertIn("const readinessCount = campaignBadgeTypes.filter(type => type === 'readiness').length;", js_text)
+        self.assertIn("const visibleFootprint = snapshot.footprint.filter(item => item && (item.value > 0 || item.tone === 'zenith' || item.tone === 'readiness'));", js_text)
         self.assertIn("badgeTypes: ['vanguard'],", js_text)
         self.assertIn("badgeTypes: ['readiness'],", js_text)
         self.assertIn("label: \"Warden's Standard\",", js_text)
