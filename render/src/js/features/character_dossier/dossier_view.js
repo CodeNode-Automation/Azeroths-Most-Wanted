@@ -276,7 +276,7 @@ function buildDossierCommendationProfile({ profile, source = null, timelineEvent
     footprintLabel.textContent = 'Campaign Footprint';
     footprint.appendChild(footprintLabel);
 
-    const visibleFootprint = snapshot.footprint.filter(item => item && (item.value > 0 || item.tone === 'zenith'));
+    const visibleFootprint = snapshot.footprint.filter(item => item && (item.value > 0 || item.tone === 'zenith' || item.tone === 'readiness'));
     if (visibleFootprint.length > 0) {
         const footprintGrid = document.createElement('div');
         footprintGrid.className = 'char-card-commendation-footprint-grid';
