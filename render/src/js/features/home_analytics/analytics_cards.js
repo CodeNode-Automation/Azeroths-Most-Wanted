@@ -508,26 +508,6 @@ function buildAnalyticsTempoStat({ label, value, meta, tone = '' }) {
     `;
 }
 
-function buildAnalyticsTempoRow({ label, count, total, meta, tone = '' }) {
-    const share = formatAnalyticsSnapshotShare(count, total);
-    const safeCount = Number.isFinite(Number(count)) ? Number(count).toLocaleString() : '—';
-    const safeMeta = meta || (share === null ? 'Not available from current snapshot' : `${share}% of tempo`);
-    const fillPercent = Number.isFinite(share) ? Math.max(0, Math.min(100, share)) : 0;
-
-    return `
-        <div class="analytics-tempo-row" data-tone="${escapeAnalyticsHtml(tone)}">
-            <div class="analytics-tempo-row-head">
-                <span class="analytics-tempo-row-label">${escapeAnalyticsHtml(label)}</span>
-                <strong class="analytics-tempo-row-value">${safeCount}</strong>
-            </div>
-            <div class="analytics-tempo-meter" aria-hidden="true">
-                <span class="analytics-tempo-fill" style="width: ${fillPercent > 0 ? Math.max(6, fillPercent) : 0}%;"></span>
-            </div>
-            <span class="analytics-tempo-row-meta">${escapeAnalyticsHtml(safeMeta)}</span>
-        </div>
-    `;
-}
-
 function renderAnalyticsCampaignTempo(tempo = {}) {
     const sectionEl = document.getElementById('analytics-activity-section');
     if (!sectionEl) return;

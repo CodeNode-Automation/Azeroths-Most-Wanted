@@ -635,16 +635,6 @@ function formatDossierBadgeHistoryEntry(entry) {
     return parts.join(` ${DOSSIER_PRESTIGE_SEPARATOR} `);
 }
 
-function getDossierRecognitionHistoryLines({ charName, badgeTypes = [], actualCount = 0, timelineEvents = [], dashboardConfig = {} }) {
-    return buildDossierBadgeHistory({
-        charName,
-        badgeTypes,
-        actualCount,
-        timelineEvents,
-        dashboardConfig
-    });
-}
-
 function formatDossierCampaignWeekLabel(weekAnchor) {
     const cleanWeek = String(weekAnchor || '').trim();
     if (!cleanWeek) return '';
@@ -658,11 +648,6 @@ function formatDossierCampaignWeekLabel(weekAnchor) {
         month: 'short',
         year: 'numeric'
     });
-}
-
-function getDossierReigningWeekLabel(profile, dashboardConfig = {}) {
-    const reigningEntries = buildDossierReigning({ profile, dashboardConfig });
-    return reigningEntries.length > 0 ? String(reigningEntries[0].weekLabel || '') : '';
 }
 
 function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents = [], dashboardConfig = {}, snapshot = null }) {

@@ -290,7 +290,7 @@ class AnalyticsRenderTests(unittest.TestCase):
         self.assertIn("function renderAnalyticsRoleSnapshot(snapshot = {})", analytics_cards)
         self.assertIn("function formatAnalyticsTempoDayStamp(day = {})", analytics_cards)
         self.assertIn("function buildAnalyticsTempoStat({ label, value, meta, tone = '' })", analytics_cards)
-        self.assertIn("function buildAnalyticsTempoRow({ label, count, total, meta, tone = '' })", analytics_cards)
+        self.assertNotIn("function buildAnalyticsTempoRow({ label, count, total, meta, tone = '' })", analytics_cards)
         self.assertIn("function buildAnalyticsRoleSnapshotRow({ label, count, total, meta, tone = '', route = '' })", analytics_cards)
         self.assertIn("Campaign tempo data is not available for this snapshot.", analytics_cards)
         self.assertIn("Raid role data is not available for this snapshot.", analytics_cards)

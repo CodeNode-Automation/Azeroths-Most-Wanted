@@ -3,7 +3,6 @@ Main entry point for the WoW Classic API Dashboard pipeline.
 Database logic upgraded to use Turso's direct REST API, eliminating driver bottlenecks.
 """
 
-import os
 import asyncio
 import aiohttp
 import sys
@@ -387,12 +386,6 @@ async def main_async():
                         'participants': p_json,
                     }
                     db_we_state[category] = {'vanguards': v_json, 'participants': p_json}
-                except Exception: pass
-
-        async def smart_update_mvp(category, champ, score):
-            old = db_mvp_state.get(category, {})
-            if old.get('champion') != champ or old.get('score') != score:
-                try: await fetch_turso(session, f"INSERT OR REPLACE INTO reigning_champs_history (week_anchor, category, champion, score) VALUES ('{week_anchor}', '{category}', '{champ}', {score})")
                 except Exception: pass
 
         # 1. XP Logic

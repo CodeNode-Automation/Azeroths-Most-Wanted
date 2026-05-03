@@ -2349,12 +2349,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         container.appendChild(clone);
     }
 
-    function appendFullCardBadgeHtml(container, html) {
-        if (!container || !html || html.trim() === '') return;
-        const fragment = document.createRange().createContextualFragment(html);
-        container.appendChild(fragment);
-    }
-
     function renderDynamicBadges(characters, isRawMode) {
         const container = document.getElementById('concise-class-badges');
         
@@ -4458,91 +4452,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         }
     };
-
-    // --- REUSABLE ROLE CHART GENERATOR ---
-    function drawRoleChart(ctxId, characters, isRawMode) {
-        const roleCounts = { "Tank": 0, "Healer": 0, "Melee DPS": 0, "Ranged DPS": 0 };
-        characters.forEach(c => {
-            const p = isRawMode ? rosterData.find(deep => deep.profile && deep.profile.name && deep.profile.name.toLowerCase() === (c.name || '').toLowerCase())?.profile : c.profile;
-            if (!p || !p.active_spec) return;
-            const spec = p.active_spec;
-            const cClass = isRawMode ? (c.class || 'Unknown') : getCharClass(c);
-            
-            if (["Protection", "Blood"].includes(spec) || (cClass === "Druid" && spec === "Feral Combat")) roleCounts["Tank"]++;
-            else if (["Holy", "Discipline", "Restoration"].includes(spec)) roleCounts["Healer"]++;
-            else if (["Mage", "Warlock", "Hunter"].includes(cClass) || ["Balance", "Elemental", "Shadow"].includes(spec)) roleCounts["Ranged DPS"]++;
-            else roleCounts["Melee DPS"]++;
-        });
-
-        const ctx = document.getElementById(ctxId);
-        if (!ctx) return null;
-
-        return new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(roleCounts),
-                datasets: [{ 
-                    data: Object.values(roleCounts), 
-                    backgroundColor: ['#e74c3c', '#2ecc71', '#e67e22', '#3498db'], 
-                    borderColor: '#111', borderWidth: 2 
-                }]
-            },
-            options: { 
-                responsive: true, maintainAspectRatio: false, cutout: '60%', layout: { padding: { top: 20, bottom: 20 } },
-                plugins: { legend: { position: 'bottom', labels: { color: '#bbb', font: { family: 'Cinzel' } } } },
-                onClick: (event, elements, chart) => {
-                    if (elements.length > 0) {
-                        const clickedLabel = chart.data.labels[elements[0].index];
-                        window.location.hash = 'filter-role-' + clickedLabel.toLowerCase().replace(/\s+/g, '-');
-                    }
-                },
-                onHover: (event, elements) => {
-                    event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
-                }
-            },
-            plugins: [createPieOverlayPlugin()]
-        });
-    }
-
-    function createDonutChart(ctxId, rosterToCount, isRawMode) {
-        const counts = {};
-        rosterToCount.forEach(char => {
-            let cClass = isRawMode ? (char.class || 'Unknown') : getCharClass(char);
-            if (cClass !== 'Unknown') counts[cClass] = (counts[cClass] || 0) + 1;
-        });
-
-        const sortedClasses = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-        const donutLabels = sortedClasses;
-        const donutData = sortedClasses.map(cls => counts[cls]);
-        const donutColors = sortedClasses.map(cls => CLASS_COLORS[cls] || '#888');
-
-        const ctx = document.getElementById(ctxId);
-        if (!ctx) return null;
-
-        return new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels: donutLabels, datasets: [{ data: donutData, backgroundColor: donutColors, borderColor: '#111', borderWidth: 2, hoverOffset: 6 }] },
-            options: {
-                responsive: true, maintainAspectRatio: false, cutout: '65%', layout: { padding: { top: 20, bottom: 20, right: 20, left: 20 } },
-                onClick: (event, elements, chart) => {
-                    if (elements.length > 0) {
-                        const clickedClass = chart.data.labels[elements[0].index];
-                        const dynamicBadge = document.querySelector(`.dynamic-badge[data-class="${clickedClass}"]`);
-                        if (dynamicBadge && document.getElementById('concise-view').style.display !== 'none') {
-                            dynamicBadge.click(); 
-                        } else {
-                            window.location.hash = 'class-' + clickedClass.toLowerCase();
-                        }
-                    }
-                },
-                onHover: (event, elements) => {
-                    event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
-                },
-                plugins: { legend: { display: false } }
-            },
-            plugins: [createPieOverlayPlugin()]
-        });
-    }
 
     function setSoloDashboardLayout() {
         const mainDashboard = document.getElementById('main-dashboard');
