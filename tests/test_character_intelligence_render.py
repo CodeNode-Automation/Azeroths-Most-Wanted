@@ -94,9 +94,14 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertIn("badge-war-readiness", runtime_text)
         self.assertIn("c-badge-weekly-readiness", runtime_text)
         self.assertIn("appendFullCardBadge(headerBadgesEl, {", runtime_text)
+        self.assertIn("const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);", runtime_text)
         self.assertIn("text: `${DASHBOARD_BADGE_ICONS.readiness} ${readinessState.count}`,", runtime_text)
         self.assertIn("title: tReadiness,", runtime_text)
         self.assertIn("classNames: ['badge-war-readiness']", runtime_text)
+        self.assertLess(
+            runtime_text.index("const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);"),
+            runtime_text.index("const tReadiness = getDetailedBadgeTooltip(p.name, ['readiness'], readinessState.title, readinessState.count);"),
+        )
         self.assertIn("const vanguardRequested = cleanBadgeTypes.includes('vanguard');", js_text)
         self.assertIn("const warEffortEntries = Array.isArray(week?.war_effort) ? week.war_effort : [];", js_text)
         self.assertIn("const isVanguard = vanguards.some(name => String(name || '').trim().toLowerCase() === targetName);", js_text)

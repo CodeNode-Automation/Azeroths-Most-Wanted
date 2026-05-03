@@ -1908,6 +1908,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const hksBadgeCount = campaignBadgeTypes.filter(type => type === 'hks').length;
         const lootCount = campaignBadgeTypes.filter(type => type === 'loot').length;
         const zenithCount = campaignBadgeTypes.filter(type => type === 'zenith').length;
+        const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);
         const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count) || 0;
         const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count) || 0;
         const pveGold = parseInt(p.pve_gold || char.pve_gold) || 0;
