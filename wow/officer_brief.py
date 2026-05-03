@@ -169,25 +169,6 @@ def _latest_changes_has_supporting_items(latest_changes: Any) -> bool:
     return False
 
 
-def _latest_changes_has_movement_item(latest_changes: Any) -> bool:
-    if not isinstance(latest_changes, dict):
-        return False
-
-    change_items = latest_changes.get("items")
-    if not isinstance(change_items, list):
-        return False
-
-    for item in change_items:
-        if not isinstance(item, dict):
-            continue
-
-        item_type = str(item.get("type") or "").strip().lower()
-        if item_type == "movement":
-            return True
-
-    return False
-
-
 def _latest_changes_has_watch_signal(latest_changes: Any) -> bool:
     if not isinstance(latest_changes, dict):
         return False
