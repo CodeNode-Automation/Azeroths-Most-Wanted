@@ -428,6 +428,10 @@
   border-color: rgba(255, 225, 106, 0.24);
 }
 
+.char-card-commendation-footprint-readiness {
+  border-color: rgba(143, 240, 195, 0.24);
+}
+
 
 /* Character dossier route shells */
 body[data-route-family="character"]::before {
@@ -1057,6 +1061,12 @@ body[data-route-family="character"] .timeline-container.timeline-character-dossi
   background: rgba(255, 225, 106, 0.2);
   border-color: rgba(255, 225, 106, 0.45);
   color: #ffe16a;
+}
+
+.tt-badge-weekly-readiness {
+  background: rgba(143, 240, 195, 0.2);
+  border-color: rgba(143, 240, 195, 0.45);
+  color: #8ff0c3;
 }
 .tooltip-guild-rank {
   color: #ffd100;

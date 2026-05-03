@@ -9,6 +9,7 @@ const DOSSIER_PRESTIGE_ICONS = Object.freeze({
     heroJourney: '\u{1F6E1}\uFE0F',
     bloodEnemy: '\u{1FA78}',
     zenith: '\u26A1\uFE0F',
+    readiness: '\u{1F3F0}',
     vanguard: '\u{1F396}\uFE0F',
     crown: '\u{1F451}',
     sword: '\u2694\uFE0F',
@@ -48,6 +49,7 @@ function getDossierCommendationSnapshot(profile, source = null, dashboardConfig 
     const hksCount = campaignBadgeTypes.filter(type => type === 'hks').length;
     const lootCount = campaignBadgeTypes.filter(type => type === 'loot').length;
     const zenithCount = campaignBadgeTypes.filter(type => type === 'zenith').length;
+    const readinessCount = campaignBadgeTypes.filter(type => type === 'readiness').length;
     const pveMedals = pveGold + pveSilver + pveBronze;
     const pvpMedals = pvpGold + pvpSilver + pvpBronze;
     const medalCount = pveMedals + pvpMedals;
@@ -111,7 +113,14 @@ function getDossierCommendationSnapshot(profile, source = null, dashboardConfig 
             { label: "Hero's Journey", value: xpCount, tone: 'xp' },
             { label: 'Blood of the Enemy', value: hksCount, tone: 'hks' },
             { label: "Dragon's Hoard", value: lootCount, tone: 'loot' },
-            zenithFootprint
+            zenithFootprint,
+            readinessCount > 0
+                ? {
+                    label: "Warden's Standard",
+                    value: readinessCount,
+                    tone: 'readiness'
+                }
+                : null
         ],
         championMeta: `PvE ${pveChamp.toLocaleString()} / PvP ${pvpChamp.toLocaleString()} crowns recorded.`,
         medalMeta: `PvE ${pveMedals.toLocaleString()} / PvP ${pvpMedals.toLocaleString()} ladder medals recorded.`
@@ -267,7 +276,7 @@ function buildDossierCommendationProfile({ profile, source = null, timelineEvent
     footprintLabel.textContent = 'Campaign Footprint';
     footprint.appendChild(footprintLabel);
 
-    const visibleFootprint = snapshot.footprint.filter(item => item.value > 0 || item.tone === 'zenith');
+    const visibleFootprint = snapshot.footprint.filter(item => item && (item.value > 0 || item.tone === 'zenith'));
     if (visibleFootprint.length > 0) {
         const footprintGrid = document.createElement('div');
         footprintGrid.className = 'char-card-commendation-footprint-grid';
@@ -550,6 +559,7 @@ function buildDossierRecognitionItems(profile, source = null) {
     const campaignBadges = safeParseArray(profile?.campaign_badges || source?.campaign_badges);
     const pveChamp = parseInt(profile?.pve_champ_count || source?.pve_champ_count, 10) || 0;
     const pvpChamp = parseInt(profile?.pvp_champ_count || source?.pvp_champ_count, 10) || 0;
+    const readinessBadges = campaignBadges.filter(type => normalizeHallOfHeroesBadgeType(type) === 'readiness');
 
     const items = [];
     if (pveChamp > 0 || pvpChamp > 0) {
@@ -560,6 +570,13 @@ function buildDossierRecognitionItems(profile, source = null) {
     }
     if (vanguardBadges.length > 0) {
         items.push({ type: 'vanguard', label: `${vanguardBadges.length} vanguard mark${vanguardBadges.length === 1 ? '' : 's'}` });
+    }
+    if (readinessBadges.length > 0) {
+        items.push({
+            type: 'readiness',
+            label: `${readinessBadges.length} Warden's Standard mark${readinessBadges.length === 1 ? '' : 's'}`,
+            className: 'tt-badge-weekly-readiness'
+        });
     }
     if (campaignBadges.length > 0) {
         items.push({ type: 'campaign', label: `${campaignBadges.length} campaign mark${campaignBadges.length === 1 ? '' : 's'}` });
@@ -712,6 +729,16 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
             categoryLabel: 'Campaign / Zenith'
         },
         {
+            key: 'readiness',
+            label: "Warden's Standard",
+            icon: DOSSIER_PRESTIGE_ICONS.readiness,
+            count: campaignBadges.filter(type => String(type).toLowerCase() === 'readiness').length,
+            tone: 'readiness',
+            badgeClass: 'tt-badge-weekly-readiness',
+            badgeTypes: ['readiness'],
+            categoryLabel: 'Campaign / Readiness'
+        },
+        {
             key: 'vanguard',
             label: 'Vanguard Status',
             icon: DOSSIER_PRESTIGE_ICONS.vanguard,
@@ -791,13 +818,14 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
                 xp: 1,
                 hks: 2,
                 zenith: 3,
-                vanguard: 4,
-                pve_gold: 5,
-                pve_silver: 6,
-                pve_bronze: 7,
-                pvp_gold: 8,
-                pvp_silver: 9,
-                pvp_bronze: 10
+                readiness: 4,
+                vanguard: 5,
+                pve_gold: 6,
+                pve_silver: 7,
+                pve_bronze: 8,
+                pvp_gold: 9,
+                pvp_silver: 10,
+                pvp_bronze: 11
             };
             const aPriority = Object.prototype.hasOwnProperty.call(priority, a.key) ? priority[a.key] : 99;
             const bPriority = Object.prototype.hasOwnProperty.call(priority, b.key) ? priority[b.key] : 99;
@@ -805,7 +833,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
             if (b.count !== a.count) return b.count - a.count;
             return 0;
         })
-        .slice(0, 11);
+        .slice(0, 12);
 
     const reigningEntries = buildDossierReigning({ profile: p, source, dashboardConfig });
     const reigningInfo = reigningEntries.length > 0 ? reigningEntries[0] : null;
@@ -910,7 +938,7 @@ function buildDossierPrestigeShowcase({ profile, source = null, timelineEvents =
                 summaryMeta.textContent = summarizeBadges(vanguardBadges) || `${item.categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${item.count.toLocaleString()} recorded mark${item.count === 1 ? '' : 's'}`;
             } else if (item.key.startsWith('pve_') || item.key.startsWith('pvp_')) {
                 summaryMeta.textContent = `${item.categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${item.count.toLocaleString()} medal${item.count === 1 ? '' : 's'}`;
-            } else if (item.key === 'loot' || item.key === 'xp' || item.key === 'hks' || item.key === 'zenith') {
+            } else if (item.key === 'loot' || item.key === 'xp' || item.key === 'hks' || item.key === 'zenith' || item.key === 'readiness') {
                 summaryMeta.textContent = `${item.categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${item.count.toLocaleString()} supporting week${item.count === 1 ? '' : 's'}`;
             } else {
                 summaryMeta.textContent = `${item.categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${item.count.toLocaleString()} recorded instance${item.count === 1 ? '' : 's'}`;
@@ -981,7 +1009,7 @@ function buildDossierBadgeHistoryEntries({
         entries.push(entry);
     };
 
-    const warEffortTypes = cleanBadgeTypes.filter(type => ['xp', 'hks', 'hk', 'loot', 'zenith'].includes(type));
+    const warEffortTypes = cleanBadgeTypes.filter(type => ['xp', 'hks', 'hk', 'loot', 'zenith', 'readiness'].includes(type));
     const vanguardRequested = cleanBadgeTypes.includes('vanguard');
     const ladderTypes = cleanBadgeTypes.filter(type => /^p[ev]_(gold|silver|bronze)$/.test(type));
     const timelineTypes = cleanBadgeTypes;
@@ -993,7 +1021,7 @@ function buildDossierBadgeHistoryEntries({
 
             warEffortEntries.forEach(typeEntry => {
                 const type = String(typeEntry?.category || '').trim().toLowerCase();
-                if (!['xp', 'hks', 'hk', 'loot', 'zenith'].includes(type)) return;
+                if (!['xp', 'hks', 'hk', 'loot', 'zenith', 'readiness'].includes(type)) return;
 
                 const vanguards = Array.isArray(typeEntry.vanguards) ? typeEntry.vanguards : [];
                 const isVanguard = vanguards.some(name => String(name || '').trim().toLowerCase() === targetName);
@@ -1003,7 +1031,9 @@ function buildDossierBadgeHistoryEntries({
                 const sourceLabel = typeEntry.label || (typeof getThematicName === 'function'
                     ? getThematicName(type)
                     : String(type || 'Awarded'));
-                const categoryLabel = String(type || '').trim().toUpperCase() || 'Campaign';
+                const categoryLabel = type === 'readiness'
+                    ? 'Readiness'
+                    : String(type || '').trim().toUpperCase() || 'Campaign';
 
                 addEntry({
                     key: `archive_${weekAnchor}_vanguard_${type}`,
@@ -1037,14 +1067,21 @@ function buildDossierBadgeHistoryEntries({
                 const sourceLabel = typeEntry.label || (typeof getThematicName === 'function'
                     ? getThematicName(type)
                     : String(type || 'Awarded'));
-                const categoryLabel = String(type || '').trim().toUpperCase() || 'Campaign';
+                const categoryLabel = type === 'readiness'
+                    ? 'Readiness'
+                    : String(type || '').trim().toUpperCase() || 'Campaign';
+                const readinessCopy = isVanguard
+                    ? "Warden's Standard Vanguard: top 3 active raid-ready profiles by equipped item level."
+                    : "Warden's Standard: maintained active raid-ready status this week.";
                 addEntry({
                     key: `archive_${weekAnchor}_${type}_${roleLabel}`,
                     kind: 'war-effort',
                     dateLabel,
                     sourceLabel,
                     roleLabel,
-                    detail: `${dateLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${sourceLabel} / ${categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${roleLabel}`
+                    detail: type === 'readiness'
+                        ? `${dateLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${readinessCopy}`
+                        : `${dateLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${sourceLabel} / ${categoryLabel} ${DOSSIER_PRESTIGE_SEPARATOR} ${roleLabel}`
                 });
             });
         });
