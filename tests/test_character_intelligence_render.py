@@ -148,7 +148,7 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertIn("Blood of the Enemy", js_text)
         self.assertIn("Warden's Standard", js_text)
         self.assertIn("Campaign / Readiness", js_text)
-        self.assertIn("Warden's Standard mark", js_text)
+        self.assertNotIn("Warden's Standard mark", js_text)
         self.assertIn("Warden's Standard: maintained active raid-ready status this week.", js_text)
         self.assertIn("Warden's Standard Vanguard: top 3 active raid-ready profiles by equipped item level.", js_text)
         self.assertIn("Latest archive week:", js_text)

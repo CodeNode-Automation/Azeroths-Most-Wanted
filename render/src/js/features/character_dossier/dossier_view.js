@@ -571,13 +571,6 @@ function buildDossierRecognitionItems(profile, source = null) {
     if (vanguardBadges.length > 0) {
         items.push({ type: 'vanguard', label: `${vanguardBadges.length} vanguard mark${vanguardBadges.length === 1 ? '' : 's'}` });
     }
-    if (readinessBadges.length > 0) {
-        items.push({
-            type: 'readiness',
-            label: `${readinessBadges.length} Warden's Standard mark${readinessBadges.length === 1 ? '' : 's'}`,
-            className: 'tt-badge-weekly-readiness'
-        });
-    }
     if (campaignBadges.length > 0) {
         items.push({ type: 'campaign', label: `${campaignBadges.length} campaign mark${campaignBadges.length === 1 ? '' : 's'}` });
     }
