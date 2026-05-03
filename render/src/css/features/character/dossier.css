@@ -1010,6 +1010,11 @@ body[data-route-family="character"] .timeline-container.timeline-character-dossi
   color: #ffe16a;
   box-shadow: 0 0 12px rgba(255, 225, 106, 0.14);
 }
+.badge-war-readiness {
+  border-color: rgba(210, 178, 106, 0.45);
+  color: #f0d28a;
+  box-shadow: 0 0 12px rgba(210, 178, 106, 0.14);
+}
 .tt-badge-silver {
   background: rgba(192, 192, 192, 0.2);
   border-color: rgba(192, 192, 192, 0.5);

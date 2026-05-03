@@ -1927,6 +1927,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const tHks = getDetailedBadgeTooltip(p.name, ['hks', 'hk'], `${hksBadgeCount}x Blood of the Enemy`, hksBadgeCount);
         const tLoot = getDetailedBadgeTooltip(p.name, ['loot'], `${lootCount}x Dragon's Hoard`, lootCount);
         const tZenith = getDetailedBadgeTooltip(p.name, ['zenith'], `${zenithCount}x The Zenith Cohort`, zenithCount);
+        const tReadiness = getDetailedBadgeTooltip(p.name, ['readiness'], readinessState.title, readinessState.count);
         const tPveGold = getDetailedBadgeTooltip(p.name, ['pve_gold'], `${pveGold}x PvE Gold Medal`, pveGold);
         const tPveSilver = getDetailedBadgeTooltip(p.name, ['pve_silver'], `${pveSilver}x PvE Silver Medal`, pveSilver);
         const tPveBronze = getDetailedBadgeTooltip(p.name, ['pve_bronze'], `${pveBronze}x PvE Bronze Medal`, pveBronze);
@@ -2044,6 +2045,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                 text: readinessLabel,
                 classNames: [hasRaidReadyLoadout ? 'badge-war-zenith' : 'default-badge']
             });
+
+            if (readinessState.count > 0) {
+                appendFullCardBadge(headerBadgesEl, {
+                    text: `${DASHBOARD_BADGE_ICONS.readiness} ${readinessState.count}`,
+                    title: tReadiness,
+                    classNames: ['badge-war-readiness']
+                });
+            }
 
             appendFullCardBadge(headerBadgesEl, {
                 text: identity.mainAltLabel,

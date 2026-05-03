@@ -116,11 +116,9 @@ class WarEffortReadinessTests(unittest.TestCase):
             state["participants"],
             ["noenchantbutqualified", "qualifiedone", "validshirttabard"],
         )
-        self.assertEqual(
-            state["vanguards"],
-            ["noenchantbutqualified", "qualifiedone", "validshirttabard"],
-        )
+        self.assertEqual(state["vanguards"], [])
         self.assertEqual(state["participant_count"], 3)
+        self.assertEqual(state["completion_pct"], 75)
         self.assertNotIn("toolowilvl", state["participants"])
         self.assertNotIn("tooold", state["participants"])
         self.assertNotIn("notenoughgear", state["participants"])
@@ -151,7 +149,46 @@ class WarEffortReadinessTests(unittest.TestCase):
         self.assertNotIn("hrefonlyprofileequipment", state["participants"])
         self.assertNotIn("missingoneuppercase", state["participants"])
         self.assertEqual(state["participant_count"], 1)
-        self.assertEqual(state["vanguards"], ["uppercasegear"])
+        self.assertEqual(state["vanguards"], [])
+
+    def test_readiness_vanguards_remain_empty_until_objective_completes_then_lock(self):
+        roster_before_completion = [
+            make_character("Alpha", ilvl=120, last_seen_ms=NOW_MS - DAY_MS),
+            make_character("Bravo", ilvl=119, last_seen_ms=NOW_MS - DAY_MS),
+            make_character("Charlie", ilvl=118, last_seen_ms=NOW_MS - DAY_MS),
+        ]
+
+        before_completion = build_readiness_week_state(
+            roster_before_completion,
+            {row["char"] for row in roster_before_completion},
+            now_ms=NOW_MS,
+            readiness_lock={
+                "active_raid_ready_baseline": 4,
+                "target": 4,
+            },
+        )
+
+        self.assertEqual(before_completion["participant_count"], 3)
+        self.assertEqual(before_completion["vanguards"], [])
+        self.assertEqual(before_completion["completion_pct"], 75)
+
+        roster_complete = roster_before_completion + [
+            make_character("Delta", ilvl=117, last_seen_ms=NOW_MS - DAY_MS),
+        ]
+
+        after_completion = build_readiness_week_state(
+            roster_complete,
+            {row["char"] for row in roster_complete},
+            now_ms=NOW_MS,
+            readiness_lock={
+                "active_raid_ready_baseline": 4,
+                "target": 4,
+            },
+        )
+
+        self.assertEqual(after_completion["participant_count"], 4)
+        self.assertEqual(after_completion["vanguards"], ["alpha", "bravo", "charlie"])
+        self.assertEqual(after_completion["completion_pct"], 100)
 
     def test_extra_metadata_dicts_do_not_increase_combat_slot_count(self):
         roster = [

@@ -243,9 +243,10 @@ def build_readiness_week_state(roster_data, active_roster_set, now_ms=None, read
         ),
     )
     participants = [row["name"] for row in participant_rows]
-    vanguards = participants[:3]
     participant_count = len(participants)
     completion_pct = round((participant_count / target) * 100) if target else 0
+    is_complete = target > 0 and participant_count >= target
+    vanguards = participants[:3] if is_complete else []
 
     return {
         "category": READINESS_CATEGORY,
