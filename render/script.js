@@ -43,8 +43,93 @@ const DASHBOARD_BADGE_ICONS = Object.freeze({
     shield: '\u{1F6E1}\uFE0F',
     blood: '\u{1FA78}',
     dragon: '\u{1F409}',
-    lightning: '\u26A1\uFE0F'
+    lightning: '\u26A1\uFE0F',
+    readiness: '\u{1F3F0}'
 });
+
+function formatReadinessDisplayName(name) {
+    return String(name || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+}
+
+function formatReadinessWeekAnchor(weekAnchor) {
+    const rawWeekAnchor = String(weekAnchor || '').trim();
+    if (!rawWeekAnchor) return '';
+
+    const parsed = new Date(`${rawWeekAnchor}T00:00:00Z`);
+    if (Number.isNaN(parsed.getTime())) return rawWeekAnchor;
+
+    return parsed.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+}
+
+function renderReadinessObjectiveCard(readinessLock = {}, weekAnchor = '') {
+    const kickerEl = document.getElementById('guild-readiness-kicker');
+    const summaryEl = document.getElementById('guild-readiness-summary');
+    const metaEl = document.getElementById('guild-readiness-meta');
+    const fillEl = document.getElementById('guild-readiness-fill');
+    const textEl = document.getElementById('guild-readiness-text');
+    const leaderEl = document.getElementById('guild-readiness-leader');
+    const cardEl = kickerEl ? kickerEl.closest('.war-effort-home-card') : null;
+
+    if (!kickerEl || !summaryEl || !metaEl || !fillEl || !textEl || !leaderEl || !cardEl) return;
+
+    const participants = Array.isArray(readinessLock.participants) ? readinessLock.participants : [];
+    const vanguards = Array.isArray(readinessLock.vanguards) ? readinessLock.vanguards : [];
+    const target = Number(readinessLock.target) || 0;
+    const participantCount = Number(readinessLock.participant_count) || participants.length || 0;
+    const activeBaseline = Number(readinessLock.active_raid_ready_baseline) || 0;
+    const activeCount = Number(readinessLock.active_raid_ready_count) || 0;
+    const totalCount = Number(readinessLock.total_raid_ready_count) || 0;
+    const completionPct = Number(readinessLock.completion_pct) || (target > 0 ? Math.round((participantCount / target) * 100) : 0);
+    const progressPct = target > 0 ? Math.min((participantCount / target) * 100, 100) : 0;
+    const weekLabel = formatReadinessWeekAnchor(weekAnchor || readinessLock.week_anchor || '');
+
+    cardEl.setAttribute('data-readiness-state', target > 0 ? 'populated' : 'empty');
+    kickerEl.textContent = `${DASHBOARD_BADGE_ICONS.readiness} Warden's Standard`;
+
+    if (target > 0) {
+        summaryEl.textContent = weekLabel
+            ? `Frozen weekly target from the ${weekLabel} reset: ${target.toLocaleString()} participants built from ${activeBaseline.toLocaleString()} active raid-ready characters.`
+            : `Frozen weekly target from the latest reset: ${target.toLocaleString()} participants built from ${activeBaseline.toLocaleString()} active raid-ready characters.`;
+        metaEl.textContent = `Current active raid-ready: ${activeCount.toLocaleString()} / ${totalCount.toLocaleString()} total raid-ready.`;
+        textEl.textContent = `Progress: ${participantCount.toLocaleString()} / ${target.toLocaleString()} participants • ${completionPct.toLocaleString()}% complete`;
+        leaderEl.textContent = vanguards.length > 0
+            ? `Vanguards: ${vanguards.map(formatReadinessDisplayName).join(', ')}`
+            : 'Vanguards: Awaiting deployable roster data.';
+    } else {
+        summaryEl.textContent = 'No active raid-ready characters were available for Warden\'s Standard this week.';
+        metaEl.textContent = 'The weekly target is frozen at 0 until an active raid-ready baseline exists.';
+        textEl.textContent = 'No active raid-ready characters were available this week.';
+        leaderEl.textContent = 'Awaiting a deployable roster.';
+    }
+
+    fillEl.classList.remove(
+        'we-fill-xp',
+        'we-fill-hk',
+        'we-fill-loot',
+        'we-fill-zenith',
+        'we-fill-state-low',
+        'we-fill-state-mid',
+        'we-fill-state-high',
+        'we-fill-state-max'
+    );
+    fillEl.classList.add('we-fill-zenith');
+    fillEl.classList.add(
+        progressPct >= 100 ? 'we-fill-state-max' :
+        progressPct >= 75 ? 'we-fill-state-high' :
+        progressPct >= 30 ? 'we-fill-state-mid' :
+        'we-fill-state-low'
+    );
+    fillEl.style.width = `${progressPct}%`;
+}
 
 function killIntro() {
     sessionStorage.setItem('amwIntroPlayed', 'true');
@@ -125,6 +210,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (weRes.ok) {
             const weData = await weRes.json();
             warEffortLocks = weData.locks || {};
+            window.warEffortWeekAnchor = weData.week_anchor || '';
         }
     } catch (error) {
         console.warn("War Effort locks not generated yet. Proceeding with dynamic data.");
@@ -180,6 +266,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     let mainDonutChartInstance = null;     
     let conciseDonutChartInstance = null;
     window.roleChartInstance = null;
+    window.warEffortReadinessLock = warEffortLocks.readiness || {};
     const analyticsView = document.getElementById('analytics-view');   
     const architectureView = document.getElementById('architecture-view');
 
@@ -4873,6 +4960,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (xpCont) xpCont.hidden = false;
 
         populateHomeOverview(config);
+        renderReadinessObjectiveCard(window.warEffortReadinessLock || {}, window.warEffortWeekAnchor || '');
 
         if (typeof window.renderGuildXPBar === 'function') window.renderGuildXPBar();
 
@@ -7093,7 +7181,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         renderBar('guild-zenith-fill', 'guild-zenith-text', totalZenith, window.WAR_EFFORT_THRESHOLDS.zenith, 'ZENITH');
 
         // Track locked vanguards and milestone monuments for the current war-effort board.
-        window.warEffortVanguards = { xp: [], hk: [], loot: [], zenith: [] };
+        window.warEffortVanguards = { xp: [], hk: [], loot: [], zenith: [], readiness: [] };
         window.warEffortMonuments = [];
         window.warEffortLockTimes = {};
 
@@ -7107,6 +7195,12 @@ window.addEventListener('DOMContentLoaded', async () => {
                 window.warEffortMonuments.push(fallbackMon);
                 window.warEffortLockTimes[type] = fallbackMon.timestamp;
             }
+        }
+
+        if (window.warEffortReadinessLock) {
+            window.warEffortVanguards.readiness = Array.isArray(window.warEffortReadinessLock.vanguards)
+                ? window.warEffortReadinessLock.vanguards
+                : [];
         }
 
         if (totalLevels >= window.WAR_EFFORT_THRESHOLDS.xp) {

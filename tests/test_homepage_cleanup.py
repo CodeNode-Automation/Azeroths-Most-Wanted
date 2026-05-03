@@ -46,6 +46,8 @@ class HomepageCleanupTests(unittest.TestCase):
         self.assertIn('href="#campaign-archive"', template_text)
         self.assertIn('View Campaign Archive', template_text)
         self.assertIn('Campaign Archive', template_text)
+        self.assertIn("Warden's Standard", template_text)
+        self.assertIn('id="guild-readiness-summary"', template_text)
         self.assertNotIn('https://github.com/parvagans/Azeroths-Most-Wanted', template_text)
         self.assertNotIn('class="nav-btn nav-btn-source"', template_text)
         self.assertNotIn('class="footer-source-info"', template_text)
