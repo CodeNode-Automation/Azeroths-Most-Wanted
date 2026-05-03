@@ -1,4 +1,5 @@
 import json
+import math
 import os
 from datetime import datetime, timedelta, timezone
 
@@ -7,6 +8,196 @@ XP_THRESHOLD = 500
 HK_THRESHOLD = 1000
 LOOT_THRESHOLD = 40
 ZENITH_THRESHOLD = 5
+READINESS_CATEGORY = "readiness"
+READINESS_LABEL = "Warden's Standard"
+READINESS_RAID_READY_LEVEL = 70
+READINESS_RAID_READY_ILVL = 110
+READINESS_ACTIVE_WINDOW_DAYS = 7
+READINESS_TARGET_RATIO = 0.70
+READINESS_COMBAT_SLOT_KEYS = (
+    "head",
+    "neck",
+    "shoulder",
+    "back",
+    "chest",
+    "wrist",
+    "hands",
+    "waist",
+    "legs",
+    "feet",
+    "finger_1",
+    "finger_2",
+    "trinket_1",
+    "trinket_2",
+    "main_hand",
+    "off_hand",
+    "ranged",
+)
+READINESS_COMBAT_SLOT_SET = set(READINESS_COMBAT_SLOT_KEYS)
+
+
+def _clean_int(value, default=0):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _clean_name(value):
+    return str(value or "").strip().lower()
+
+
+def _parse_timestamp_ms(value):
+    try:
+        raw = int(value)
+    except (TypeError, ValueError):
+        return None
+    return raw if raw > 0 else None
+
+
+def _count_combat_equipment_slots(equipped):
+    if not isinstance(equipped, dict):
+        return 0
+
+    return sum(
+        1
+        for slot_name in READINESS_COMBAT_SLOT_KEYS
+        if isinstance(equipped.get(slot_name), dict)
+    )
+
+
+def _get_character_roster_name(character):
+    if not isinstance(character, dict):
+        return ""
+
+    profile = character.get("profile") if isinstance(character.get("profile"), dict) else {}
+    return _clean_name(profile.get("name") or character.get("char"))
+
+
+def _get_character_profile_and_equipped(character):
+    if not isinstance(character, dict):
+        return {}, {}
+
+    profile = character.get("profile") if isinstance(character.get("profile"), dict) else {}
+    equipped = character.get("equipped") if isinstance(character.get("equipped"), dict) else {}
+    return profile, equipped
+
+
+def _get_readiness_character_state(character, active_roster_set, now_ms):
+    profile, equipped = _get_character_profile_and_equipped(character)
+    name = _get_character_roster_name(character)
+    if not name or (active_roster_set and name not in active_roster_set):
+        return None
+
+    level = _clean_int(profile.get("level") or character.get("level"), 0)
+    ilvl = _clean_int(
+        profile.get("equipped_item_level")
+        or character.get("equipped_item_level")
+        or equipped.get("equipped_item_level"),
+        0,
+    )
+    last_seen_ms = (
+        _parse_timestamp_ms(profile.get("last_login_timestamp"))
+        or _parse_timestamp_ms(character.get("last_login_ms"))
+        or _parse_timestamp_ms(equipped.get("last_login_ms"))
+    )
+
+    raid_ready = level >= READINESS_RAID_READY_LEVEL and ilvl >= READINESS_RAID_READY_ILVL
+    seen_recently = bool(last_seen_ms and now_ms - last_seen_ms <= READINESS_ACTIVE_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+    combat_slots = _count_combat_equipment_slots(equipped)
+    has_valid_profile_gear = bool(profile) and bool(equipped) and ilvl > 0 and last_seen_ms is not None
+
+    return {
+        "name": name,
+        "level": level,
+        "equipped_item_level": ilvl,
+        "last_seen_ms": last_seen_ms or 0,
+        "raid_ready": raid_ready,
+        "seen_recently": seen_recently,
+        "combat_slots": combat_slots,
+        "has_valid_profile_gear": has_valid_profile_gear,
+        "is_participant": bool(
+            raid_ready
+            and seen_recently
+            and has_valid_profile_gear
+            and combat_slots == len(READINESS_COMBAT_SLOT_KEYS)
+        ),
+    }
+
+
+def build_readiness_week_state(roster_data, active_roster_set, now_ms=None, readiness_lock=None):
+    if now_ms is None:
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+
+    readiness_lock = readiness_lock or {}
+    active_raid_ready_baseline = _clean_int(readiness_lock.get("active_raid_ready_baseline"), -1)
+    target = _clean_int(readiness_lock.get("target"), -1)
+
+    total_raid_ready_count = 0
+    active_raid_ready_count = 0
+    participant_rows = []
+
+    for character in roster_data or []:
+        state = _get_readiness_character_state(character, active_roster_set, now_ms)
+        if not state:
+            continue
+
+        if state["raid_ready"]:
+            total_raid_ready_count += 1
+        if state["raid_ready"] and state["seen_recently"]:
+            active_raid_ready_count += 1
+        if state["is_participant"]:
+            participant_rows.append(state)
+
+    if active_raid_ready_baseline < 0:
+        active_raid_ready_baseline = active_raid_ready_count
+    if target < 0:
+        target = math.ceil(active_raid_ready_baseline * READINESS_TARGET_RATIO) if active_raid_ready_baseline > 0 else 0
+
+    participant_rows = sorted(
+        participant_rows,
+        key=lambda row: (
+            -_clean_int(row.get("equipped_item_level"), 0),
+            -_clean_int(row.get("last_seen_ms"), 0),
+            row.get("name", ""),
+        ),
+    )
+    participants = [row["name"] for row in participant_rows]
+    vanguards = participants[:3]
+    participant_count = len(participants)
+    completion_pct = round((participant_count / target) * 100) if target else 0
+
+    return {
+        "category": READINESS_CATEGORY,
+        "label": READINESS_LABEL,
+        "active_raid_ready_baseline": active_raid_ready_baseline,
+        "active_raid_ready_count": active_raid_ready_count,
+        "total_raid_ready_count": total_raid_ready_count,
+        "target": target,
+        "participant_count": participant_count,
+        "completion_pct": completion_pct,
+        "participants": participants,
+        "vanguards": vanguards,
+    }
+
+
+def update_readiness_lock(we_data, readiness_state):
+    if "locks" not in we_data or not isinstance(we_data["locks"], dict):
+        we_data["locks"] = {}
+
+    current_lock = dict(we_data["locks"].get(READINESS_CATEGORY, {}))
+    current_lock.update({
+        "vanguards": readiness_state.get("vanguards", []),
+        "participants": readiness_state.get("participants", []),
+        "active_raid_ready_baseline": readiness_state.get("active_raid_ready_baseline", 0),
+        "active_raid_ready_count": readiness_state.get("active_raid_ready_count", 0),
+        "total_raid_ready_count": readiness_state.get("total_raid_ready_count", 0),
+        "target": readiness_state.get("target", 0),
+        "participant_count": readiness_state.get("participant_count", 0),
+        "completion_pct": readiness_state.get("completion_pct", 0),
+    })
+    we_data["locks"][READINESS_CATEGORY] = current_lock
+    return current_lock
 
 
 def build_weekly_reset_context(berlin_tz):
@@ -61,6 +252,12 @@ def load_war_effort_lock_data(we_file, week_anchor, active_roster_set):
             continue
 
         clean_vanguards = filter_active_we_names(lock.get("vanguards", []), active_roster_set)
+        if cat == READINESS_CATEGORY:
+            clean_participants = filter_active_we_names(lock.get("participants", []), active_roster_set)
+            we_data["locks"][cat]["vanguards"] = clean_vanguards
+            we_data["locks"][cat]["participants"] = clean_participants
+            continue
+
         if clean_vanguards:
             we_data["locks"][cat]["vanguards"] = clean_vanguards
         else:

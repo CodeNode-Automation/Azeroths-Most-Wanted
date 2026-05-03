@@ -1,12 +1,13 @@
 import json
 
 
-WAR_EFFORT_CATEGORY_ORDER = ("xp", "hk", "loot", "zenith")
+WAR_EFFORT_CATEGORY_ORDER = ("xp", "hk", "loot", "zenith", "readiness")
 WAR_EFFORT_CATEGORY_LABELS = {
     "xp": "Hero's Journey",
     "hk": "Blood of the Enemy",
     "loot": "Dragon's Hoard",
     "zenith": "The Zenith Cohort",
+    "readiness": "Warden's Standard",
 }
 
 LADDER_CATEGORY_ORDER = ("pve", "pvp")

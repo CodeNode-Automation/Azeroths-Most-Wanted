@@ -42,8 +42,9 @@ from wow.war_effort import (
     build_weekly_reset_context,
     collect_hk_progress,
     collect_loot_progress,
-    collect_xp_progress,
     collect_zenith_progress,
+    build_readiness_week_state,
+    collect_xp_progress,
     filter_active_we_names,
     load_war_effort_lock_data,
     prepare_war_effort_history_purge,
@@ -51,6 +52,7 @@ from wow.war_effort import (
     rebuild_locked_vanguards,
     update_hk_lock,
     update_loot_lock,
+    update_readiness_lock,
     update_xp_lock,
     update_zenith_lock,
 )
@@ -457,7 +459,22 @@ async def main_async():
 
         await smart_update_we('zenith', current_vanguards, unique_70s, preserve_existing_vanguards=zenith_threshold_met)
 
-        # 5. MVP Reigning Champs Logic (Save CONFIRMED winners from last week)
+        # 5. Readiness / Warden's Standard Logic
+        readiness_state = build_readiness_week_state(
+            roster_data,
+            active_roster_set,
+            now_ms=int(now_berlin.astimezone(timezone.utc).timestamp() * 1000),
+            readiness_lock=we_data["locks"].get("readiness"),
+        )
+        update_readiness_lock(we_data, readiness_state)
+        await smart_update_we(
+            'readiness',
+            readiness_state["vanguards"],
+            readiness_state["participants"],
+            preserve_existing_vanguards=False,
+        )
+
+        # 6. MVP Reigning Champs Logic (Save CONFIRMED winners from last week)
         # We must NOT save the current week's leader until the week is actually over!
 
         try:

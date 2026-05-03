@@ -20,6 +20,12 @@ class CampaignArchiveTests(unittest.TestCase):
                     "category": "xp",
                     "vanguards": '[" Bravo ", "Alpha"]',
                     "participants": '["Zulu"]',
+                },
+                {
+                    "week_anchor": "2026-04-21",
+                    "category": "readiness",
+                    "vanguards": '["Charlie", "Alpha"]',
+                    "participants": '["Charlie", "Delta"]',
                 }
             ],
             ladder_rows=[
@@ -50,17 +56,22 @@ class CampaignArchiveTests(unittest.TestCase):
 
         self.assertEqual(payload["latest_week"], "2026-04-21")
         self.assertEqual(payload["archived_weeks"], 1)
-        self.assertEqual(payload["total_campaign_entries"], 3)
+        self.assertEqual(payload["total_campaign_entries"], 4)
         self.assertEqual(payload["reigning_titles_logged"], 1)
 
         week = payload["weeks"][0]
         self.assertEqual(week["week_anchor"], "2026-04-21")
-        self.assertEqual(week["war_effort_entry_count"], 1)
+        self.assertEqual(week["war_effort_entry_count"], 2)
         self.assertEqual(week["ladder_entry_count"], 2)
         self.assertEqual(week["reigning_entry_count"], 1)
         self.assertEqual(week["war_effort"][0]["category"], "xp")
         self.assertEqual(week["war_effort"][0]["vanguards"], ["Bravo", "Alpha"])
         self.assertEqual(week["war_effort"][0]["participant_count"], 1)
+        self.assertEqual(week["war_effort"][1]["category"], "readiness")
+        self.assertEqual(week["war_effort"][1]["label"], "Warden's Standard")
+        self.assertEqual(week["war_effort"][1]["vanguards"], ["Charlie", "Alpha"])
+        self.assertEqual(week["war_effort"][1]["participants"], ["Charlie", "Delta"])
+        self.assertEqual(week["war_effort"][1]["participant_count"], 2)
         self.assertEqual(week["ladder"]["pve"], [])
         self.assertEqual([entry["rank"] for entry in week["ladder"]["pvp"]], [1, 2])
         self.assertEqual([entry["champion"] for entry in week["ladder"]["pvp"]], ["First", "Second"])

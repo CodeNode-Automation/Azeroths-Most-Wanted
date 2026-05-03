@@ -4,7 +4,13 @@ import json
 def aggregate_war_effort_badges(historical_data):
     vanguard_tallies, campaign_tallies = {}, {}
     badge_events = []
-    cat_map = {"xp": "XP", "hk": "HKs", "loot": "Loot", "zenith": "Zenith"}
+    cat_map = {
+        "xp": "XP",
+        "hk": "HKs",
+        "loot": "Loot",
+        "zenith": "Zenith",
+        "readiness": "Warden's Standard",
+    }
 
     if historical_data:
         for row in historical_data:
