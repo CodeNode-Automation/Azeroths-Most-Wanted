@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 from wow.campaign_archive import build_campaign_archive_payload, parse_archive_name_list
 
@@ -101,6 +102,33 @@ class CampaignArchiveTests(unittest.TestCase):
         self.assertEqual(payload["latest_week"], "2026-04-21")
         self.assertEqual(payload["weeks"][0]["reigning_titles"][0]["champion"], "Current Champion")
         self.assertEqual(payload["weeks"][0]["reigning_titles"][0]["score"], 25)
+
+    def test_campaign_archive_frontend_recognizes_readiness_category(self):
+        archive_view_text = Path("render/src/js/features/campaign_archive/archive_view.js").read_text(encoding="utf-8")
+
+        self.assertIn("CAMPAIGN_ARCHIVE_CATEGORY_ICONS", archive_view_text)
+        self.assertIn("const cleanCategory = String(category || '').trim().toLowerCase();", archive_view_text)
+        self.assertIn("CAMPAIGN_ARCHIVE_CATEGORY_ICONS[cleanCategory] || '\\u{1F396}\\uFE0F'", archive_view_text)
+        self.assertIn("readiness: '\\u{1F3F0}'", archive_view_text)
+        self.assertIn("CAMPAIGN_ARCHIVE_CATEGORY_LABELS", archive_view_text)
+        self.assertIn("readiness: \"Warden's Standard\"", archive_view_text)
+        self.assertIn("buildCampaignArchiveWarEffortTitle(category, label)", archive_view_text)
+        self.assertIn("String(label || '').trim() || CAMPAIGN_ARCHIVE_CATEGORY_LABELS[cleanCategory] || cleanCategory || 'War Effort';", archive_view_text)
+        self.assertIn("Hero's Journey", archive_view_text)
+        self.assertIn("Blood of the Enemy", archive_view_text)
+        self.assertIn("Dragon's Hoard", archive_view_text)
+        self.assertIn("The Zenith Cohort", archive_view_text)
+        self.assertNotIn("WS", archive_view_text)
+        self.assertNotIn("READY", archive_view_text)
+        self.assertNotIn("WARDEN", archive_view_text)
+        self.assertNotIn("DH", archive_view_text)
+        self.assertNotIn("PVE", archive_view_text)
+        self.assertNotIn("BOE", archive_view_text)
+        self.assertNotIn("ZN", archive_view_text)
+        self.assertNotIn("__amwReadinessPatched", archive_view_text)
+        self.assertNotIn("patchedGetHallOfHeroes", archive_view_text)
+        self.assertNotIn("badge.removeAttribute('title');", archive_view_text)
+        self.assertNotIn("badge.style.pointerEvents = 'none';", archive_view_text)
 
 
 if __name__ == "__main__":

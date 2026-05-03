@@ -2,10 +2,19 @@
 
 const CAMPAIGN_ARCHIVE_PARTICIPANT_PREVIEW_COUNT = 6;
 const CAMPAIGN_ARCHIVE_CATEGORY_ICONS = {
-    xp: '🛡️',
-    hk: '🩸',
-    loot: '🐉',
-    zenith: '⚡'
+    xp: '\u{1F6E1}\uFE0F',
+    hk: '\u{1FA78}',
+    loot: '\u{1F409}',
+    zenith: '\u26A1\uFE0F',
+    readiness: '\u{1F3F0}'
+};
+
+const CAMPAIGN_ARCHIVE_CATEGORY_LABELS = {
+    xp: "Hero's Journey",
+    hk: 'Blood of the Enemy',
+    loot: "Dragon's Hoard",
+    zenith: 'The Zenith Cohort',
+    readiness: "Warden's Standard"
 };
 
 function formatCampaignArchiveWeekLabel(weekAnchor) {
@@ -218,17 +227,18 @@ function buildCampaignArchiveSummaryCard({
 function buildCampaignArchiveWarEffortTitle(category, label) {
     const titleEl = document.createElement('h4');
     titleEl.className = 'leaderboard-title campaign-archive-panel-title campaign-archive-panel-title-war-effort';
+    const cleanCategory = String(category || '').trim().toLowerCase();
 
     const titleWrap = document.createElement('span');
     titleWrap.className = 'campaign-archive-title-wrap';
 
     const iconEl = document.createElement('span');
     iconEl.className = 'campaign-archive-title-icon';
-    iconEl.textContent = CAMPAIGN_ARCHIVE_CATEGORY_ICONS[String(category || '').trim().toLowerCase()] || '🎖️';
+    iconEl.textContent = CAMPAIGN_ARCHIVE_CATEGORY_ICONS[cleanCategory] || '\u{1F396}\uFE0F';
 
     const textEl = document.createElement('span');
     textEl.className = 'campaign-archive-title-text';
-    textEl.textContent = label;
+    textEl.textContent = String(label || '').trim() || CAMPAIGN_ARCHIVE_CATEGORY_LABELS[cleanCategory] || cleanCategory || 'War Effort';
 
     titleWrap.appendChild(iconEl);
     titleWrap.appendChild(textEl);
