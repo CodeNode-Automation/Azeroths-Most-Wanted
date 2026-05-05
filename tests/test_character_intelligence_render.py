@@ -1,4 +1,5 @@
-﻿import unittest
+import json
+import unittest
 from pathlib import Path
 
 
@@ -142,8 +143,8 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertIn("buildDossierReigning({", runtime_text)
         self.assertIn("profile: p,", runtime_text)
         self.assertIn("source: char,", runtime_text)
-        self.assertNotIn("addBadge(isPveReigning ? 1 : 0, 'Current Reigning PvE Champion!', 'tt-badge-pve', '👑', '👑 Reign');", runtime_text)
-        self.assertNotIn("addBadge(isPvpReigning ? 1 : 0, 'Current Reigning PvP Champion!', 'tt-badge-pvp', '⚔️', '⚔️ Reign');", runtime_text)
+        self.assertNotIn("addBadge(isPveReigning ? 1 : 0, 'Current Reigning PvE Champion!', 'tt-badge-pve', '\U0001F451', '\U0001F451 Reign');", runtime_text)
+        self.assertNotIn("addBadge(isPvpReigning ? 1 : 0, 'Current Reigning PvP Champion!', 'tt-badge-pvp', '\u2694\ufe0f', '\u2694\ufe0f Reign');", runtime_text)
         self.assertIn("Dragon's Hoard", js_text)
         self.assertIn("Blood of the Enemy", js_text)
         self.assertIn("Warden's Standard", js_text)
@@ -171,9 +172,9 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertNotIn("patchedTooltip", js_text)
         self.assertNotIn("badge.removeAttribute('title');", js_text)
         self.assertNotIn("badge.style.pointerEvents = 'none';", js_text)
-        self.assertNotIn("Ãƒ", js_text)
-        self.assertNotIn("Ã", js_text)
-        self.assertNotIn("ï¿½", js_text)
+        self.assertNotIn("\u00c3\u0192", js_text)
+        self.assertNotIn("\u00c3\u00d0", js_text)
+        self.assertNotIn("\u00ef\u00bf\u00bd", js_text)
         self.assertIn("Latest dashboard scan:", js_text)
         self.assertIn("Raid-ready main.", js_text)
         self.assertIn("Level 70 but below raid-ready threshold.", js_text)
@@ -236,6 +237,37 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertLess(identity_decl, runtime_text.index("text: identity.mainAltLabel"))
         self.assertLess(activity_decl, runtime_text.index("activity.label === 'Recently active'"))
         self.assertLess(runtime_text.index("const reigningBadges = typeof buildDossierReigning === 'function'"), runtime_text.index("reigningBadges.forEach"))
+
+    def test_dossier_officer_brief_uses_canonical_equipped_item_level(self):
+        js_text = Path("render/src/js/features/character_dossier/dossier_view.js").read_text(encoding="utf-8")
+        roster_rows = json.loads(Path("asset/roster.json").read_text(encoding="utf-8"))
+
+        self.assertTrue(any(
+            isinstance(row.get("profile"), dict) and row["profile"].get("equipped_item_level", 0) > 0
+            for row in roster_rows
+            if isinstance(row, dict)
+        ))
+        self.assertTrue(any(
+            isinstance(row.get("equipped"), dict) and row["equipped"].get("equipped_item_level", 0) > 0
+            for row in roster_rows
+            if isinstance(row, dict)
+        ))
+
+        self.assertIn("function getDossierEquippedItemLevel(profile, source = null)", js_text)
+        self.assertIn("profile?.equipped_item_level", js_text)
+        self.assertIn("source?.equipped_item_level", js_text)
+        self.assertIn("profile?.equipped?.equipped_item_level", js_text)
+        self.assertIn("source?.equipped?.equipped_item_level", js_text)
+        self.assertIn("source?.profile?.equipped_item_level", js_text)
+        self.assertIn("const ilvl = getDossierEquippedItemLevel(profile, source);", js_text)
+        self.assertIn("const equippedIlvl = getDossierEquippedItemLevel(profile, source);", js_text)
+        self.assertIn("if (identity.level >= 70 && equippedIlvl <= 0)", js_text)
+        self.assertLess(
+            js_text.index("const equippedIlvl = getDossierEquippedItemLevel(profile, source);"),
+            js_text.index("if (identity.level >= 70 && equippedIlvl <= 0)"),
+        )
+        self.assertIn("Missing item-level data; inspect profile source before roster decisions.", js_text)
+        self.assertNotIn("equippedIlvl = 0", js_text)
 
 
 if __name__ == "__main__":

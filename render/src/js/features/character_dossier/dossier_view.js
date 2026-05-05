@@ -357,7 +357,7 @@ function getDossierActivitySnapshot(profile, source = null) {
 
 function getDossierReadinessSnapshot(profile, source = null) {
     const level = parseInt(profile?.level || source?.level, 10) || 0;
-    const ilvl = parseInt(profile?.equipped_item_level || source?.equipped_item_level, 10) || 0;
+    const ilvl = getDossierEquippedItemLevel(profile, source);
 
     if (level < 70) {
         return { label: 'Still advancing', meta: `Level ${level}` };
@@ -392,6 +392,25 @@ function formatDossierTimestamp(value) {
     }
 }
 
+function getDossierEquippedItemLevel(profile, source = null) {
+    const candidates = [
+        profile?.equipped_item_level,
+        source?.equipped_item_level,
+        profile?.equipped?.equipped_item_level,
+        source?.equipped?.equipped_item_level,
+        source?.profile?.equipped_item_level
+    ];
+
+    for (const candidate of candidates) {
+        const ilvl = parseInt(candidate, 10);
+        if (Number.isFinite(ilvl) && ilvl > 0) {
+            return ilvl;
+        }
+    }
+
+    return 0;
+}
+
 function getDossierIdentitySnapshot(profile, source = null) {
     const level = parseInt(profile?.level || source?.level, 10) || 0;
     const cClass = getCharClass(source || { profile }) || 'Unknown';
@@ -403,6 +422,7 @@ function getDossierIdentitySnapshot(profile, source = null) {
     const roleLabel = activeSpec ? getCharacterRole(cClass, activeSpec) : 'Unknown';
     const isAlt = isAltCharacter(source);
     const mainAltLabel = isAlt ? 'Alt' : 'Main';
+    const equippedIlvl = getDossierEquippedItemLevel(profile, source);
 
     return {
         level,
@@ -414,6 +434,7 @@ function getDossierIdentitySnapshot(profile, source = null) {
         isAlt,
         isMain: !isAlt,
         mainAltLabel,
+        equippedIlvl,
         levelLabel: level > 0 ? `Level ${level}` : 'Level unknown'
     };
 }
