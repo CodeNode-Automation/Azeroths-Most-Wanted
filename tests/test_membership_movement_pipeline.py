@@ -68,7 +68,7 @@ class MembershipMovementPipelineTests(unittest.IsolatedAsyncioTestCase):
             main_text,
         )
         self.assertIn(
-            "SELECT * FROM timeline WHERE timestamp >= datetime('now', '-7 days') ORDER BY timestamp DESC LIMIT 15000",
+            "SELECT * FROM timeline WHERE timestamp >= strftime('%Y-%m-%dT%H:%M:%S', 'now', '-7 days') ORDER BY timestamp DESC LIMIT 15000",
             main_text,
         )
         self.assertIn("INSERT OR REPLACE INTO gear_current", main_text)

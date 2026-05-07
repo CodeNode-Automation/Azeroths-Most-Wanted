@@ -114,7 +114,7 @@ async def main_async():
             session,
             "SELECT last_total, last_active, last_ready, last_total_mains, last_active_mains, last_ready_mains FROM global_trends WHERE id='__GLOBAL__'"
         )
-        timeline_task = fetch_turso(session, "SELECT * FROM timeline WHERE timestamp >= datetime('now', '-7 days') ORDER BY timestamp DESC LIMIT 15000")
+        timeline_task = fetch_turso(session, "SELECT * FROM timeline WHERE timestamp >= strftime('%Y-%m-%dT%H:%M:%S', 'now', '-7 days') ORDER BY timestamp DESC LIMIT 15000")
         prev_mvp_task = fetch_turso(session, prev_mvp_query)
 
         char_rows, gear_rows, trend_rows, gt_rows, timeline_rows, prev_mvp_rows = await asyncio.gather(
