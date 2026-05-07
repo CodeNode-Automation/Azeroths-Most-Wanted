@@ -1908,7 +1908,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         const hksBadgeCount = campaignBadgeTypes.filter(type => type === 'hks').length;
         const lootCount = campaignBadgeTypes.filter(type => type === 'loot').length;
         const zenithCount = campaignBadgeTypes.filter(type => type === 'zenith').length;
-        const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);
         const pveChamp = parseInt(p.pve_champ_count || char.pve_champ_count) || 0;
         const pvpChamp = parseInt(p.pvp_champ_count || char.pvp_champ_count) || 0;
         const pveGold = parseInt(p.pve_gold || char.pve_gold) || 0;
@@ -1928,7 +1927,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         const tHks = getDetailedBadgeTooltip(p.name, ['hks', 'hk'], `${hksBadgeCount}x Blood of the Enemy`, hksBadgeCount);
         const tLoot = getDetailedBadgeTooltip(p.name, ['loot'], `${lootCount}x Dragon's Hoard`, lootCount);
         const tZenith = getDetailedBadgeTooltip(p.name, ['zenith'], `${zenithCount}x The Zenith Cohort`, zenithCount);
-        const tReadiness = getDetailedBadgeTooltip(p.name, ['readiness'], readinessState.title, readinessState.count);
         const tPveGold = getDetailedBadgeTooltip(p.name, ['pve_gold'], `${pveGold}x PvE Gold Medal`, pveGold);
         const tPveSilver = getDetailedBadgeTooltip(p.name, ['pve_silver'], `${pveSilver}x PvE Silver Medal`, pveSilver);
         const tPveBronze = getDetailedBadgeTooltip(p.name, ['pve_bronze'], `${pveBronze}x PvE Bronze Medal`, pveBronze);
@@ -2042,18 +2040,25 @@ window.addEventListener('DOMContentLoaded', async () => {
                 classNames: ['default-badge']
             });
 
+            const equippedIlvl = parseInt(identity.equippedIlvl || 0, 10) || 0;
+            if (equippedIlvl > 0) {
+                appendFullCardBadge(headerBadgesEl, {
+                    text: `iLvl ${equippedIlvl.toLocaleString()}`,
+                    classNames: ['default-badge']
+                });
+            }
+
+            if (guildRank) {
+                appendFullCardBadge(headerBadgesEl, {
+                    text: guildRank,
+                    classNames: ['default-badge']
+                });
+            }
+
             appendFullCardBadge(headerBadgesEl, {
                 text: readinessLabel,
                 classNames: [hasRaidReadyLoadout ? 'badge-war-zenith' : 'default-badge']
             });
-
-            if (readinessState.count > 0) {
-                appendFullCardBadge(headerBadgesEl, {
-                    text: `${DASHBOARD_BADGE_ICONS.readiness} ${readinessState.count}`,
-                    title: tReadiness,
-                    classNames: ['badge-war-readiness']
-                });
-            }
 
             appendFullCardBadge(headerBadgesEl, {
                 text: identity.mainAltLabel,

@@ -110,14 +110,25 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertIn("badge-war-readiness", runtime_text)
         self.assertIn("c-badge-weekly-readiness", runtime_text)
         self.assertIn("appendFullCardBadge(headerBadgesEl, {", runtime_text)
-        self.assertIn("const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);", runtime_text)
-        self.assertIn("text: `${DASHBOARD_BADGE_ICONS.readiness} ${readinessState.count}`,", runtime_text)
-        self.assertIn("title: tReadiness,", runtime_text)
-        self.assertIn("classNames: ['badge-war-readiness']", runtime_text)
+        self.assertIn("const headerBadgesEl = clone.querySelector('.char-card-header-badges') || clone.querySelector('.char-badges-container');", runtime_text)
+        self.assertIn("const headerReigningSlotEl = clone.querySelector('.char-card-header-reigning-slot') || headerBadgesEl;", runtime_text)
+        self.assertIn("const equippedIlvl = parseInt(identity.equippedIlvl || 0, 10) || 0;", runtime_text)
+        self.assertIn("if (equippedIlvl > 0) {", runtime_text)
+        self.assertIn("text: `iLvl ${equippedIlvl.toLocaleString()}`,", runtime_text)
+        self.assertIn("text: guildRank,", runtime_text)
+        self.assertIn("text: readinessLabel,", runtime_text)
         self.assertLess(
-            runtime_text.index("const readinessState = getReadinessBadgeState(vBadges, campaignBadgeTypes);"),
-            runtime_text.index("const tReadiness = getDetailedBadgeTooltip(p.name, ['readiness'], readinessState.title, readinessState.count);"),
+            runtime_text.index("text: `iLvl ${equippedIlvl.toLocaleString()}`,"),
+            runtime_text.index("text: guildRank,"),
         )
+        self.assertLess(
+            runtime_text.index("text: guildRank,"),
+            runtime_text.index("text: readinessLabel,"),
+        )
+        header_block = runtime_text[runtime_text.index("const headerBadgesEl = clone.querySelector('.char-card-header-badges') || clone.querySelector('.char-badges-container');"):runtime_text.index("const reigningBadges = typeof buildDossierReigning === 'function'")]
+        self.assertNotIn("text: `${DASHBOARD_BADGE_ICONS.readiness} ${readinessState.count}`", header_block)
+        self.assertNotIn("classNames: ['badge-war-readiness']", header_block)
+        self.assertNotIn("title: tReadiness,", header_block)
         self.assertIn("const vanguardRequested = cleanBadgeTypes.includes('vanguard');", js_text)
         self.assertIn("const warEffortEntries = Array.isArray(week?.war_effort) ? week.war_effort : [];", js_text)
         self.assertIn("const isVanguard = vanguards.some(name => String(name || '').trim().toLowerCase() === targetName);", js_text)
@@ -143,6 +154,17 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertIn("buildDossierReigning({", runtime_text)
         self.assertIn("profile: p,", runtime_text)
         self.assertIn("source: char,", runtime_text)
+        self.assertIn("const equippedIlvl = parseInt(identity.equippedIlvl || 0, 10) || 0;", runtime_text)
+        self.assertIn("if (equippedIlvl > 0) {", runtime_text)
+        self.assertIn("text: `iLvl ${equippedIlvl.toLocaleString()}`,", runtime_text)
+        self.assertLess(
+            runtime_text.index("const equippedIlvl = parseInt(identity.equippedIlvl || 0, 10) || 0;"),
+            runtime_text.index("text: `iLvl ${equippedIlvl.toLocaleString()}`,"),
+        )
+        self.assertLess(
+            runtime_text.index("text: `iLvl ${equippedIlvl.toLocaleString()}`,"),
+            runtime_text.index("text: readinessLabel,"),
+        )
         self.assertNotIn("addBadge(isPveReigning ? 1 : 0, 'Current Reigning PvE Champion!', 'tt-badge-pve', '\U0001F451', '\U0001F451 Reign');", runtime_text)
         self.assertNotIn("addBadge(isPvpReigning ? 1 : 0, 'Current Reigning PvP Champion!', 'tt-badge-pvp', '\u2694\ufe0f', '\u2694\ufe0f Reign');", runtime_text)
         self.assertIn("Dragon's Hoard", js_text)
@@ -187,6 +209,8 @@ class CharacterIntelligenceRenderTests(unittest.TestCase):
         self.assertIn("Staging for raid", js_text)
         self.assertIn("Needs gear", js_text)
         self.assertIn("Still advancing", js_text)
+        self.assertNotIn("Equipped item level:", runtime_text)
+        self.assertNotIn("Equipped item level:", js_text)
         self.assertNotIn("Battlefield Distinction", js_text)
         self.assertNotIn("Commendation Profile", js_text)
         self.assertNotIn("char-card-officer-badge", js_text)
