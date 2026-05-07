@@ -113,7 +113,7 @@ async def main_async():
             session,
             "SELECT last_total, last_active, last_ready, last_total_mains, last_active_mains, last_ready_mains FROM global_trends WHERE id='__GLOBAL__'"
         )
-        timeline_task = fetch_turso(session, "SELECT character_name, type, level, item_id FROM timeline")
+        timeline_task = fetch_turso(session, "SELECT * FROM timeline ORDER BY timestamp DESC")
         prev_mvp_task = fetch_turso(session, prev_mvp_query)
 
         char_rows, gear_rows, trend_rows, gt_rows, timeline_rows, prev_mvp_rows = await asyncio.gather(
@@ -130,6 +130,7 @@ async def main_async():
             timeline_rows,
         )
 
+        dashboard_feed = list(timeline_rows or [])[:15000]
         timeline_data_new = []
         roster_data = []
 
@@ -270,6 +271,7 @@ async def main_async():
         })
 
         # Drop departed guild members from the live Turso tables.
+        departed_chars = []
         if roster_names:
             departed_chars = sorted({str(char).lower() for char in history_data.keys() if str(char).lower() not in roster_names})
             if departed_chars:
@@ -279,31 +281,47 @@ async def main_async():
                 for departed in departed_chars:
                     history_data.pop(departed, None)
 
-            placeholders = ",".join(["?"] * len(roster_names))
-            batch_stmts_initial.append({
-                "q": f"DELETE FROM characters WHERE lower(name) NOT IN ({placeholders})",
-                "params": roster_names
-            })
-            batch_stmts_initial.append({
-                "q": f"DELETE FROM gear WHERE lower(character_name) NOT IN ({placeholders})",
-                "params": roster_names
-            })
-            batch_stmts_initial.append({
-                "q": f"DELETE FROM timeline WHERE lower(character_name) NOT IN ({placeholders})",
-                "params": roster_names
-            })
-            batch_stmts_initial.append({
-                "q": f"DELETE FROM char_history WHERE lower(char_name) NOT IN ({placeholders})",
-                "params": roster_names
-            })
+            if departed_chars:
+                placeholders = ",".join(["?"] * len(departed_chars))
+                batch_stmts_initial.append({
+                    "q": f"DELETE FROM characters WHERE lower(name) IN ({placeholders})",
+                    "params": departed_chars,
+                })
+                batch_stmts_initial.append({
+                    "q": f"DELETE FROM gear WHERE lower(character_name) IN ({placeholders})",
+                    "params": departed_chars,
+                })
+                batch_stmts_initial.append({
+                    "q": f"DELETE FROM timeline WHERE lower(character_name) IN ({placeholders})",
+                    "params": departed_chars,
+                })
+                batch_stmts_initial.append({
+                    "q": f"DELETE FROM char_history WHERE lower(char_name) IN ({placeholders})",
+                    "params": departed_chars,
+                })
 
         if batch_stmts_initial:
             await push_turso_batch(session, batch_stmts_initial)
 
         active_roster_set = set(roster_names)
         
-        print("🌐 Fetching updated timeline for War Efforts...")
-        dashboard_feed = await fetch_turso(session, "SELECT * FROM timeline ORDER BY timestamp DESC LIMIT 15000")
+        if timeline_data_new:
+            def _timeline_event_to_feed_row(event):
+                item = event.get("item") if isinstance(event.get("item"), dict) else {}
+                return {
+                    "timestamp": event.get("timestamp"),
+                    "character_name": event.get("character"),
+                    "class": event.get("class"),
+                    "type": event.get("type"),
+                    "item_id": item.get("item_id"),
+                    "item_name": item.get("name"),
+                    "item_quality": item.get("quality"),
+                    "item_icon": item.get("icon_data"),
+                    "level": event.get("level"),
+                }
+
+            dashboard_feed.extend(_timeline_event_to_feed_row(event) for event in timeline_data_new)
+            dashboard_feed.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
 
         # Keep the current week's war-effort lock state in sync with Turso history.
         we_file = "asset/war_effort.json"
@@ -328,7 +346,7 @@ async def main_async():
 
         # Prune departed members from the historical Turso records.
         try:
-            purge_stmts = prepare_war_effort_history_purge(roster_names, active_roster_set, war_effort_history_state)
+            purge_stmts = prepare_war_effort_history_purge(departed_chars, active_roster_set, war_effort_history_state)
             if purge_stmts:
                 await push_turso_batch(session, purge_stmts)
         except Exception as e:

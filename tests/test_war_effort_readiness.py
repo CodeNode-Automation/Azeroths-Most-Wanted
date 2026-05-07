@@ -5,6 +5,7 @@ from pathlib import Path
 from tests.workspace_temp import workspace_temp_dir
 from wow.badges import aggregate_war_effort_badges
 from wow.war_effort import READINESS_COMBAT_SLOT_KEYS, build_readiness_week_state, load_war_effort_lock_data
+from wow.war_effort import prepare_war_effort_history_purge
 
 
 NOW_MS = 1_725_000_000_000
@@ -303,6 +304,20 @@ class WarEffortReadinessTests(unittest.TestCase):
             self.assertEqual(loaded["locks"]["readiness"]["target"], 0)
         finally:
             temp_dir.cleanup()
+
+    def test_war_effort_history_purge_targets_departed_names_with_indexed_in_filters(self):
+        purge_stmts = prepare_war_effort_history_purge(
+            ["Alpha", "Bravo"],
+            {"alpha", "bravo", "charlie"},
+            {},
+        )
+
+        purge_sql = "\n".join(stmt["q"] for stmt in purge_stmts)
+        self.assertIn("DELETE FROM reigning_champs_history WHERE lower(champion) IN", purge_sql)
+        self.assertIn("DELETE FROM ladder_history WHERE lower(champion) IN", purge_sql)
+        self.assertNotIn("NOT IN", purge_sql)
+        self.assertEqual(purge_stmts[0]["params"], ["alpha", "bravo"])
+        self.assertEqual(purge_stmts[1]["params"], ["alpha", "bravo"])
 
     def test_war_effort_badges_recognize_readiness_and_preserve_existing_categories(self):
         historical_data = [

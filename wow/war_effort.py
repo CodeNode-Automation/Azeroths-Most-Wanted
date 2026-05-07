@@ -363,21 +363,27 @@ def build_war_effort_history_state(war_effort_history_rows):
     return war_effort_history_state
 
 
-def prepare_war_effort_history_purge(roster_names, active_roster_set, war_effort_history_state):
-    if not roster_names:
-        return []
+def prepare_war_effort_history_purge(departed_names, active_roster_set, war_effort_history_state):
+    purge_stmts = []
 
-    placeholders = ",".join(["?"] * len(roster_names))
-    purge_stmts = [
-        {
-            "q": f"DELETE FROM reigning_champs_history WHERE lower(champion) NOT IN ({placeholders})",
-            "params": roster_names,
-        },
-        {
-            "q": f"DELETE FROM ladder_history WHERE lower(champion) NOT IN ({placeholders})",
-            "params": roster_names,
-        },
+    clean_departed_names = [
+        str(name).strip().lower()
+        for name in (departed_names or [])
+        if str(name or "").strip()
     ]
+
+    if clean_departed_names:
+        placeholders = ",".join(["?"] * len(clean_departed_names))
+        purge_stmts.extend([
+            {
+                "q": f"DELETE FROM reigning_champs_history WHERE lower(champion) IN ({placeholders})",
+                "params": clean_departed_names,
+            },
+            {
+                "q": f"DELETE FROM ladder_history WHERE lower(champion) IN ({placeholders})",
+                "params": clean_departed_names,
+            },
+        ])
 
     for row in list(war_effort_history_state.values()):
         week = row.get('week_anchor')

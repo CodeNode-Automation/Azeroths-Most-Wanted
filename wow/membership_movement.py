@@ -215,17 +215,24 @@ def build_latest_membership_status_query():
     """
 
 
-def build_recent_membership_movement_query(limit=200):
+def build_recent_membership_movement_query(limit=500, days=7):
     try:
         safe_limit = int(limit)
     except (TypeError, ValueError):
-        safe_limit = 200
+        safe_limit = 500
+
+    try:
+        safe_days = int(days)
+    except (TypeError, ValueError):
+        safe_days = 7
 
     safe_limit = max(1, safe_limit)
+    safe_days = max(1, safe_days)
 
     return f"""
         SELECT scan_id, character_name, event_type, detected_at, previous_status, current_status
         FROM guild_membership_events
+        WHERE detected_at >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-{safe_days} days')
         ORDER BY detected_at DESC, id DESC
         LIMIT {safe_limit}
     """

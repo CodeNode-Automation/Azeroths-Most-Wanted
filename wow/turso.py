@@ -1,5 +1,38 @@
 import os
+import re
 from urllib.parse import urlparse
+
+
+def _is_truthy_env(name):
+    return str(os.environ.get(name, "")).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _compact_sql(query, limit=180):
+    compact = re.sub(r"\s+", " ", str(query or "")).strip()
+    if len(compact) > limit:
+        return compact[: limit - 3] + "..."
+    return compact
+
+
+def _extract_query_tables(query):
+    table_names = []
+    seen = set()
+    for pattern in (r"\bFROM\s+([^\s,;()]+)", r"\bJOIN\s+([^\s,;()]+)", r"\bINTO\s+([^\s,;()]+)", r"\bUPDATE\s+([^\s,;()]+)"):
+        for table_name in re.findall(pattern, str(query or ""), flags=re.IGNORECASE):
+            clean = str(table_name).strip().strip('`"[]')
+            if clean and clean not in seen:
+                seen.add(clean)
+                table_names.append(clean)
+    return table_names
+
+
+def _audit_turso_query(query, row_count=None):
+    if not _is_truthy_env("AMW_TURSO_QUERY_AUDIT"):
+        return
+
+    tables = ",".join(_extract_query_tables(query)) or "-"
+    rows = "?" if row_count is None else str(row_count)
+    print(f"[turso-audit] rows={rows} tables={tables} sql={_compact_sql(query)}")
 
 
 def _resolve_turso_config():
@@ -46,7 +79,9 @@ async def fetch_turso(session, query):
                 return []
             cols = results.get("columns", [])
             rows = results.get("rows", [])
-            return [dict(zip(cols, row)) for row in rows]
+            payload_rows = [dict(zip(cols, row)) for row in rows]
+            _audit_turso_query(query, len(payload_rows))
+            return payload_rows
     except Exception as e:
         print(f"Turso Fetch Error: {e}")
         return []
@@ -77,17 +112,33 @@ async def setup_database(session):
     print("Ensuring Turso schema exists...")
     schema_queries = [
         "CREATE TABLE IF NOT EXISTS characters (name TEXT PRIMARY KEY, class TEXT, race TEXT, faction TEXT, guild TEXT, level INTEGER, equipped_item_level INTEGER, xp INTEGER, xp_max INTEGER, health INTEGER, power INTEGER, last_login_ms INTEGER, portrait_url TEXT, active_spec TEXT, honorable_kills INTEGER, power_type TEXT, strength_base INTEGER, strength_effective INTEGER, agility_base INTEGER, agility_effective INTEGER, intellect_base INTEGER, intellect_effective INTEGER, stamina_base INTEGER, stamina_effective INTEGER, melee_crit_value REAL, melee_haste_value REAL, attack_power INTEGER, main_hand_min REAL, main_hand_max REAL, main_hand_speed REAL, main_hand_dps REAL, off_hand_min REAL, off_hand_max REAL, off_hand_speed REAL, off_hand_dps REAL, spell_power INTEGER, spell_penetration INTEGER, spell_crit_value REAL, mana_regen REAL, mana_regen_combat REAL, armor_base INTEGER, armor_effective INTEGER, dodge REAL, parry REAL, block REAL, ranged_crit REAL, ranged_haste REAL, spell_haste REAL, spirit_base INTEGER, spirit_effective INTEGER, defense_base INTEGER, defense_effective INTEGER, vanguard_badges TEXT, campaign_badges TEXT, pve_champ_count INTEGER, pvp_champ_count INTEGER)",
+        "CREATE INDEX IF NOT EXISTS idx_characters_lower_name ON characters (lower(name))",
         "CREATE TABLE IF NOT EXISTS gear (character_name TEXT, slot TEXT, item_id INTEGER, name TEXT, quality TEXT, icon_data TEXT, tooltip_params TEXT, last_detected TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (character_name, slot, item_id))",
+        "CREATE INDEX IF NOT EXISTS idx_gear_lower_character_name ON gear (lower(character_name))",
         "CREATE TABLE IF NOT EXISTS timeline (timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, character_name TEXT, class TEXT, type TEXT, item_id INTEGER, item_name TEXT, item_quality TEXT, item_icon TEXT, level INTEGER)",
         "CREATE INDEX IF NOT EXISTS idx_timeline_timestamp ON timeline (timestamp DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_timeline_lower_character_name ON timeline (lower(character_name))",
         "CREATE TABLE IF NOT EXISTS guild_membership_events (id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id TEXT NOT NULL, character_name TEXT NOT NULL, event_type TEXT NOT NULL, detected_at TEXT NOT NULL, previous_status TEXT, current_status TEXT)",
         "CREATE INDEX IF NOT EXISTS idx_guild_membership_events_detected_at ON guild_membership_events (detected_at DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_guild_membership_events_detected_at_id ON guild_membership_events (detected_at DESC, id DESC)",
         "CREATE INDEX IF NOT EXISTS idx_guild_membership_events_character_name ON guild_membership_events (character_name)",
         "CREATE INDEX IF NOT EXISTS idx_guild_membership_events_event_type ON guild_membership_events (event_type)",
+        "CREATE INDEX IF NOT EXISTS idx_guild_membership_events_scan_id_detected_at_id ON guild_membership_events (scan_id, detected_at DESC, id DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_guild_membership_events_lower_character_name_detected_at_id ON guild_membership_events (lower(character_name), detected_at DESC, id DESC)",
         "CREATE TABLE IF NOT EXISTS global_trends (id TEXT PRIMARY KEY, last_total INTEGER, trend_total INTEGER, last_active INTEGER, trend_active INTEGER, last_ready INTEGER, trend_ready INTEGER, last_total_mains INTEGER, trend_total_mains INTEGER, last_active_mains INTEGER, trend_active_mains INTEGER, last_ready_mains INTEGER, trend_ready_mains INTEGER)",
         "CREATE TABLE IF NOT EXISTS daily_roster_stats (date TEXT PRIMARY KEY, total_roster INTEGER DEFAULT 0, active_roster INTEGER DEFAULT 0, avg_ilvl_70 INTEGER DEFAULT 0, total_hks INTEGER DEFAULT 0, total_roster_mains INTEGER, active_roster_mains INTEGER, avg_ilvl_70_mains INTEGER)",
         "CREATE TABLE IF NOT EXISTS char_history (char_name TEXT, record_date TEXT, ilvl INTEGER, hks INTEGER, PRIMARY KEY (char_name, record_date))",
+        "CREATE INDEX IF NOT EXISTS idx_char_history_lower_char_name ON char_history (lower(char_name))",
+        "CREATE INDEX IF NOT EXISTS idx_char_history_record_date_char_name ON char_history (record_date, char_name)",
+        "CREATE INDEX IF NOT EXISTS idx_char_history_char_name_record_date_desc ON char_history (char_name, record_date DESC)",
+        "CREATE TABLE IF NOT EXISTS war_effort_history (week_anchor TEXT, category TEXT, vanguards TEXT, participants TEXT, PRIMARY KEY(week_anchor, category))",
+        "CREATE INDEX IF NOT EXISTS idx_war_effort_history_week_category ON war_effort_history (week_anchor DESC, category ASC)",
         "CREATE TABLE IF NOT EXISTS ladder_history (week_anchor TEXT, category TEXT, rank INTEGER, champion TEXT, score INTEGER, PRIMARY KEY (week_anchor, category, rank))",
+        "CREATE INDEX IF NOT EXISTS idx_ladder_history_week_category_rank ON ladder_history (week_anchor DESC, category ASC, rank ASC)",
+        "CREATE INDEX IF NOT EXISTS idx_ladder_history_lower_champion ON ladder_history (lower(champion))",
+        "CREATE TABLE IF NOT EXISTS reigning_champs_history (week_anchor TEXT, category TEXT, champion TEXT, score INTEGER, PRIMARY KEY(week_anchor, category))",
+        "CREATE INDEX IF NOT EXISTS idx_reigning_champs_history_week_category ON reigning_champs_history (week_anchor DESC, category ASC)",
+        "CREATE INDEX IF NOT EXISTS idx_reigning_champs_history_lower_champion ON reigning_champs_history (lower(champion))",
     ]
     await push_turso_batch(session, [{"q": q} for q in schema_queries])
 

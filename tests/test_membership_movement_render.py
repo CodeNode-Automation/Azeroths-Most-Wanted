@@ -66,6 +66,15 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
 
         mock_write_timeline.assert_called_once()
         self.assertTrue(mock_fetch.await_count >= 1)
+        self.assertTrue(
+            any(
+                "guild_membership_events" in call.args[1]
+                and "WHERE detected_at >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-7 days')" in call.args[1]
+                and "LIMIT 500" in call.args[1]
+                for call in mock_fetch.await_args_list
+            )
+        )
+        self.assertFalse(any("WITH latest_scan AS" in call.args[1] for call in mock_fetch.await_args_list))
         self.assertTrue(mock_generate_html.call_count == 1)
         self.assertIn("membership_movement", mock_generate_html.call_args.kwargs)
         membership_movement = mock_generate_html.call_args.kwargs["membership_movement"]

@@ -7,12 +7,19 @@ from wow.trends import process_global_trends
 
 
 class MembershipMovementSummaryTests(unittest.TestCase):
-    def test_build_recent_membership_movement_query_targets_table_and_limit(self):
-        query = build_recent_membership_movement_query(limit=7)
+    def test_build_recent_membership_movement_query_targets_recent_window_and_limit(self):
+        query = build_recent_membership_movement_query(limit=7, days=7)
 
         self.assertIn("guild_membership_events", query)
+        self.assertIn("WHERE detected_at >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-7 days')", query)
         self.assertIn("ORDER BY detected_at DESC, id DESC", query)
         self.assertIn("LIMIT 7", query)
+
+    def test_build_recent_membership_movement_query_defaults_to_7_day_window_and_500_limit(self):
+        query = build_recent_membership_movement_query()
+
+        self.assertIn("WHERE detected_at >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-7 days')", query)
+        self.assertIn("LIMIT 500", query)
 
     def test_build_latest_membership_movement_query_targets_latest_scan_without_limit(self):
         query = build_latest_membership_movement_query()
