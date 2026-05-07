@@ -59,6 +59,21 @@ class MembershipMovementPipelineTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertLess(call_index, purge_index)
 
+    def test_main_uses_compact_gear_cache_and_recent_timeline_window(self):
+        main_text = pathlib.Path("main.py").read_text(encoding="utf-8")
+
+        self.assertIn("ensure_current_gear_cache(session)", main_text)
+        self.assertIn(
+            "SELECT character_name, slot, item_id, name, quality, icon_data, tooltip_params FROM gear_current",
+            main_text,
+        )
+        self.assertIn(
+            "SELECT * FROM timeline WHERE timestamp >= datetime('now', '-7 days') ORDER BY timestamp DESC LIMIT 15000",
+            main_text,
+        )
+        self.assertIn("INSERT OR REPLACE INTO gear_current", main_text)
+        self.assertIn("DELETE FROM gear_current WHERE lower(character_name) IN", main_text)
+
 
 if __name__ == "__main__":
     unittest.main()

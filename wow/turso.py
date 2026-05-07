@@ -87,6 +87,41 @@ async def fetch_turso(session, query):
         return []
 
 
+def build_gear_current_backfill_query():
+    return """
+        INSERT OR REPLACE INTO gear_current
+        (character_name, slot, item_id, name, quality, icon_data, tooltip_params, last_detected)
+        SELECT character_name, slot, item_id, name, quality, icon_data, tooltip_params, last_detected
+        FROM (
+            SELECT
+                character_name,
+                slot,
+                item_id,
+                name,
+                quality,
+                icon_data,
+                tooltip_params,
+                last_detected,
+                ROW_NUMBER() OVER(
+                    PARTITION BY lower(character_name), lower(slot)
+                    ORDER BY last_detected DESC, item_id DESC
+                ) AS rn
+            FROM gear
+        )
+        WHERE rn = 1
+    """
+
+
+async def ensure_current_gear_cache(session):
+    """Backfill the compact current-gear cache the first time it is needed."""
+    existing = await fetch_turso(session, "SELECT character_name FROM gear_current LIMIT 1")
+    if existing:
+        return False
+
+    await push_turso_batch(session, [{"q": build_gear_current_backfill_query()}])
+    return True
+
+
 async def push_turso_batch(session, statements):
     """Pushes an array of dicts to Turso in chunked transactions."""
     url, token = _resolve_turso_config()
@@ -115,6 +150,9 @@ async def setup_database(session):
         "CREATE INDEX IF NOT EXISTS idx_characters_lower_name ON characters (lower(name))",
         "CREATE TABLE IF NOT EXISTS gear (character_name TEXT, slot TEXT, item_id INTEGER, name TEXT, quality TEXT, icon_data TEXT, tooltip_params TEXT, last_detected TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (character_name, slot, item_id))",
         "CREATE INDEX IF NOT EXISTS idx_gear_lower_character_name ON gear (lower(character_name))",
+        "CREATE INDEX IF NOT EXISTS idx_gear_lower_character_name_slot_last_detected_item ON gear (lower(character_name), lower(slot), last_detected DESC, item_id DESC)",
+        "CREATE TABLE IF NOT EXISTS gear_current (character_name TEXT, slot TEXT, item_id INTEGER, name TEXT, quality TEXT, icon_data TEXT, tooltip_params TEXT, last_detected TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (character_name, slot))",
+        "CREATE INDEX IF NOT EXISTS idx_gear_current_lower_character_name ON gear_current (lower(character_name))",
         "CREATE TABLE IF NOT EXISTS timeline (timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, character_name TEXT, class TEXT, type TEXT, item_id INTEGER, item_name TEXT, item_quality TEXT, item_icon TEXT, level INTEGER)",
         "CREATE INDEX IF NOT EXISTS idx_timeline_timestamp ON timeline (timestamp DESC)",
         "CREATE INDEX IF NOT EXISTS idx_timeline_lower_character_name ON timeline (lower(character_name))",

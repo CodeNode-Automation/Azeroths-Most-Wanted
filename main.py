@@ -30,7 +30,7 @@ from wow.history_queries import (
 from wow.output import finalize_dashboard_output, write_api_status_output
 from wow.pipeline_state import build_historical_state, build_prev_mvps
 from wow.roster import GuildRosterFetchError, fetch_guild_roster
-from wow.turso import fetch_turso, push_turso_batch, setup_database
+from wow.turso import ensure_current_gear_cache, fetch_turso, push_turso_batch, setup_database
 from wow.trends import process_character_trends, process_global_trends
 from wow.war_effort import (
     apply_locked_prev_mvps,
@@ -93,6 +93,7 @@ async def main_async():
     async with aiohttp.ClientSession(connector=connector) as session:
         
         await setup_database(session)
+        await ensure_current_gear_cache(session)
 
         print("📂 Fetching historical state into memory concurrently...")
         
@@ -107,13 +108,13 @@ async def main_async():
 
         # Load the existing Turso state concurrently before processing the fresh roster.
         char_task = fetch_turso(session, "SELECT * FROM characters")
-        gear_task = fetch_turso(session, "SELECT character_name, slot, item_id, name, quality, icon_data, tooltip_params FROM gear")
+        gear_task = fetch_turso(session, "SELECT character_name, slot, item_id, name, quality, icon_data, tooltip_params FROM gear_current")
         trend_task = fetch_turso(session, trend_query)
         gt_task = fetch_turso(
             session,
             "SELECT last_total, last_active, last_ready, last_total_mains, last_active_mains, last_ready_mains FROM global_trends WHERE id='__GLOBAL__'"
         )
-        timeline_task = fetch_turso(session, "SELECT * FROM timeline ORDER BY timestamp DESC")
+        timeline_task = fetch_turso(session, "SELECT * FROM timeline WHERE timestamp >= datetime('now', '-7 days') ORDER BY timestamp DESC LIMIT 15000")
         prev_mvp_task = fetch_turso(session, prev_mvp_query)
 
         char_rows, gear_rows, trend_rows, gt_rows, timeline_rows, prev_mvp_rows = await asyncio.gather(
@@ -226,6 +227,10 @@ async def main_async():
                         "q": "INSERT OR REPLACE INTO gear (character_name, slot, item_id, name, quality, icon_data, tooltip_params) VALUES (?, ?, ?, ?, ?, ?, ?)",
                         "params": [char_name, slot, item.get('item_id'), item.get('name'), item.get('quality'), item.get('icon_data'), item.get('tooltip_params')]
                     })
+                    batch_stmts_initial.append({
+                        "q": "INSERT OR REPLACE INTO gear_current (character_name, slot, item_id, name, quality, icon_data, tooltip_params) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        "params": [char_name, slot, item.get('item_id'), item.get('name'), item.get('quality'), item.get('icon_data'), item.get('tooltip_params')]
+                    })
 
         for ev in timeline_data_new:
             char_name = ev.get('character')
@@ -289,6 +294,10 @@ async def main_async():
                 })
                 batch_stmts_initial.append({
                     "q": f"DELETE FROM gear WHERE lower(character_name) IN ({placeholders})",
+                    "params": departed_chars,
+                })
+                batch_stmts_initial.append({
+                    "q": f"DELETE FROM gear_current WHERE lower(character_name) IN ({placeholders})",
                     "params": departed_chars,
                 })
                 batch_stmts_initial.append({

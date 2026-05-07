@@ -235,6 +235,9 @@ class TursoConfigTests(unittest.IsolatedAsyncioTestCase):
         schema_statements = mock_push.await_args_list[0].args[1]
         schema_sql = "\n".join(stmt["q"] for stmt in schema_statements)
         self.assertIn("idx_timeline_lower_character_name", schema_sql)
+        self.assertIn("idx_gear_lower_character_name_slot_last_detected_item", schema_sql)
+        self.assertIn("CREATE TABLE IF NOT EXISTS gear_current", schema_sql)
+        self.assertIn("idx_gear_current_lower_character_name", schema_sql)
         self.assertIn("idx_guild_membership_events_scan_id_detected_at_id", schema_sql)
         self.assertIn("idx_guild_membership_events_detected_at_id", schema_sql)
         self.assertIn("idx_char_history_record_date_char_name", schema_sql)
