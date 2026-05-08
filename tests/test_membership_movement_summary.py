@@ -11,6 +11,7 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         query = build_recent_membership_movement_query(limit=7, days=7)
 
         self.assertIn("guild_membership_events", query)
+        self.assertIn("SELECT id, scan_id, character_name, event_type, detected_at, previous_status, current_status", query)
         self.assertIn("WHERE detected_at >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-7 days')", query)
         self.assertIn("ORDER BY detected_at DESC, id DESC", query)
         self.assertIn("LIMIT 7", query)
@@ -27,6 +28,7 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         self.assertIn("WITH latest_scan AS", query)
         self.assertIn("SELECT scan_id", query)
         self.assertIn("WHERE scan_id = (SELECT scan_id FROM latest_scan)", query)
+        self.assertIn("ORDER BY detected_at DESC, id DESC", query)
         self.assertNotIn("LIMIT 200", query)
 
     def test_summarize_membership_events_handles_empty_input(self):
@@ -44,18 +46,20 @@ class MembershipMovementSummaryTests(unittest.TestCase):
             },
         )
 
-    def test_summarize_membership_events_counts_latest_scan_and_orders_recent_rows(self):
+    def test_summarize_membership_events_counts_latest_scan_and_keeps_recent_window_rows(self):
         summary = summarize_membership_events(
             [
                 {
+                    "id": 1,
                     "scan_id": "scan-1",
                     "character_name": "Legacy",
-                    "event_type": "joined",
+                    "event_type": "departed",
                     "detected_at": "2026-04-29T09:00:00Z",
-                    "previous_status": None,
-                    "current_status": "active",
+                    "previous_status": "active",
+                    "current_status": "departed",
                 },
                 {
+                    "id": 2,
                     "scan_id": "scan-2",
                     "character_name": "Bravo",
                     "event_type": "departed",
@@ -64,6 +68,7 @@ class MembershipMovementSummaryTests(unittest.TestCase):
                     "current_status": "departed",
                 },
                 {
+                    "id": 3,
                     "scan_id": "scan-2",
                     "character_name": "Alpha",
                     "event_type": "rejoined",
@@ -72,6 +77,7 @@ class MembershipMovementSummaryTests(unittest.TestCase):
                     "current_status": "active",
                 },
                 {
+                    "id": 4,
                     "scan_id": "scan-2",
                     "character_name": "Charlie",
                     "event_type": "joined",
@@ -92,7 +98,73 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         self.assertFalse(summary["bootstrap"])
         self.assertEqual(
             [event["character_name"] for event in summary["recent"]],
-            ["Charlie", "Alpha", "Bravo"],
+            ["Charlie", "Alpha", "Bravo", "Legacy"],
+        )
+        self.assertEqual(
+            [event["id"] for event in summary["recent"]],
+            [4, 3, 2, 1],
+        )
+
+    def test_summarize_membership_events_uses_latest_scan_for_counts_and_7_day_recent_rows(self):
+        summary = summarize_membership_events(
+            [
+                {
+                    "id": 10,
+                    "scan_id": "scan-old",
+                    "character_name": "Old Departed",
+                    "event_type": "departed",
+                    "detected_at": "2026-04-24T08:00:00Z",
+                    "previous_status": "active",
+                    "current_status": "departed",
+                },
+                {
+                    "id": 20,
+                    "scan_id": "scan-latest",
+                    "character_name": "Latest Joined",
+                    "event_type": "joined",
+                    "detected_at": "2026-04-29T10:00:00Z",
+                    "previous_status": None,
+                    "current_status": "active",
+                },
+                {
+                    "id": 21,
+                    "scan_id": "scan-latest",
+                    "character_name": "Latest Departed",
+                    "event_type": "departed",
+                    "detected_at": "2026-04-29T10:00:00Z",
+                    "previous_status": "active",
+                    "current_status": "departed",
+                },
+                {
+                    "id": 22,
+                    "scan_id": "scan-latest",
+                    "character_name": "Latest Rejoined",
+                    "event_type": "rejoined",
+                    "detected_at": "2026-04-29T10:00:00Z",
+                    "previous_status": "departed",
+                    "current_status": "active",
+                },
+                {
+                    "id": 23,
+                    "scan_id": "scan-latest",
+                    "character_name": "Latest Joined B",
+                    "event_type": "joined",
+                    "detected_at": "2026-04-29T10:00:00Z",
+                    "previous_status": None,
+                    "current_status": "active",
+                },
+            ],
+            limit=10,
+        )
+
+        self.assertEqual(summary["scan_id"], "scan-latest")
+        self.assertEqual(summary["joined"], 2)
+        self.assertEqual(summary["departed"], 1)
+        self.assertEqual(summary["rejoined"], 1)
+        self.assertEqual(summary["total"], 4)
+        self.assertEqual(
+            [event["character_name"] for event in summary["recent"]],
+            ["Latest Joined", "Latest Joined B", "Latest Rejoined", "Latest Departed", "Old Departed"],
         )
 
     def test_summarize_membership_events_marks_initial_capture_as_bootstrap(self):

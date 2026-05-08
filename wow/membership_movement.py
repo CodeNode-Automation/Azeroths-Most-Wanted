@@ -230,7 +230,7 @@ def build_recent_membership_movement_query(limit=500, days=7):
     safe_days = max(1, safe_days)
 
     return f"""
-        SELECT scan_id, character_name, event_type, detected_at, previous_status, current_status
+        SELECT id, scan_id, character_name, event_type, detected_at, previous_status, current_status
         FROM guild_membership_events
         WHERE detected_at >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-{safe_days} days')
         ORDER BY detected_at DESC, id DESC
@@ -257,6 +257,11 @@ def _coerce_summary_event_row(row: Any) -> dict[str, Any] | None:
     if not isinstance(row, dict):
         return None
 
+    try:
+        event_id = int(row.get("id") or 0)
+    except (TypeError, ValueError):
+        event_id = 0
+
     character_name = str(row.get("character_name") or "").strip()
     event_type = str(row.get("event_type") or "").strip().lower()
     detected_at = str(row.get("detected_at") or "").strip()
@@ -266,6 +271,7 @@ def _coerce_summary_event_row(row: Any) -> dict[str, Any] | None:
         return None
 
     return {
+        "id": event_id,
         "scan_id": scan_id,
         "character_name": character_name,
         "event_type": event_type,
@@ -276,11 +282,12 @@ def _coerce_summary_event_row(row: Any) -> dict[str, Any] | None:
 
 
 def summarize_membership_events(events, limit=5):
-    """Summarize the most recent membership scan into compact counts and rows.
+    """Summarize the most recent membership scan with recent-window rows.
 
-    The summary is anchored to the most recent scan id / detected_at pair so the
-    rendered card reflects one coherent movement snapshot instead of mixing
-    multiple scans together.
+    The counts are anchored to the most recent scan id / detected_at pair so the
+    rendered card reflects one coherent movement snapshot. The recent rows keep
+    the bounded query window so the dashboard can still show older movement from
+    the last few days.
     """
     normalized_events = []
     for event in events or []:
@@ -306,9 +313,17 @@ def summarize_membership_events(events, limit=5):
         safe_limit = 0
     safe_limit = max(0, safe_limit)
 
+    def _event_sort_key(event: dict[str, Any]) -> tuple[str, int, str, str]:
+        return (
+            event["detected_at"],
+            int(event.get("id") or 0),
+            event["scan_id"] or event["detected_at"],
+            event["character_name"].lower(),
+        )
+
     scan_groups: dict[str, list[dict[str, Any]]] = {}
     for event in normalized_events:
-        scan_key = event["scan_id"] or event["detected_at"]
+        scan_key = event["scan_id"] or f"{event['detected_at']}::{event.get('id', 0)}"
         scan_groups.setdefault(scan_key, []).append(event)
 
     ranked_scans = []
@@ -316,14 +331,11 @@ def summarize_membership_events(events, limit=5):
         scan_events.sort(key=lambda event: (
             EVENT_TYPE_PRIORITY.get(event["event_type"], 99),
             event["character_name"].lower(),
+            int(event.get("id") or 0),
         ))
         latest_scan_event = max(
             scan_events,
-            key=lambda event: (
-                event["detected_at"],
-                event["scan_id"] or event["detected_at"],
-                event["character_name"].lower(),
-            ),
+            key=_event_sort_key,
         )
         counts = {
             "joined": sum(1 for event in scan_events if event["event_type"] == "joined"),
@@ -343,11 +355,7 @@ def summarize_membership_events(events, limit=5):
             "bootstrap": bootstrap,
         })
 
-    ranked_scans.sort(key=lambda scan: (
-        scan["latest_event"]["detected_at"],
-        scan["latest_event"]["scan_id"] or scan["latest_event"]["detected_at"],
-        scan["latest_event"]["character_name"].lower(),
-    ), reverse=True)
+    ranked_scans.sort(key=lambda scan: _event_sort_key(scan["latest_event"]), reverse=True)
 
     latest_scan = ranked_scans[0]
     if latest_scan["bootstrap"]:
@@ -355,18 +363,28 @@ def summarize_membership_events(events, limit=5):
         if fallback_scan:
             latest_scan = fallback_scan
 
-    latest_events = latest_scan["events"]
     latest_event = latest_scan["latest_event"]
     counts = latest_scan["counts"]
     total = latest_scan["total"]
     bootstrap = latest_scan["bootstrap"]
+    recent_events_source = []
+    for scan in ranked_scans:
+        if scan["bootstrap"]:
+            continue
+        recent_events_source.extend(scan["events"])
+
+    if not recent_events_source:
+        for scan in ranked_scans:
+            recent_events_source.extend(scan["events"])
+
+    recent_events = recent_events_source
 
     return {
         "joined": counts["joined"],
         "departed": counts["departed"],
         "rejoined": counts["rejoined"],
         "total": total,
-        "recent": latest_events[:safe_limit],
+        "recent": recent_events[:safe_limit],
         "bootstrap": bootstrap,
         "scan_id": latest_event["scan_id"] or None,
         "detected_at": latest_event["detected_at"],
