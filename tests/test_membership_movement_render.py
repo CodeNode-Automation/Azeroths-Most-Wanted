@@ -7,6 +7,7 @@ from unittest import mock
 
 from render.html_dashboard import generate_html_dashboard
 from tests.workspace_temp import workspace_temp_dir
+from wow.membership_movement import summarize_membership_events
 from wow.output import finalize_dashboard_output
 
 
@@ -115,6 +116,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
 
         with (
             mock.patch("wow.output.fetch_turso", side_effect=fetch_side_effect) as mock_fetch,
+            mock.patch("wow.output.summarize_membership_events", wraps=summarize_membership_events) as mock_summarize,
             mock.patch("wow.output.write_timeline_output"),
             mock.patch("wow.output.generate_html_dashboard") as mock_generate_html,
         ):
@@ -136,6 +138,8 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
             )
 
         self.assertTrue(mock_fetch.await_count >= 1)
+        mock_summarize.assert_called_once()
+        self.assertEqual(mock_summarize.call_args.kwargs["limit"], 500)
         self.assertEqual(mock_generate_html.call_count, 1)
         generated = mock_generate_html.call_args.kwargs
         membership_movement = generated["membership_movement"]
@@ -144,7 +148,8 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(membership_movement["total"], 625)
         self.assertEqual(membership_movement["joined"], 625)
-        self.assertEqual(len(membership_movement["recent"]), 5)
+        self.assertGreater(len(membership_movement["recent"]), 5)
+        self.assertEqual(len(membership_movement["recent"]), 500)
         self.assertTrue(latest_changes["empty"])
         self.assertEqual(latest_changes["items"], [])
         self.assertEqual(
@@ -253,7 +258,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(membership_movement["bootstrap"])
         self.assertEqual(
             [event["character_name"] for event in membership_movement["recent"]],
-            ["Alpha", "Bravo", "Charlie", "Alpha", "Bravo"],
+            ["Alpha", "Bravo", "Charlie", "Alpha", "Bravo", "Charlie"],
         )
 
     def test_generate_html_dashboard_serializes_membership_movement_payload(self):

@@ -59,7 +59,7 @@ async def finalize_dashboard_output(session, roster_data, realm_data, dashboard_
         reigning_champs_history_rows,
     )
     membership_movement_rows = await fetch_turso(session, build_recent_membership_movement_query(limit=500, days=7))
-    membership_movement = summarize_membership_events(membership_movement_rows)
+    membership_movement = summarize_membership_events(membership_movement_rows, limit=500)
     latest_changes = build_change_summary(
         membership_movement=membership_movement,
         timeline_events=(dashboard_feed or [])[:50],
