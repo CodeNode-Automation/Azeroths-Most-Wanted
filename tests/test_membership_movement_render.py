@@ -355,8 +355,12 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         css_text = Path("render/style.css").read_text(encoding="utf-8")
 
         self.assertIn('id="home-movement-card"', template_text)
+        self.assertIn('id="home-movement-recent-label"', template_text)
+        self.assertIn('id="home-movement-recent-summary"', template_text)
         self.assertIn('id="home-movement-list"', template_text)
-        self.assertIn('Latest roster movement', template_text)
+        self.assertIn('home-movement-list-scroll', template_text)
+        self.assertIn('Latest scan', template_text)
+        self.assertIn('Recent movement, last 7 days', template_text)
         self.assertIn('Roster Movement', template_text)
         self.assertIn("renderHomeMovementCard", js_text)
         self.assertIn("function getHomeMovementCharacterTarget(characterName)", js_text)
@@ -364,6 +368,8 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Guild roster currently reports", js_text)
         self.assertIn("detail-eligible characters are recorded as the movement baseline for profile, gear, activity, and movement intelligence.", js_text)
         self.assertIn("${total.toLocaleString()} detail-eligible characters are recorded as the movement baseline", js_text)
+        self.assertIn("Latest scan: +${joined.toLocaleString()} joined / -${departed.toLocaleString()} departed /", js_text)
+        self.assertIn("Last 7 days: +${recentJoined.toLocaleString()} joined / -${recentDeparted.toLocaleString()} departed /", js_text)
         self.assertIn('data-movement-state', js_text)
         self.assertIn("item.classList.add('is-clickable');", js_text)
         self.assertIn("item.setAttribute('role', 'button');", js_text)
@@ -373,6 +379,9 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("No processed character departure was identified, likely because the change involved a low-level or privacy-restricted roster entry.", js_text)
         self.assertIn('.home-movement-card[data-movement-state="bootstrap"] .home-nav-copy,', css_text)
         self.assertIn('.home-movement-card[data-movement-state="count-only"] .home-nav-copy,', css_text)
+        self.assertIn('.home-movement-list-scroll {', css_text)
+        self.assertIn('overflow-y: auto;', css_text)
+        self.assertIn('max-height: 322px;', css_text)
         self.assertIn('.home-movement-item.is-clickable {', css_text)
         self.assertIn('.home-movement-item.is-clickable:focus-visible {', css_text)
 
@@ -381,7 +390,9 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIn("function renderHomeMovementCard(dashboardConfig = {}) {", js_text)
         self.assertIn("const cardEl = document.getElementById('home-movement-card');", js_text)
-        self.assertIn("if (!cardEl || !titleEl || !summaryEl || !listEl || !noteEl) return;", js_text)
+        self.assertIn("const recentLabelEl = document.getElementById('home-movement-recent-label');", js_text)
+        self.assertIn("const recentSummaryEl = document.getElementById('home-movement-recent-summary');", js_text)
+        self.assertIn("if (!cardEl || !titleEl || !summaryEl || !recentLabelEl || !recentSummaryEl || !listEl || !noteEl) return;", js_text)
         self.assertIn("cardEl.setAttribute('data-movement-state', movementState);", js_text)
         self.assertIn('data-movement-state', js_text)
 

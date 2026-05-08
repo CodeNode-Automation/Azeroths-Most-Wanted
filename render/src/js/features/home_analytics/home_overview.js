@@ -204,15 +204,21 @@ function renderHomeMovementCard(dashboardConfig = {}) {
     const cardEl = document.getElementById('home-movement-card');
     const titleEl = document.getElementById('home-movement-title');
     const summaryEl = document.getElementById('home-movement-summary');
+    const recentLabelEl = document.getElementById('home-movement-recent-label');
+    const recentSummaryEl = document.getElementById('home-movement-recent-summary');
     const listEl = document.getElementById('home-movement-list');
     const noteEl = document.getElementById('home-movement-note');
 
-    if (!cardEl || !titleEl || !summaryEl || !listEl || !noteEl) return;
+    if (!cardEl || !titleEl || !summaryEl || !recentLabelEl || !recentSummaryEl || !listEl || !noteEl) return;
 
     const joined = getNumericConfigValue(movement, 'joined', 0);
     const departed = getNumericConfigValue(movement, 'departed', 0);
     const rejoined = getNumericConfigValue(movement, 'rejoined', 0);
     const total = getNumericConfigValue(movement, 'total', 0);
+    const recentJoined = getNumericConfigValue(movement, 'recent_joined', 0);
+    const recentDeparted = getNumericConfigValue(movement, 'recent_departed', 0);
+    const recentRejoined = getNumericConfigValue(movement, 'recent_rejoined', 0);
+    const recentTotal = getNumericConfigValue(movement, 'recent_total', 0);
     const recent = Array.isArray(movement.recent) ? movement.recent : [];
     const bootstrap = Boolean(movement.bootstrap);
     const rawRosterTrend = getNumericConfigValue((dashboardConfig && dashboardConfig.global_trends) || {}, 'trend_total', 0);
@@ -232,14 +238,21 @@ function renderHomeMovementCard(dashboardConfig = {}) {
         ? 'Initial roster capture'
         : countOnlyRawDelta
             ? 'Roster count change'
-            : 'Latest roster movement';
+            : 'Latest scan';
     summaryEl.textContent = bootstrap
         ? `${total.toLocaleString()} detail-eligible characters recorded as the movement baseline.`
         : countOnlyRawDelta
             ? `Guild roster ${rawRosterTrend > 0 ? 'increased' : 'decreased'} by ${Math.abs(rawRosterTrend).toLocaleString()} since the previous scan.`
             : total > 0
-                ? `+${joined.toLocaleString()} joined / -${departed.toLocaleString()} departed / ↻ ${rejoined.toLocaleString()} rejoined from the latest scan.`
+                ? `Latest scan: +${joined.toLocaleString()} joined / -${departed.toLocaleString()} departed / ${rejoined.toLocaleString()} rejoined.`
                 : 'No roster movement logged yet.';
+
+    recentLabelEl.textContent = 'Recent movement, last 7 days';
+    recentSummaryEl.textContent = recentTotal > 0
+        ? `Last 7 days: +${recentJoined.toLocaleString()} joined / -${recentDeparted.toLocaleString()} departed / ${recentRejoined.toLocaleString()} rejoined.`
+        : 'No recent movement recorded in the last 7 days.';
+    recentLabelEl.hidden = bootstrap || countOnlyRawDelta || recent.length === 0;
+    recentSummaryEl.hidden = bootstrap || countOnlyRawDelta || recent.length === 0;
 
     listEl.innerHTML = '';
     if (bootstrap || countOnlyRawDelta || recent.length === 0) {

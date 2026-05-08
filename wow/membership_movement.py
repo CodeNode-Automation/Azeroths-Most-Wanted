@@ -382,12 +382,21 @@ def summarize_membership_events(events, limit=5):
             recent_events_source.extend(scan["events"])
 
     recent_events = sorted(recent_events_source, key=_event_sort_key, reverse=True)
+    recent_counts = {
+        "joined": sum(1 for event in recent_events_source if event["event_type"] == "joined"),
+        "departed": sum(1 for event in recent_events_source if event["event_type"] == "departed"),
+        "rejoined": sum(1 for event in recent_events_source if event["event_type"] == "rejoined"),
+    }
 
     return {
         "joined": counts["joined"],
         "departed": counts["departed"],
         "rejoined": counts["rejoined"],
         "total": total,
+        "recent_joined": recent_counts["joined"],
+        "recent_departed": recent_counts["departed"],
+        "recent_rejoined": recent_counts["rejoined"],
+        "recent_total": len(recent_events_source),
         "recent": recent_events[:safe_limit],
         "bootstrap": bootstrap,
         "scan_id": latest_event["scan_id"] or None,

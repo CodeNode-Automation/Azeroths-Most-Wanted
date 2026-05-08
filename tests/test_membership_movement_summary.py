@@ -95,6 +95,10 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         self.assertEqual(summary["departed"], 1)
         self.assertEqual(summary["rejoined"], 1)
         self.assertEqual(summary["total"], 3)
+        self.assertEqual(summary["recent_joined"], 1)
+        self.assertEqual(summary["recent_departed"], 2)
+        self.assertEqual(summary["recent_rejoined"], 1)
+        self.assertEqual(summary["recent_total"], 4)
         self.assertFalse(summary["bootstrap"])
         self.assertEqual(
             [event["character_name"] for event in summary["recent"]],
@@ -162,6 +166,10 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         self.assertEqual(summary["departed"], 1)
         self.assertEqual(summary["rejoined"], 1)
         self.assertEqual(summary["total"], 4)
+        self.assertEqual(summary["recent_joined"], 2)
+        self.assertEqual(summary["recent_departed"], 2)
+        self.assertEqual(summary["recent_rejoined"], 1)
+        self.assertEqual(summary["recent_total"], 5)
         self.assertEqual(
             [event["character_name"] for event in summary["recent"]],
             ["Latest Joined B", "Latest Rejoined", "Latest Departed", "Latest Joined", "Old Departed"],
@@ -207,6 +215,10 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         self.assertEqual(summary["departed"], 0)
         self.assertEqual(summary["rejoined"], 0)
         self.assertEqual(summary["total"], 2)
+        self.assertEqual(summary["recent_joined"], 2)
+        self.assertEqual(summary["recent_departed"], 1)
+        self.assertEqual(summary["recent_rejoined"], 0)
+        self.assertEqual(summary["recent_total"], 3)
         self.assertEqual(
             [event["character_name"] for event in summary["recent"][:2]],
             ["Syeara", "Sikahunt"],
@@ -235,6 +247,10 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         self.assertEqual(summary["rejoined"], 0)
         self.assertEqual(summary["total"], 30)
         self.assertEqual(summary["scan_id"], "scan-seed")
+        self.assertEqual(summary["recent_joined"], 30)
+        self.assertEqual(summary["recent_departed"], 0)
+        self.assertEqual(summary["recent_rejoined"], 0)
+        self.assertEqual(summary["recent_total"], 30)
         self.assertEqual(len(summary["recent"]), 5)
 
     def test_process_global_trends_serializes_raw_totals_for_count_only_deltas(self):
