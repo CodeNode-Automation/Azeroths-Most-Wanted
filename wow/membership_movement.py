@@ -12,6 +12,8 @@ EVENT_TYPE_PRIORITY = {
     "departed": 2,
 }
 
+BOOTSTRAP_SCAN_MIN_EVENTS = 25
+
 KNOWN_STATUSES = {"active", "departed"}
 MEMBERSHIP_EVENT_INSERT_QUERY = """
     INSERT INTO guild_membership_events
@@ -343,8 +345,10 @@ def summarize_membership_events(events, limit=5):
             "rejoined": sum(1 for event in scan_events if event["event_type"] == "rejoined"),
         }
         total = len(scan_events)
-        bootstrap = total > 0 and counts["joined"] == total and all(
-            event["previous_status"] is None for event in scan_events
+        bootstrap = (
+            total >= BOOTSTRAP_SCAN_MIN_EVENTS
+            and counts["joined"] == total
+            and all(event["previous_status"] is None for event in scan_events)
         )
         ranked_scans.append({
             "scan_key": scan_key,
@@ -377,7 +381,7 @@ def summarize_membership_events(events, limit=5):
         for scan in ranked_scans:
             recent_events_source.extend(scan["events"])
 
-    recent_events = recent_events_source
+    recent_events = sorted(recent_events_source, key=_event_sort_key, reverse=True)
 
     return {
         "joined": counts["joined"],

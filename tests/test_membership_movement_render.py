@@ -82,7 +82,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(membership_movement["departed"], 1)
         self.assertEqual(
             [event["character_name"] for event in membership_movement["recent"]],
-            ["Alpha", "Bravo"],
+            ["Bravo", "Alpha"],
         )
         self.assertIn("latest_changes", mock_generate_html.call_args.kwargs)
         latest_changes = mock_generate_html.call_args.kwargs["latest_changes"]
@@ -161,6 +161,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
     async def test_finalize_dashboard_output_prefers_latest_real_movement_scan_over_bootstrap_scan(self):
         recent_rows = [
             {
+                "id": 3,
                 "scan_id": "scan-200",
                 "character_name": "Alpha",
                 "event_type": "joined",
@@ -169,6 +170,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
                 "current_status": "active",
             },
             {
+                "id": 2,
                 "scan_id": "scan-200",
                 "character_name": "Bravo",
                 "event_type": "joined",
@@ -177,6 +179,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
                 "current_status": "active",
             },
             {
+                "id": 1,
                 "scan_id": "scan-200",
                 "character_name": "Charlie",
                 "event_type": "joined",
@@ -185,6 +188,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
                 "current_status": "active",
             },
             {
+                "id": 6,
                 "scan_id": "scan-100",
                 "character_name": "Alpha",
                 "event_type": "joined",
@@ -193,6 +197,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
                 "current_status": "active",
             },
             {
+                "id": 5,
                 "scan_id": "scan-100",
                 "character_name": "Bravo",
                 "event_type": "departed",
@@ -201,6 +206,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
                 "current_status": "departed",
             },
             {
+                "id": 4,
                 "scan_id": "scan-100",
                 "character_name": "Charlie",
                 "event_type": "rejoined",
@@ -241,13 +247,13 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(mock_generate_html.call_count, 1)
         membership_movement = mock_generate_html.call_args.kwargs["membership_movement"]
 
-        self.assertEqual(membership_movement["joined"], 1)
-        self.assertEqual(membership_movement["departed"], 1)
-        self.assertEqual(membership_movement["rejoined"], 1)
+        self.assertEqual(membership_movement["joined"], 3)
+        self.assertEqual(membership_movement["departed"], 0)
+        self.assertEqual(membership_movement["rejoined"], 0)
         self.assertFalse(membership_movement["bootstrap"])
         self.assertEqual(
             [event["character_name"] for event in membership_movement["recent"]],
-            ["Alpha", "Charlie", "Bravo"],
+            ["Alpha", "Bravo", "Charlie", "Alpha", "Bravo"],
         )
 
     def test_generate_html_dashboard_serializes_membership_movement_payload(self):

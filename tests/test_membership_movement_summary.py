@@ -164,36 +164,78 @@ class MembershipMovementSummaryTests(unittest.TestCase):
         self.assertEqual(summary["total"], 4)
         self.assertEqual(
             [event["character_name"] for event in summary["recent"]],
-            ["Latest Joined", "Latest Joined B", "Latest Rejoined", "Latest Departed", "Old Departed"],
+            ["Latest Joined B", "Latest Rejoined", "Latest Departed", "Latest Joined", "Old Departed"],
         )
 
-    def test_summarize_membership_events_marks_initial_capture_as_bootstrap(self):
+    def test_summarize_membership_events_does_not_treat_small_all_joined_scan_as_bootstrap(self):
         summary = summarize_membership_events(
             [
                 {
-                    "scan_id": "scan-9",
-                    "character_name": "Alpha",
+                    "id": 647,
+                    "scan_id": "2026-05-08T00:00:53.016089Z",
+                    "character_name": "Syeara",
                     "event_type": "joined",
-                    "detected_at": "2026-04-29T11:00:00Z",
+                    "detected_at": "2026-05-08T00:00:53.016089Z",
                     "previous_status": None,
                     "current_status": "active",
                 },
                 {
-                    "scan_id": "scan-9",
-                    "character_name": "Bravo",
+                    "id": 646,
+                    "scan_id": "2026-05-08T00:00:53.016089Z",
+                    "character_name": "Sikahunt",
                     "event_type": "joined",
-                    "detected_at": "2026-04-29T11:00:00Z",
+                    "detected_at": "2026-05-08T00:00:53.016089Z",
                     "previous_status": None,
                     "current_status": "active",
                 },
+                {
+                    "id": 645,
+                    "scan_id": "2026-05-07T23:58:12.000000Z",
+                    "character_name": "Shelidoni",
+                    "event_type": "departed",
+                    "detected_at": "2026-05-07T23:58:12.000000Z",
+                    "previous_status": "active",
+                    "current_status": "departed",
+                },
             ],
-            limit=1,
+            limit=5,
+        )
+
+        self.assertFalse(summary["bootstrap"])
+        self.assertEqual(summary["scan_id"], "2026-05-08T00:00:53.016089Z")
+        self.assertEqual(summary["joined"], 2)
+        self.assertEqual(summary["departed"], 0)
+        self.assertEqual(summary["rejoined"], 0)
+        self.assertEqual(summary["total"], 2)
+        self.assertEqual(
+            [event["character_name"] for event in summary["recent"][:2]],
+            ["Syeara", "Sikahunt"],
+        )
+
+    def test_summarize_membership_events_still_suppresses_large_initial_seed_scan(self):
+        summary = summarize_membership_events(
+            [
+                {
+                    "id": index,
+                    "scan_id": "scan-seed",
+                    "character_name": f"Seed {index:03d}",
+                    "event_type": "joined",
+                    "detected_at": "2026-04-01T10:00:00Z",
+                    "previous_status": None,
+                    "current_status": "active",
+                }
+                for index in range(1, 31)
+            ],
+            limit=5,
         )
 
         self.assertTrue(summary["bootstrap"])
-        self.assertEqual(summary["joined"], 2)
-        self.assertEqual(summary["total"], 2)
-        self.assertEqual(len(summary["recent"]), 1)
+        self.assertEqual(summary["joined"], 30)
+        self.assertEqual(summary["departed"], 0)
+        self.assertEqual(summary["rejoined"], 0)
+        self.assertEqual(summary["total"], 30)
+        self.assertEqual(summary["scan_id"], "scan-seed")
+        self.assertEqual(len(summary["recent"]), 5)
 
     def test_process_global_trends_serializes_raw_totals_for_count_only_deltas(self):
         roster_data = [
