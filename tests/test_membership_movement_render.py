@@ -292,13 +292,14 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
                 "bootstrap": True,
                 "recent": [
                     {
-                        "scan_id": "scan-1",
-                        "character_name": "SmokeTest",
+                        "scan_id": f"scan-{index}",
+                        "character_name": f"SmokeTest {index}",
                         "event_type": "joined",
-                        "detected_at": "2026-04-29T11:45:00Z",
+                        "detected_at": f"2026-04-29T11:4{index}:00Z",
                         "previous_status": None,
                         "current_status": "active",
                     }
+                    for index in range(1, 7)
                 ],
             }
             latest_changes = {
@@ -338,9 +339,10 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
             dashboard_config = json.loads(config_match.group(1))
             self.assertIn("membership_movement", dashboard_config)
             self.assertEqual(dashboard_config["membership_movement"]["joined"], 1)
+            self.assertEqual(len(dashboard_config["membership_movement"]["recent"]), 6)
             self.assertEqual(
                 dashboard_config["membership_movement"]["recent"][0]["character_name"],
-                "SmokeTest",
+                "SmokeTest 1",
             )
             self.assertIn("latest_changes", dashboard_config)
             self.assertEqual(dashboard_config["latest_changes"]["title"], "Latest Changes")
@@ -370,6 +372,8 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("${total.toLocaleString()} detail-eligible characters are recorded as the movement baseline", js_text)
         self.assertIn("Latest scan: +${joined.toLocaleString()} joined / -${departed.toLocaleString()} departed /", js_text)
         self.assertIn("Last 7 days: +${recentJoined.toLocaleString()} joined / -${recentDeparted.toLocaleString()} departed /", js_text)
+        self.assertIn("recent.forEach(event => {", js_text)
+        self.assertNotIn("recent.slice(0, 5)", js_text)
         self.assertIn('data-movement-state', js_text)
         self.assertIn("item.classList.add('is-clickable');", js_text)
         self.assertIn("item.setAttribute('role', 'button');", js_text)
@@ -408,7 +412,7 @@ class MembershipMovementRenderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('renderHomeLatestChangesCard', js_text)
         self.assertIn('No notable changes recorded yet.', js_text)
         self.assertIn('Recent activity, trend shifts, and notable roster signals worth noting.', js_text)
-        self.assertIn('Roster movement updated in the latest scan.', helper_text)
+        self.assertIn('label = f"Roster movement: {\' / \'.join(parts)} in the last 7 days."', helper_text)
         self.assertIn(
             'Activity and trend changes will appear after comparison scans detect movement beyond the baseline.',
             helper_text,

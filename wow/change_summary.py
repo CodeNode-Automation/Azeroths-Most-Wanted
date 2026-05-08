@@ -40,28 +40,26 @@ def _extract_membership_movement_item(membership_movement: Any) -> list[dict[str
     if membership_movement.get("bootstrap"):
         return []
 
-    joined = _clean_int(membership_movement.get("joined"), 0)
-    departed = _clean_int(membership_movement.get("departed"), 0)
-    rejoined = _clean_int(membership_movement.get("rejoined"), 0)
+    recent_joined = _clean_int(membership_movement.get("recent_joined"), 0)
+    recent_departed = _clean_int(membership_movement.get("recent_departed"), 0)
+    recent_rejoined = _clean_int(membership_movement.get("recent_rejoined"), 0)
 
-    if joined <= 0 and departed <= 0 and rejoined <= 0:
+    if recent_joined <= 0 and recent_departed <= 0 and recent_rejoined <= 0:
         return []
 
     parts = []
-    if joined > 0:
-        parts.append(_format_count(joined, "joined", "joined"))
-    if departed > 0:
-        parts.append(_format_count(departed, "departed", "departed"))
-    if rejoined > 0:
-        parts.append(_format_count(rejoined, "rejoined", "rejoined"))
+    if recent_joined > 0:
+        parts.append(f"+{recent_joined} joined")
+    if recent_departed > 0:
+        parts.append(f"-{recent_departed} departed")
+    if recent_rejoined > 0:
+        parts.append(_format_count(recent_rejoined, "rejoined", "rejoined"))
 
     if not parts:
         return []
 
-    tone = "watch" if departed > 0 else "positive"
-    label = "Roster movement updated in the latest scan."
-    if len(parts) == 1:
-        label = f"Roster movement updated: {parts[0]}."
+    tone = "watch" if recent_departed > 0 else "positive"
+    label = f"Roster movement: {' / '.join(parts)} in the last 7 days."
 
     return [
         {

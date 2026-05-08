@@ -258,7 +258,7 @@ function renderHomeMovementCard(dashboardConfig = {}) {
     if (bootstrap || countOnlyRawDelta || recent.length === 0) {
         listEl.hidden = true;
     } else {
-        recent.slice(0, 5).forEach(event => {
+        recent.forEach(event => {
             const characterName = String(event.character_name || '').trim();
             const targetCharacter = getHomeMovementCharacterTarget(characterName);
             const hasTarget = Boolean(targetCharacter);
@@ -445,4 +445,3 @@ function populateHomeOverview(dashboardConfig = {}) {
     renderHomeLatestChangesCard(dashboardConfig);
     renderHomeOfficerBriefCard(dashboardConfig);
 }
-

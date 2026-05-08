@@ -77,9 +77,13 @@ class ChangeSummaryTests(unittest.TestCase):
     def test_normal_membership_movement_counts_are_summarized_in_order(self):
         summary = build_change_summary(
             membership_movement={
-                "joined": 3,
+                "joined": 1,
                 "departed": 1,
-                "rejoined": 2,
+                "rejoined": 0,
+                "recent_joined": 3,
+                "recent_departed": 1,
+                "recent_rejoined": 2,
+                "recent_total": 6,
                 "total": 6,
                 "bootstrap": False,
             },
@@ -88,7 +92,11 @@ class ChangeSummaryTests(unittest.TestCase):
         )
 
         self.assertEqual(len(summary["items"]), 1)
-        self.assertEqual(summary["items"][0]["label"], "Roster movement updated in the latest scan.")
+        self.assertEqual(
+            summary["items"][0]["label"],
+            "Roster movement: +3 joined / -1 departed / 2 rejoined in the last 7 days.",
+        )
+        self.assertNotIn("+1 joined", summary["items"][0]["label"])
 
     def test_timeline_events_are_grouped_by_type(self):
         summary = build_change_summary(
@@ -147,6 +155,10 @@ class ChangeSummaryTests(unittest.TestCase):
                 "joined": 1,
                 "departed": 1,
                 "rejoined": 0,
+                "recent_joined": 1,
+                "recent_departed": 1,
+                "recent_rejoined": 0,
+                "recent_total": 2,
                 "total": 2,
                 "bootstrap": False,
             },
@@ -168,6 +180,10 @@ class ChangeSummaryTests(unittest.TestCase):
                 "departed": 1,
                 "rejoined": 0,
                 "joined": 1,
+                "recent_joined": 1,
+                "recent_departed": 1,
+                "recent_rejoined": 0,
+                "recent_total": 2,
                 "total": 2,
                 "bootstrap": False,
             },
