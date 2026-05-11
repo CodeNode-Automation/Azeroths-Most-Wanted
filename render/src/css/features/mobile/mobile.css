@@ -507,7 +507,8 @@
   }
 
   .home-insights-row {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 16px;
   }
 
@@ -518,6 +519,8 @@
   }
 
   .home-roster-intelligence-cluster {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
     padding: 14px;
   }

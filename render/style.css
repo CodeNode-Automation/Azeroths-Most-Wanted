@@ -4601,9 +4601,10 @@ body.nav-menu-open {
 }
 
 .home-roster-intelligence-cluster {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+  grid-template-areas: "movement side";
+  gap: 18px;
   width: 100%;
   padding: 16px;
   border: 1px solid rgba(112, 94, 164, 0.14);
@@ -4613,16 +4614,21 @@ body.nav-menu-open {
     linear-gradient(180deg, rgba(10, 11, 16, 0.96) 0%, rgba(7, 8, 12, 0.99) 100%);
   box-shadow:
     0 18px 36px rgba(0, 0, 0, 0.42),
-    inset 0 0 18px rgba(255, 209, 0, 0.025);
+  inset 0 0 18px rgba(255, 209, 0, 0.025);
+}
+
+.home-movement-card {
+  grid-area: movement;
 }
 
 .home-insights-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   align-items: stretch;
 }
 
