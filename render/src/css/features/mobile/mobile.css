@@ -686,6 +686,14 @@
     padding: 28px 20px 24px;
   }
 
+  .home-war-effort-section .weekly-challenges-flex-container {
+    grid-template-columns: 1fr;
+  }
+
+  .war-effort-home-card-readiness {
+    grid-column: auto;
+  }
+
   .weekly-challenges-head {
     flex-direction: column;
   }
