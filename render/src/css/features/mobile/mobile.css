@@ -685,6 +685,18 @@
     max-width: 100%;
   }
 
+  .home-scan-summary-shell {
+    padding: 14px 14px 16px;
+    border-radius: 22px;
+    gap: 14px;
+  }
+
+  .home-scan-summary-shell .command-ribbon-container,
+  .home-scan-summary-shell .home-section-nav,
+  .home-scan-summary-shell .home-pulse-section {
+    max-width: 100%;
+  }
+
   .home-war-effort-section .weekly-challenges-container {
     padding: 28px 20px 24px;
   }
@@ -1082,6 +1094,13 @@
 
 /* Phone layouts: home, roster cards, archive, analytics, dossier */
 @media (max-width: 640px) {
+  .home-scan-summary-shell {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
   .home-dashboard-grid {
     gap: 44px;
     margin-top: 44px;
