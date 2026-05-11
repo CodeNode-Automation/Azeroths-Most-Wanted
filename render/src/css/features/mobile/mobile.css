@@ -1087,6 +1087,19 @@
     scroll-margin-top: 88px;
   }
 
+  #homepage-standouts {
+    scroll-margin-top: 108px;
+  }
+
+  #homepage-status,
+  #homepage-roster,
+  #homepage-war-effort,
+  #homepage-standouts,
+  #homepage-councils,
+  #homepage-analytics {
+    scroll-margin-top: 88px;
+  }
+
   .home-command-deck,
   .home-pulse-grid,
   .home-secondary-grid,

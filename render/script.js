@@ -5116,6 +5116,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const hash = (hashValue || '').toLowerCase();
 
         if (!hash) return { route: 'home', family: 'home' };
+        if (isHomepageSectionHash(hash)) return { route: 'home', family: 'home' };
         if (hash === 'analytics') return { route: 'analytics', family: 'analytics' };
         if (hash === 'architecture') return { route: 'architecture', family: 'architecture' };
         if (hash === 'badges') return { route: 'badges', family: 'hall' };
@@ -5162,12 +5163,44 @@ window.addEventListener('DOMContentLoaded', async () => {
         'homepage-analytics'
     ]);
 
+    function isHomepageSectionHash(hash) {
+        return HOMEPAGE_SECTION_HASHES.has(hash);
+    }
+
     function scrollToHomepageSection(hash) {
-        const target = HOMEPAGE_SECTION_HASHES.has(hash) ? document.getElementById(hash) : null;
+        const target = isHomepageSectionHash(hash) ? document.getElementById(hash) : null;
         if (!target) return false;
 
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return true;
+    }
+
+    function bindHomepageSectionNav() {
+        if (window.__amwHomepageSectionNavBound) return;
+        window.__amwHomepageSectionNavBound = true;
+
+        document.querySelectorAll('.home-section-nav-link, .homepage-section-nav-link').forEach(link => {
+            link.addEventListener('click', (event) => {
+                const href = link.getAttribute('href') || '';
+                const hash = decodeURIComponent(href.replace(/^#/, ''));
+                if (!isHomepageSectionHash(hash)) return;
+
+                event.preventDefault();
+
+                if (document.body.dataset.routeFamily !== 'home') {
+                    showHomeView();
+                }
+
+                if (window.location.hash !== `#${hash}`) {
+                    history.pushState(null, '', `#${hash}`);
+                } else {
+                    history.replaceState(null, '', `#${hash}`);
+                }
+
+                applyRoutePresentation(hash);
+                window.requestAnimationFrame(() => scrollToHomepageSection(hash));
+            });
+        });
     }
 
     function showConciseView(title, characters, isRawRoster = false, showBadges = true, defaultSort = 'level') {
@@ -5529,7 +5562,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const hash = decodeURIComponent(window.location.hash.substring(1));
         applyRoutePresentation(hash);
 
-        if (HOMEPAGE_SECTION_HASHES.has(hash)) {
+        if (isHomepageSectionHash(hash)) {
             showHomeView();
             window.requestAnimationFrame(() => scrollToHomepageSection(hash));
             updateDropdownLabel('all');
@@ -6804,6 +6837,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     syncPrimaryNavAccessibilityState();
     syncNavActiveState();
+    bindHomepageSectionNav();
     window.addEventListener('hashchange', syncNavActiveState);
 
     // ==========================================

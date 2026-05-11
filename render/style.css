@@ -6163,6 +6163,14 @@ body[data-route="ladder-pvp"] #ember-canvas, body[data-route="war-effort-hk"] #e
   scroll-margin-top: 112px;
 }
 
+#homepage-status, #homepage-roster, #homepage-war-effort, #homepage-standouts, #homepage-councils, #homepage-analytics {
+  scroll-margin-top: 112px;
+}
+
+#homepage-standouts {
+  scroll-margin-top: 144px;
+}
+
 .home-command-section, .home-pulse-section, .home-roster-intelligence-section, .home-war-effort-section, .weekly-mvps-wrapper, .home-ladders-section, .home-secondary-section {
   margin-top: 72px;
 }
