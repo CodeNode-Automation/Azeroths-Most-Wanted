@@ -4981,12 +4981,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
 
             applyTrend(
-                'trend-total',
-                resolveTrendMetric(today, 'total_roster', 'total_roster'),
-                resolveTrendMetric(yesterday, 'total_roster', 'total_roster'),
-                'Raw endpoint delta'
-            );
-            applyTrend(
                 'trend-active',
                 resolveTrendMetric(today, 'active_roster_mains', 'active_roster'),
                 resolveTrendMetric(yesterday, 'active_roster_mains', 'active_roster')

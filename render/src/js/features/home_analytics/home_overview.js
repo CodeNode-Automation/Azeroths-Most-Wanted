@@ -416,7 +416,7 @@ function populateHomeOverview(dashboardConfig = {}) {
         `${totalMainCount.toLocaleString()} mains`,
         `${totalAltCount.toLocaleString()} alts`
     ]);
-    setHomeCardText('home-pulse-total', '.home-pulse-meta', 'Raw roster total from the guild roster endpoint. Delta can differ from tracked movement.');
+    setHomeCardText('home-pulse-total', '.home-pulse-meta', 'Raw roster total from the guild roster endpoint. Tracked movement is summarized below.');
 
     setHomeCardText('home-pulse-active', '.home-pulse-label', 'Active Mains');
     setHomeCardText('home-pulse-active', '.home-pulse-context', '14-day window');
