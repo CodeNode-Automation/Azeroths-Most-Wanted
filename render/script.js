@@ -5153,6 +5153,23 @@ window.addEventListener('DOMContentLoaded', async () => {
         window.dispatchEvent(new CustomEvent('amw:route-theme', { detail: presentation }));
     }
 
+    const HOMEPAGE_SECTION_HASHES = new Set([
+        'homepage-status',
+        'homepage-roster',
+        'homepage-war-effort',
+        'homepage-standouts',
+        'homepage-councils',
+        'homepage-analytics'
+    ]);
+
+    function scrollToHomepageSection(hash) {
+        const target = HOMEPAGE_SECTION_HASHES.has(hash) ? document.getElementById(hash) : null;
+        if (!target) return false;
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return true;
+    }
+
     function showConciseView(title, characters, isRawRoster = false, showBadges = true, defaultSort = 'level') {
         hideAllViews();
         setSoloDashboardLayout();
@@ -5511,7 +5528,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     function route() {
         const hash = decodeURIComponent(window.location.hash.substring(1));
         applyRoutePresentation(hash);
-        
+
+        if (HOMEPAGE_SECTION_HASHES.has(hash)) {
+            showHomeView();
+            window.requestAnimationFrame(() => scrollToHomepageSection(hash));
+            updateDropdownLabel('all');
+            return;
+        }
+
         if (!hash || hash === '') {
             showHomeView();
         } else if (hash === 'analytics') {

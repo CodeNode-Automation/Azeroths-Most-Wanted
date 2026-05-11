@@ -357,6 +357,7 @@
 
   .home-command-section,
   .home-pulse-section,
+  .home-roster-intelligence-section,
   .home-war-effort-section,
   .weekly-mvps-wrapper,
   .home-ladders-section,
@@ -479,6 +480,26 @@
     padding: 5px 8px;
   }
 
+  .home-section-nav {
+    width: min(100%, 1240px);
+    margin-top: 16px;
+    padding: 10px 12px;
+    gap: 8px 10px;
+  }
+
+  .home-section-nav-kicker {
+    width: 100%;
+    justify-content: center;
+    margin-right: 0;
+  }
+
+  .home-section-nav-link {
+    flex: 1 1 124px;
+    min-height: 32px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
   .home-pulse-meta {
     max-width: none;
     font-size: 11px;
@@ -494,6 +515,11 @@
   .home-latest-changes-card,
   .home-officer-brief-card {
     padding: 16px;
+  }
+
+  .home-roster-intelligence-cluster {
+    gap: 12px;
+    padding: 14px;
   }
 
   .analytics-pressure-grid,

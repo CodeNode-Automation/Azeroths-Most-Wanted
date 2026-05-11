@@ -773,7 +773,17 @@
                     </div>
                 </section>
 
-                <section class="home-pulse-section">
+                <nav class="home-section-nav" aria-label="Homepage sections">
+                    <span class="home-section-nav-kicker">Jump to</span>
+                    <a href="#homepage-status" class="home-section-nav-link">Status</a>
+                    <a href="#homepage-roster" class="home-section-nav-link">Roster</a>
+                    <a href="#homepage-war-effort" class="home-section-nav-link">War Effort</a>
+                    <a href="#homepage-standouts" class="home-section-nav-link">Standouts</a>
+                    <a href="#homepage-councils" class="home-section-nav-link">Councils</a>
+                    <a href="#homepage-analytics" class="home-section-nav-link">Analytics</a>
+                </nav>
+
+                <section id="homepage-status" class="home-pulse-section">
                     <div class="home-section-heading">
                         <span class="home-section-kicker">Guild Pulse</span>
                         <h3 class="home-section-title">Live status from the latest scan</h3>
@@ -851,14 +861,15 @@
                     </div>
                 </section>
 
-                <section class="home-roster-intelligence-section">
+                <section id="homepage-roster" class="home-roster-intelligence-section">
                     <div class="home-section-heading home-section-heading-compact home-roster-intelligence-heading">
                         <h3 class="home-section-title">Roster Intelligence</h3>
                         <p class="home-section-subtitle">Movement, recent changes, and officer health from the latest guild snapshot.</p>
                         <p id="home-roster-intelligence-sync" class="home-roster-intelligence-sync">Dashboard built: {{ last_updated_display }}</p>
                     </div>
 
-                    <div id="home-movement-card" class="home-movement-card" role="note" aria-labelledby="home-movement-title">
+                    <div class="home-roster-intelligence-cluster">
+                        <div id="home-movement-card" class="home-movement-card" role="note" aria-labelledby="home-movement-title">
                         <span class="home-nav-eyebrow">Roster Movement</span>
                         <span id="home-movement-title" class="home-nav-title">Latest scan</span>
                         <span id="home-movement-summary" class="home-nav-copy">No roster movement logged yet.</span>
@@ -886,10 +897,11 @@
                             <ul id="home-officer-brief-list" class="home-officer-brief-list" aria-label="Officer brief insights"></ul>
                         </div>
                     </div>
+                    </div>
                 </section>
 
                 <div class="home-dashboard-grid">
-                    <section class="home-war-effort-section">
+                    <section id="homepage-war-effort" class="home-war-effort-section">
                         <div class="home-section-heading home-section-heading-compact">
                             <span class="home-section-kicker">Guild War Effort</span>
                             <h3 class="home-section-title">Campaign objectives worth tracking this week</h3>
@@ -1030,6 +1042,7 @@
                     </section>
 
                     <section id="weekly-mvps-container" class="weekly-mvps-wrapper" hidden>
+                        <span id="homepage-standouts" class="home-section-anchor" aria-hidden="true"></span>
                         <div class="home-section-heading home-section-heading-compact">
                             <span class="home-section-kicker">Guild Commendations</span>
                             <h3 class="home-section-title">7-day standouts worth spotlighting</h3>
@@ -1048,7 +1061,7 @@
                         </div>
                     </section>
                     
-                    <section class="home-ladders-section">
+                    <section id="homepage-councils" class="home-ladders-section">
                         <div class="home-section-heading home-section-heading-compact">
                             <span class="home-section-kicker">War Council Reports</span>
                             <h3 class="home-section-title">Curated ladder intelligence</h3>
@@ -1069,7 +1082,7 @@
                         </div>
                     </section>
 
-                    <section class="home-secondary-section">
+                    <section id="homepage-analytics" class="home-secondary-section">
                         <div class="home-section-heading home-section-heading-compact">
                             <span class="home-section-kicker">Guild Intelligence</span>
                             <h3 class="home-section-title">Go deeper when the homepage summary is not enough</h3>
