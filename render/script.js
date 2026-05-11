@@ -4954,7 +4954,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 return { hasValue: false, value: 0 };
             }
 
-            function applyTrend(elementId, todayMetric, yestMetric) {
+            function applyTrend(elementId, todayMetric, yestMetric, prefixText = '') {
                 const el = document.getElementById(elementId);
                 if (!el) return;
 
@@ -4964,14 +4964,15 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const diff = todayMetric.value - yestMetric.value;
                 const span = document.createElement('span');
 
+                const prefix = String(prefixText || '').trim();
                 if (diff > 0) {
-                    span.textContent = `+${diff} since previous scan`;
+                    span.textContent = prefix ? `${prefix}: +${diff.toLocaleString()}` : `+${diff} since previous scan`;
                     span.classList.add('trend-positive');
                 } else if (diff < 0) {
-                    span.textContent = `-${Math.abs(diff)} since previous scan`;
+                    span.textContent = prefix ? `${prefix}: -${Math.abs(diff).toLocaleString()}` : `-${Math.abs(diff)} since previous scan`;
                     span.classList.add('trend-negative');
                 } else {
-                    span.textContent = 'No change since previous scan';
+                    span.textContent = prefix ? `${prefix}: no change` : 'No change since previous scan';
                     span.classList.add('trend-neutral');
                 }
 
@@ -4982,7 +4983,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             applyTrend(
                 'trend-total',
                 resolveTrendMetric(today, 'total_roster', 'total_roster'),
-                resolveTrendMetric(yesterday, 'total_roster', 'total_roster')
+                resolveTrendMetric(yesterday, 'total_roster', 'total_roster'),
+                'Raw endpoint delta'
             );
             applyTrend(
                 'trend-active',

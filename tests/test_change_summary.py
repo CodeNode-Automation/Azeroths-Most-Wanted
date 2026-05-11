@@ -74,6 +74,32 @@ class ChangeSummaryTests(unittest.TestCase):
         )
         self.assertEqual(summary["items"][0]["tone"], "neutral")
 
+    def test_tracked_membership_movement_takes_precedence_over_raw_roster_delta(self):
+        summary = build_change_summary(
+            membership_movement={
+                "recent_joined": 2,
+                "recent_departed": 1,
+                "recent_rejoined": 0,
+                "recent_total": 3,
+                "total": 3,
+                "bootstrap": False,
+            },
+            timeline_events=[],
+            trend_data={
+                "global_trends": {
+                    "total_members": 664,
+                    "previous_total_members": 666,
+                },
+            },
+        )
+
+        self.assertEqual(len(summary["items"]), 1)
+        self.assertEqual(
+            summary["items"][0]["label"],
+            "Roster movement: +2 joined / -1 departed in the last 7 days.",
+        )
+        self.assertNotIn("Guild roster decreased by 2 since the previous scan.", [item["label"] for item in summary["items"]])
+
     def test_normal_membership_movement_counts_are_summarized_in_order(self):
         summary = build_change_summary(
             membership_movement={
