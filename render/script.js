@@ -28,10 +28,10 @@ const TBC_XP = {
     60: 494000, 61: 517000, 62: 550000, 63: 587000, 64: 632000, 65: 684000, 66: 745000, 67: 815000, 68: 895000, 69: 985000
 };
 window.WAR_EFFORT_THRESHOLDS = window.WAR_EFFORT_THRESHOLDS || Object.freeze({
-    xp: 500,
-    hk: 1000,
-    loot: 40,
-    zenith: 5
+    xp: 250,
+    hk: 500,
+    loot: 25,
+    zenith: 3
 });
 const DASHBOARD_BADGE_ICONS = Object.freeze({
     crown: '\u{1F451}',

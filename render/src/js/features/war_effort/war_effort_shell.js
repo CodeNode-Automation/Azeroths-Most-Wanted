@@ -1,10 +1,10 @@
 // War-effort shell and config helpers prepended during final JS assembly.
 
 window.WAR_EFFORT_THRESHOLDS = window.WAR_EFFORT_THRESHOLDS || Object.freeze({
-    xp: 500,
-    hk: 1000,
-    loot: 40,
-    zenith: 5
+    xp: 250,
+    hk: 500,
+    loot: 25,
+    zenith: 3
 });
 
 function buildWarEffortHeroStatNode(value, label) {
@@ -30,7 +30,7 @@ function getWarEffortConfig(type) {
             desc: 'A war room for the guild leveling push. Track who is driving the campaign, how close the roster is to the weekly goal, and who is setting the pace for the march through Azeroth and into Outland.',
             emptyTitle: 'The campaign has begun.',
             emptyDesc: 'No levels have been claimed yet this cycle. Rally the leveling core, push your alts, and become the first name on the board.',
-            objectiveLabel: 'Objective: 500 levels gained this week.',
+            objectiveLabel: 'Objective: 250 levels gained this week.',
             unitLabel: 'Levels',
             progressUnitSingular: 'level',
             progressUnitPlural: 'levels',
@@ -45,7 +45,7 @@ function getWarEffortConfig(type) {
             desc: 'A live war tally for battleground pressure and honorable kills. Use this page to see who is opening the week strongest, how close the guild is to the HK objective, and where the fiercest PvP momentum lives.',
             emptyTitle: 'The blood ledger is still clean.',
             emptyDesc: 'No honorable kills have been recorded yet this cycle. Hit the battlegrounds, hunt the enemy, and open the week with the first HKs.',
-            objectiveLabel: 'Objective: 1,000 honorable kills this week.',
+            objectiveLabel: 'Objective: 500 honorable kills this week.',
             unitLabel: 'HKs',
             progressUnitSingular: 'honorable kill',
             progressUnitPlural: 'honorable kills',
@@ -60,7 +60,7 @@ function getWarEffortConfig(type) {
             desc: 'A trophy ledger for epic and legendary haul. This board turns the weekly loot race into a visible campaign, spotlighting who is filling the vault and how quickly the guild is stacking spoils.',
             emptyTitle: 'The hoard stands empty.',
             emptyDesc: 'No epics have been secured yet this cycle. Step into raids and dungeons, bring home the first trophy, and give the guild vault its first shine.',
-            objectiveLabel: 'Objective: 40 notable gear upgrades this week.',
+            objectiveLabel: 'Objective: 25 notable gear upgrades this week.',
             unitLabel: 'Epics',
             progressUnitSingular: 'upgrade',
             progressUnitPlural: 'upgrades',
@@ -75,7 +75,7 @@ function getWarEffortConfig(type) {
             desc: 'A ceremonial race board for the sprint to level 70. Watch the summit open, see who crossed first, and keep the weekly push visible until the cohort is filled.',
             emptyTitle: 'The summit awaits.',
             emptyDesc: 'No one has entered the Zenith Cohort this week. Push to level 70 and become the first hero etched into the record.',
-            objectiveLabel: 'Objective: 5 members reach level 70 this week.',
+            objectiveLabel: 'Objective: 3 members reach level 70 this week.',
             unitLabel: 'New 70s',
             progressUnitSingular: 'member',
             progressUnitPlural: 'members',
