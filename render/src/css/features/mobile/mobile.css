@@ -1101,6 +1101,24 @@
     box-shadow: none;
   }
 
+  .home-report-cluster {
+    padding: 14px 14px 16px;
+    border-radius: 22px;
+    gap: 18px;
+  }
+
+  .home-report-cluster .weekly-mvps-wrapper,
+  .home-report-cluster .home-ladders-section,
+  .home-report-cluster .home-secondary-section {
+    max-width: 100%;
+  }
+
+  .home-report-cluster .mvp-cards-container,
+  .home-report-cluster .leaderboards-wrapper,
+  .home-report-cluster .home-secondary-grid {
+    gap: 14px;
+  }
+
   .home-dashboard-grid {
     gap: 44px;
     margin-top: 44px;
