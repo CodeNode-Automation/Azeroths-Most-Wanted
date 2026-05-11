@@ -126,15 +126,28 @@ body[data-route="war-effort-zenith"]::before {
   text-shadow: 0 0 10px var(--we-text-crushed-glow, transparent);
 }
 .challenge-link {
-  color: #bbb;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(215, 206, 180, 0.82);
   font-family: "Inter", sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 209, 0, 0.14);
+  background: rgba(0, 0, 0, 0.12);
   cursor: pointer;
   text-shadow: none;
-  transition: color 0.3s;
-  letter-spacing: 0;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 .challenge-text {
   color: #fff;
@@ -313,9 +326,15 @@ body[data-route="war-effort-zenith"]::before {
     var(--amw-surface-focus-ring),
     0 12px 24px rgba(0, 0, 0, 0.22);
   color: #f4deb0;
-  border-bottom-color: rgba(255, 209, 0, 0.72);
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
+  border-color: rgba(255, 209, 0, 0.55);
+  background: rgba(255, 209, 0, 0.08);
+}
+
+.war-effort-home-card .challenge-link:hover {
+  color: #f4deb0;
+  border-color: rgba(255, 209, 0, 0.28);
+  background: rgba(255, 209, 0, 0.05);
+  transform: translateY(-1px);
 }
 
 .war-effort-shell {

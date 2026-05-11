@@ -91,6 +91,29 @@ function formatReadinessWeekAnchor(weekAnchor) {
     });
 }
 
+function formatWarEffortTooltipSummary(type, snapshot = {}, config = {}) {
+    const current = Number(snapshot.current) || 0;
+    const target = Number(snapshot.target) || Number(config.target) || 0;
+
+    if (type === 'readiness') {
+        const vanguards = Array.isArray(snapshot.vanguards) ? snapshot.vanguards : [];
+        if (target <= 0) return "Warden's Standard has not opened for this reset yet.";
+        if (current <= 0) return "Warden's Standard has begun; no participants are locked yet.";
+
+        const statusLine = current >= target
+            ? `Warden's Standard complete: ${current.toLocaleString()} / ${target.toLocaleString()} participants locked this reset.`
+            : `Warden's Standard is in progress: ${current.toLocaleString()} / ${target.toLocaleString()} participants locked.`;
+
+        return current >= target && vanguards.length > 0
+            ? `${statusLine} Vanguards: ${vanguards.map(formatReadinessDisplayName).join(', ')}.`
+            : statusLine;
+    }
+
+    if (current >= target && target > 0) return 'Objective complete this week.';
+    if (current > 0) return `Objective in progress: ${current.toLocaleString()} / ${target.toLocaleString()}.`;
+    return 'The challenge has just begun.';
+}
+
 function renderReadinessObjectiveCard(readinessLock = {}, weekAnchor = '') {
     const kickerEl = document.getElementById('guild-readiness-kicker');
     const summaryEl = document.getElementById('guild-readiness-summary');
@@ -7369,11 +7392,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         ['xp', 'hk', 'loot', 'zenith'].forEach(applyHomeWarEffortText);
 
         // 6. Tooltip Generator Helper (Updated to Route on Click)
-        function bindTooltip(triggerId, contributorsDict, titleText, labelText) {
+        function bindTooltip(triggerId, contributorsDict, titleText, labelText, type) {
             const tooltipTrigger = document.getElementById(triggerId);
             if (!tooltipTrigger) return;
             
             const sortedContributors = Object.entries(contributorsDict).sort((a, b) => b[1] - a[1]);
+            const snapshot = type && window.warEffortSnapshots ? window.warEffortSnapshots[type] : null;
+            const config = type && typeof getWarEffortConfig === 'function' ? getWarEffortConfig(type) : null;
             
             const newTrigger = tooltipTrigger.cloneNode(true);
             tooltipTrigger.parentNode.replaceChild(newTrigger, tooltipTrigger);
@@ -7389,12 +7414,15 @@ window.addEventListener('DOMContentLoaded', async () => {
                     tooltip.appendChild(headerClone);
                 }
 
-                if (sortedContributors.length === 0) {
-                    const emptyTemplate = document.getElementById('tpl-we-tooltip-empty');
-                    if (emptyTemplate) {
-                        tooltip.appendChild(emptyTemplate.content.cloneNode(true));
-                    }
-                } else {
+                const emptyTemplate = document.getElementById('tpl-we-tooltip-empty');
+                if (emptyTemplate) {
+                    const emptyClone = emptyTemplate.content.cloneNode(true);
+                    const emptyEl = emptyClone.querySelector('.we-tt-empty');
+                    if (emptyEl) emptyEl.textContent = formatWarEffortTooltipSummary(type, snapshot || {}, config || {});
+                    tooltip.appendChild(emptyClone);
+                }
+
+                if (sortedContributors.length > 0) {
                     const topList = sortedContributors.slice(0, 15);
                     topList.forEach(([name, count], index) => {
                         const charData = rosterData.find(c => c.profile && c.profile.name && c.profile.name.toLowerCase() === name.toLowerCase());
@@ -7469,11 +7497,11 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        bindTooltip('guild-xp-tooltip-trigger', levelContributors, "Top Leveling Heroes", "levels");
-        bindTooltip('guild-hk-tooltip-trigger', hkContributors, "Top PvP Slayers", "HKs");
-        bindTooltip('guild-loot-tooltip-trigger', lootContributors, "Top Treasure Hunters", "Epics");
-        bindTooltip('guild-zenith-tooltip-trigger', zenithContributors, "The Zenith Cohort", "Max Levels");
-        bindTooltip('guild-readiness-tooltip-trigger', {}, "Warden's Standard", "participants");
+        bindTooltip('guild-xp-tooltip-trigger', levelContributors, "Top Leveling Heroes", "levels", 'xp');
+        bindTooltip('guild-hk-tooltip-trigger', hkContributors, "Top PvP Slayers", "HKs", 'hk');
+        bindTooltip('guild-loot-tooltip-trigger', lootContributors, "Top Treasure Hunters", "Epics", 'loot');
+        bindTooltip('guild-zenith-tooltip-trigger', zenithContributors, "The Zenith Cohort", "Max Levels", 'zenith');
+        bindTooltip('guild-readiness-tooltip-trigger', {}, "Warden's Standard", "participants", 'readiness');
     };
 
     window.addEventListener('hashchange', route);

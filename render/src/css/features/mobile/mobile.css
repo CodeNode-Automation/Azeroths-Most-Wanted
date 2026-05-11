@@ -1413,6 +1413,7 @@
 
   .war-effort-home-card .challenge-link {
     width: 100%;
+    justify-content: center;
   }
 
   .campaign-archive-body {
