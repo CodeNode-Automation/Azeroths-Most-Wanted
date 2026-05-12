@@ -10,6 +10,7 @@ from wow.war_effort import prepare_war_effort_history_purge
 
 NOW_MS = 1_725_000_000_000
 DAY_MS = 24 * 60 * 60 * 1000
+RESET_ANCHOR_MS = NOW_MS - (3 * DAY_MS)
 
 
 def make_equipped(
@@ -75,6 +76,16 @@ def make_character(
     return character
 
 
+def build_state(roster, *, now_ms=NOW_MS, reset_anchor_ms=RESET_ANCHOR_MS, readiness_lock=None):
+    return build_readiness_week_state(
+        roster,
+        {row["char"] for row in roster},
+        now_ms=now_ms,
+        readiness_lock=readiness_lock,
+        reset_anchor_ms=reset_anchor_ms,
+    )
+
+
 class WarEffortReadinessTests(unittest.TestCase):
     def test_main_pipeline_threads_readiness_into_history_rows_without_schema_change(self):
         main_text = Path("main.py").read_text(encoding="utf-8")
@@ -84,6 +95,7 @@ class WarEffortReadinessTests(unittest.TestCase):
             main_text,
         )
         self.assertIn("build_readiness_week_state(", main_text)
+        self.assertIn("reset_anchor_ms=weekly_reset[\"last_reset_ms\"]", main_text)
         self.assertIn("smart_update_we(\n            'readiness',", main_text)
 
     def test_readiness_participants_require_recent_raid_ready_valid_gear_and_seventeen_slots(self):
@@ -107,7 +119,7 @@ class WarEffortReadinessTests(unittest.TestCase):
             ),
         ]
 
-        state = build_readiness_week_state(roster, {row["char"] for row in roster}, now_ms=NOW_MS)
+        state = build_state(roster)
 
         self.assertEqual(state["active_raid_ready_baseline"], 5)
         self.assertEqual(state["active_raid_ready_count"], 5)
@@ -125,6 +137,24 @@ class WarEffortReadinessTests(unittest.TestCase):
         self.assertNotIn("notenoughgear", state["participants"])
         self.assertNotIn("missingprofile", state["participants"])
         self.assertNotIn("missingequipment", state["participants"])
+
+    def test_readiness_requires_post_reset_confirmation_even_when_pre_reset_activity_is_recent(self):
+        roster = [
+            make_character("PreResetActive", last_seen_ms=RESET_ANCHOR_MS - DAY_MS),
+            make_character("PostResetActive", last_seen_ms=RESET_ANCHOR_MS + DAY_MS),
+        ]
+
+        state = build_state(roster, now_ms=RESET_ANCHOR_MS + (2 * DAY_MS))
+
+        self.assertEqual(state["active_raid_ready_baseline"], 2)
+        self.assertEqual(state["active_raid_ready_count"], 2)
+        self.assertEqual(state["total_raid_ready_count"], 2)
+        self.assertEqual(state["target"], 2)
+        self.assertEqual(state["participants"], ["postresetactive"])
+        self.assertEqual(state["participant_count"], 1)
+        self.assertEqual(state["completion_pct"], 50)
+        self.assertEqual(state["vanguards"], [])
+        self.assertNotIn("preresetactive", state["participants"])
 
     def test_readiness_accepts_normalized_current_gear_slots_and_rejects_href_only_profile_equipment(self):
         roster = [
@@ -144,7 +174,7 @@ class WarEffortReadinessTests(unittest.TestCase):
             ),
         ]
 
-        state = build_readiness_week_state(roster, {row["char"] for row in roster}, now_ms=NOW_MS)
+        state = build_state(roster)
 
         self.assertIn("uppercasegear", state["participants"])
         self.assertNotIn("hrefonlyprofileequipment", state["participants"])
@@ -159,10 +189,8 @@ class WarEffortReadinessTests(unittest.TestCase):
             make_character("Charlie", ilvl=118, last_seen_ms=NOW_MS - DAY_MS),
         ]
 
-        before_completion = build_readiness_week_state(
+        before_completion = build_state(
             roster_before_completion,
-            {row["char"] for row in roster_before_completion},
-            now_ms=NOW_MS,
             readiness_lock={
                 "active_raid_ready_baseline": 4,
                 "target": 4,
@@ -177,10 +205,8 @@ class WarEffortReadinessTests(unittest.TestCase):
             make_character("Delta", ilvl=117, last_seen_ms=NOW_MS - DAY_MS),
         ]
 
-        after_completion = build_readiness_week_state(
+        after_completion = build_state(
             roster_complete,
-            {row["char"] for row in roster_complete},
-            now_ms=NOW_MS,
             readiness_lock={
                 "active_raid_ready_baseline": 4,
                 "target": 4,
@@ -190,6 +216,29 @@ class WarEffortReadinessTests(unittest.TestCase):
         self.assertEqual(after_completion["participant_count"], 4)
         self.assertEqual(after_completion["vanguards"], ["alpha", "bravo", "charlie"])
         self.assertEqual(after_completion["completion_pct"], 100)
+
+    def test_readiness_vanguards_do_not_carry_over_without_post_reset_participants(self):
+        roster = [
+            make_character("OldVanguard", ilvl=125, last_seen_ms=RESET_ANCHOR_MS - DAY_MS),
+            make_character("OldSupport", ilvl=124, last_seen_ms=RESET_ANCHOR_MS - (2 * DAY_MS)),
+        ]
+
+        state = build_state(
+            roster,
+            now_ms=RESET_ANCHOR_MS + DAY_MS,
+            readiness_lock={
+                "active_raid_ready_baseline": 2,
+                "target": 2,
+                "vanguards": ["oldvanguard"],
+                "participants": ["oldvanguard"],
+            },
+        )
+
+        self.assertEqual(state["participant_count"], 0)
+        self.assertEqual(state["participants"], [])
+        self.assertEqual(state["vanguards"], [])
+        self.assertEqual(state["completion_pct"], 0)
+        self.assertEqual(state["target"], 2)
 
     def test_extra_metadata_dicts_do_not_increase_combat_slot_count(self):
         roster = [
@@ -202,7 +251,7 @@ class WarEffortReadinessTests(unittest.TestCase):
             )
         ]
 
-        state = build_readiness_week_state(roster, {row["char"] for row in roster}, now_ms=NOW_MS)
+        state = build_state(roster)
 
         self.assertEqual(state["participant_count"], 1)
         self.assertEqual(state["participants"], ["metadatanoise"])
@@ -218,11 +267,7 @@ class WarEffortReadinessTests(unittest.TestCase):
             for i in range(2)
         ]
 
-        initial_state = build_readiness_week_state(
-            base_roster + inactive_ready,
-            {row["char"] for row in base_roster + inactive_ready},
-            now_ms=NOW_MS,
-        )
+        initial_state = build_state(base_roster + inactive_ready)
 
         self.assertEqual(initial_state["active_raid_ready_baseline"], 14)
         self.assertEqual(initial_state["active_raid_ready_count"], 14)
@@ -234,9 +279,8 @@ class WarEffortReadinessTests(unittest.TestCase):
             for i in range(5)
         ]
 
-        frozen_state = build_readiness_week_state(
+        frozen_state = build_state(
             midweek_roster,
-            {row["char"] for row in midweek_roster},
             now_ms=NOW_MS + (2 * DAY_MS),
             readiness_lock={
                 "active_raid_ready_baseline": initial_state["active_raid_ready_baseline"],
@@ -249,7 +293,7 @@ class WarEffortReadinessTests(unittest.TestCase):
         self.assertEqual(frozen_state["total_raid_ready_count"], 21)
         self.assertEqual(frozen_state["target"], 10)
 
-        empty_state = build_readiness_week_state([], set(), now_ms=NOW_MS)
+        empty_state = build_state([])
         self.assertEqual(empty_state["active_raid_ready_baseline"], 0)
         self.assertEqual(empty_state["active_raid_ready_count"], 0)
         self.assertEqual(empty_state["total_raid_ready_count"], 0)
@@ -265,7 +309,7 @@ class WarEffortReadinessTests(unittest.TestCase):
             make_character("echo", ilvl=118, last_seen_ms=NOW_MS - DAY_MS),
         ]
 
-        state = build_readiness_week_state(roster, {row["char"] for row in roster}, now_ms=NOW_MS)
+        state = build_state(roster)
 
         self.assertEqual(state["participant_count"], 5)
         self.assertEqual(state["vanguards"], ["alpha", "charlie", "bravo"])

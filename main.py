@@ -485,6 +485,7 @@ async def main_async():
             active_roster_set,
             now_ms=int(now_berlin.astimezone(timezone.utc).timestamp() * 1000),
             readiness_lock=we_data["locks"].get("readiness"),
+            reset_anchor_ms=weekly_reset["last_reset_ms"],
         )
         update_readiness_lock(we_data, readiness_state)
         await smart_update_we(

@@ -87,15 +87,15 @@ function getWarEffortConfig(type) {
             theme: 'readiness',
             overline: 'Deployable Roster Command',
             title: "Warden's Standard",
-            desc: 'Recognizes raid-ready characters who remained active and deployable this week.',
+            desc: "Recognizes raid-ready characters confirmed active after this week's reset and still deployable.",
             emptyTitle: 'No active raid-ready baseline is currently locked.',
             emptyDesc: "No active raid-ready baseline is currently locked for Warden's Standard. The board will populate after the next backend refresh.",
-            objectiveLabel: 'Objective: Maintain 70% of the active raid-ready roster captured at weekly reset.',
+            objectiveLabel: 'Objective: Maintain 70% of the active raid-ready roster confirmed after weekly reset.',
             unitLabel: 'Participants',
             progressUnitSingular: 'participant',
             progressUnitPlural: 'participants',
-            ctaValue: 'Awaiting deployable roster data.',
-            ctaMeta: 'Keep the active raid-ready roster deployable, recently seen, and fully equipped.',
+            ctaValue: 'Awaiting post-reset confirmation.',
+            ctaMeta: 'Keep the active raid-ready roster confirmed after reset, deployable, and fully equipped.',
             target: 0
         }
     };
@@ -189,7 +189,7 @@ function buildReadinessWarEffortSnapshot(readinessLock = {}) {
         homeLeader: target > 0
             ? (vanguards.length > 0
                 ? `Vanguards: ${vanguards.map(formatReadinessDisplayName).join(', ')}`
-                : 'Vanguards: Awaiting deployable roster data.')
+                : 'Vanguards: Awaiting post-reset confirmation.')
             : 'Awaiting deployable roster.'
     };
 }
@@ -267,7 +267,7 @@ function buildWarEffortShell(hashUrl, characters = []) {
             ? `Progress: ${participantCount.toLocaleString()} / ${target.toLocaleString()} participants \u2022 ${Math.round(completionPct).toLocaleString()}% complete`
             : "No active raid-ready baseline is currently locked for Warden's Standard.";
         const readinessMetaLine = readinessHasLock
-            ? `Frozen weekly target from the ${snapshot.weekLabel || 'latest'} reset \u2022 ${activeBaseline.toLocaleString()} active raid-ready at lock \u2022 ${activeCount.toLocaleString()} currently active \u2022 ${totalCount.toLocaleString()} total raid-ready`
+            ? `Frozen weekly target from the ${snapshot.weekLabel || 'latest'} reset \u2022 ${activeBaseline.toLocaleString()} active raid-ready at reset \u2022 ${activeCount.toLocaleString()} currently active \u2022 ${totalCount.toLocaleString()} total raid-ready`
             : "No active raid-ready baseline is currently locked for Warden's Standard.";
 
         if (shell) shell.classList.add(`war-effort-shell-${config.theme}`);
@@ -340,8 +340,8 @@ function buildWarEffortShell(hashUrl, characters = []) {
                 },
                 {
                     kicker: 'Command Order',
-                    value: 'Keep the active raid-ready roster deployable, recently seen, and fully equipped.',
-                    meta: 'Maintain 70% of the active raid-ready roster captured at weekly reset.'
+                    value: 'Keep the active raid-ready roster confirmed after reset, deployable, and fully equipped.',
+                    meta: 'Maintain 70% of the active raid-ready roster confirmed after weekly reset.'
                 }
             ].forEach(item => {
                 const node = buildHeroBandItemNode(item);

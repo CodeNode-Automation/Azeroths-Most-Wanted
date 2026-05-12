@@ -89,6 +89,30 @@ def _parse_timestamp_ms(value):
     return raw if raw > 0 else None
 
 
+def _get_readiness_last_seen_ms(profile, character, equipped):
+    if not isinstance(profile, dict):
+        profile = {}
+    if not isinstance(character, dict):
+        character = {}
+    if not isinstance(equipped, dict):
+        equipped = {}
+
+    for candidate in (
+        profile.get("last_login_timestamp"),
+        profile.get("last_seen_ms"),
+        profile.get("last_login_ms"),
+        character.get("last_login_ms"),
+        character.get("last_seen_ms"),
+        equipped.get("last_login_ms"),
+        equipped.get("last_seen_ms"),
+    ):
+        last_seen_ms = _parse_timestamp_ms(candidate)
+        if last_seen_ms is not None:
+            return last_seen_ms
+
+    return None
+
+
 def _count_combat_equipment_slots(equipped):
     normalized_equipped = _normalize_readiness_equipped_slots(equipped)
     if not normalized_equipped:
@@ -163,7 +187,7 @@ def _get_character_profile_and_equipped(character):
     return profile, equipped
 
 
-def _get_readiness_character_state(character, active_roster_set, now_ms):
+def _get_readiness_character_state(character, active_roster_set, now_ms, reset_anchor_ms=None):
     profile, equipped = _get_character_profile_and_equipped(character)
     name = _get_character_roster_name(character)
     if not name or (active_roster_set and name not in active_roster_set):
@@ -176,14 +200,11 @@ def _get_readiness_character_state(character, active_roster_set, now_ms):
         or equipped.get("equipped_item_level"),
         0,
     )
-    last_seen_ms = (
-        _parse_timestamp_ms(profile.get("last_login_timestamp"))
-        or _parse_timestamp_ms(character.get("last_login_ms"))
-        or _parse_timestamp_ms(equipped.get("last_login_ms"))
-    )
+    last_seen_ms = _get_readiness_last_seen_ms(profile, character, equipped)
 
     raid_ready = level >= READINESS_RAID_READY_LEVEL and ilvl >= READINESS_RAID_READY_ILVL
     seen_recently = bool(last_seen_ms and now_ms - last_seen_ms <= READINESS_ACTIVE_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+    confirmed_after_reset = bool(last_seen_ms and reset_anchor_ms is not None and last_seen_ms >= reset_anchor_ms)
     combat_slots = _count_combat_equipment_slots(equipped)
     has_valid_profile_gear = bool(profile) and bool(equipped) and ilvl > 0 and last_seen_ms is not None
 
@@ -194,31 +215,37 @@ def _get_readiness_character_state(character, active_roster_set, now_ms):
         "last_seen_ms": last_seen_ms or 0,
         "raid_ready": raid_ready,
         "seen_recently": seen_recently,
+        "confirmed_after_reset": confirmed_after_reset,
         "combat_slots": combat_slots,
         "has_valid_profile_gear": has_valid_profile_gear,
         "is_participant": bool(
             raid_ready
-            and seen_recently
+            and confirmed_after_reset
             and has_valid_profile_gear
             and combat_slots == len(READINESS_COMBAT_SLOT_KEYS)
         ),
     }
 
 
-def build_readiness_week_state(roster_data, active_roster_set, now_ms=None, readiness_lock=None):
+def build_readiness_week_state(roster_data, active_roster_set, now_ms=None, readiness_lock=None, reset_anchor_ms=None):
     if now_ms is None:
         now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
 
     readiness_lock = readiness_lock or {}
     active_raid_ready_baseline = _clean_int(readiness_lock.get("active_raid_ready_baseline"), -1)
     target = _clean_int(readiness_lock.get("target"), -1)
+    resolved_reset_anchor_ms = _clean_int(reset_anchor_ms, 0)
+    if resolved_reset_anchor_ms <= 0:
+        resolved_reset_anchor_ms = _clean_int(readiness_lock.get("reset_anchor_ms"), 0)
+    if resolved_reset_anchor_ms <= 0:
+        resolved_reset_anchor_ms = None
 
     total_raid_ready_count = 0
     active_raid_ready_count = 0
     participant_rows = []
 
     for character in roster_data or []:
-        state = _get_readiness_character_state(character, active_roster_set, now_ms)
+        state = _get_readiness_character_state(character, active_roster_set, now_ms, resolved_reset_anchor_ms)
         if not state:
             continue
 
@@ -259,6 +286,7 @@ def build_readiness_week_state(roster_data, active_roster_set, now_ms=None, read
         "completion_pct": completion_pct,
         "participants": participants,
         "vanguards": vanguards,
+        "reset_anchor_ms": resolved_reset_anchor_ms or 0,
     }
 
 
@@ -276,6 +304,7 @@ def update_readiness_lock(we_data, readiness_state):
         "target": readiness_state.get("target", 0),
         "participant_count": readiness_state.get("participant_count", 0),
         "completion_pct": readiness_state.get("completion_pct", 0),
+        "reset_anchor_ms": readiness_state.get("reset_anchor_ms", 0),
     })
     we_data["locks"][READINESS_CATEGORY] = current_lock
     return current_lock
@@ -286,11 +315,13 @@ def build_weekly_reset_context(berlin_tz):
     days_since_tuesday = (now_berlin.weekday() - 1) % 7
     last_reset_berlin = now_berlin - timedelta(days=days_since_tuesday)
     last_reset_berlin = last_reset_berlin.replace(hour=0, minute=0, second=0, microsecond=0)
+    last_reset_ms = int(last_reset_berlin.astimezone(timezone.utc).timestamp() * 1000)
 
     return {
         "now_berlin": now_berlin,
         "last_reset_berlin": last_reset_berlin,
         "last_reset_iso": last_reset_berlin.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        "last_reset_ms": last_reset_ms,
         "week_anchor": last_reset_berlin.strftime("%Y-%m-%d"),
         "prev_week_anchor": (last_reset_berlin - timedelta(days=7)).strftime("%Y-%m-%d"),
     }
