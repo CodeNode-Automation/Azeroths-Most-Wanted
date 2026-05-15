@@ -313,6 +313,7 @@ class WarEffortReadinessTests(unittest.TestCase):
 
         self.assertEqual(state["participant_count"], 5)
         self.assertEqual(state["vanguards"], ["alpha", "charlie", "bravo"])
+        self.assertTrue(all(isinstance(name, str) for name in state["vanguards"]))
         self.assertEqual(state["participants"][:3], ["alpha", "charlie", "bravo"])
         self.assertNotIn("delta", state["vanguards"])
         self.assertNotIn("echo", state["vanguards"])

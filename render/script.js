@@ -91,6 +91,45 @@ function formatReadinessWeekAnchor(weekAnchor) {
     });
 }
 
+function getResolvedEquippedItemLevel(character = null, profile = null) {
+    const candidates = [
+        profile && profile.equipped_item_level,
+        character && character.profile && character.profile.equipped_item_level,
+        character && character.equipped_item_level,
+        character && character.equipped && character.equipped.equipped_item_level,
+        profile && profile.equipped && profile.equipped.equipped_item_level
+    ];
+
+    for (const candidate of candidates) {
+        const value = parseInt(candidate, 10) || 0;
+        if (value > 0) return value;
+    }
+
+    const charName = String(
+        (profile && profile.name)
+        || (character && character.profile && character.profile.name)
+        || (character && character.name)
+        || ''
+    ).toLowerCase().trim();
+    if (!charName || !Array.isArray(rosterData)) return 0;
+
+    const rosterMatch = rosterData.find(entry => String(
+        (entry && entry.profile && entry.profile.name)
+        || (entry && entry.name)
+        || ''
+    ).toLowerCase().trim() === charName);
+
+    if (!rosterMatch) return 0;
+
+    return parseInt(
+        (rosterMatch.profile && rosterMatch.profile.equipped_item_level)
+        || rosterMatch.equipped_item_level
+        || (rosterMatch.equipped && rosterMatch.equipped.equipped_item_level)
+        || 0,
+        10
+    ) || 0;
+}
+
 function formatWarEffortTooltipSummary(type, snapshot = {}, config = {}) {
     const current = Number(snapshot.current) || 0;
     const target = Number(snapshot.target) || Number(config.target) || 0;
@@ -2969,6 +3008,16 @@ window.addEventListener('DOMContentLoaded', async () => {
             zenithEl.className = 'text-zenith';
             zenithEl.textContent = window.warEffortContext[cleanName].split(' ')[0];
             pill.appendChild(zenithEl);
+        } else if (hashUrl === 'war-effort-readiness') {
+            const readinessIlvl = getResolvedEquippedItemLevel(deepChar, deepChar && deepChar.profile ? deepChar.profile : null);
+            if (readinessIlvl > 0) {
+                statValEl.textContent = `iLvl ${readinessIlvl.toLocaleString()}`;
+                statValEl.classList.add('text-ilvl');
+                statLabelEl.remove();
+            } else {
+                pill.remove();
+            }
+            trendContainer.remove();
         } else if (hashUrl === 'ladder-pve') {
             const trendVal = deepChar && deepChar.profile ? (deepChar.profile.trend_pve || deepChar.profile.trend_ilvl || 0) : 0;
             statValEl.textContent = statValue;
@@ -3667,6 +3716,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 cHex = CLASS_COLORS[cClass] || "#fff";
                 portraitURL = deepChar.render_url || getClassIcon(cClass);
                 level = p.level || 0;
+                const equippedIlvl = getResolvedEquippedItemLevel(deepChar, p);
                 
                 const activeSpec = p.active_spec ? p.active_spec : '';
                 activeSpecAttr = activeSpec ? activeSpec : 'unspecced';
@@ -3677,7 +3727,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                     ? (p.honorable_kills || 0).toLocaleString()
                     : currentSortMethod === 'badges'
                         ? totalHonors.toLocaleString()
-                        : (p.equipped_item_level || 0);
+                        : equippedIlvl;
                 statValueClass = currentSortMethod === 'hks'
                     ? ' c-val-ilvl-hks'
                     : currentSortMethod === 'badges'
